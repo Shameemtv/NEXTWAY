@@ -9,7 +9,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Optional Cloud Sync SDKs (Firebase & Supabase) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -56,7 +55,7 @@
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto p-4">
 
-    <!-- ================= MODULE: AUTHENTICATION VIEW ================= -->
+    <!-- ================= AUTHENTICATION VIEW ================= -->
     <section id="authView" class="max-w-md mx-auto mt-10 bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-800 font-black text-xl mb-2">NW</div>
@@ -85,10 +84,10 @@
       </div>
     </section>
 
-    <!-- ================= MODULE: APPLICATION WORKSPACE ================= -->
+    <!-- ================= APPLICATION WORKSPACE ================= -->
     <section id="appView" class="hidden space-y-4">
 
-      <!-- GLOBAL STATUS BAR & QUICK SEARCH BY CONSIGNMENT ID -->
+      <!-- GLOBAL STATUS BAR & SEARCH BY ID / AGENT -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <div class="flex flex-wrap items-center gap-3">
           <span id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900"></span>
@@ -100,9 +99,8 @@
           <div id="agentOtpBanner" class="hidden text-xs font-semibold px-3 py-1 rounded-lg"></div>
         </div>
 
-        <!-- Global Consignment Search with Photo & QR Inspection -->
         <div class="flex items-center gap-2 w-full md:w-auto">
-          <input id="globalConsignmentSearch" type="text" placeholder="Search Consignment ID (View Photos/QR)..."
+          <input id="globalConsignmentSearch" type="text" placeholder="Search ID or Agent Name..."
             class="w-full md:w-72 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" />
           <button onclick="inspectConsignmentById()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shrink-0">
             Inspect ID
@@ -140,12 +138,12 @@
               <option value="ALL">All Statuses</option>
               <option value="Created">Created (Unassigned / Pending Pickup)</option>
               <option value="Assigned">Assigned</option>
-              <option value="Picked Up">Picked Up (QR Active)</option>
-              <option value="In Transit">In Transit</option>
+              <option value="Picked Up">Picked Up</option>
+              <option value="In-Transit">In-Transit</option>
               <option value="Delivered">Delivered</option>
               <option value="Cancelled">Cancelled</option>
             </select>
-            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter by ID, Customer, Phone, Vendor..."
+            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter by ID, Customer, Phone, Vendor, Agent..."
               class="text-xs border border-slate-300 rounded-lg px-3 py-2 w-60" />
           </div>
           <button onclick="openNewConsignmentModal()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow">
@@ -156,18 +154,18 @@
         <div id="consignmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- ================= TAB 2: AMOUNT MODIFICATION CONFIRMATIONS ================= -->
+      <!-- ================= TAB 2: AMOUNT CONFIRMATIONS ================= -->
       <div id="panel-confirmations" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-          <h3 class="font-bold text-base text-slate-900">Post-Delivery / Admin Amount Modification Requests (AED)</h3>
+          <h3 class="font-bold text-base text-slate-900">Post-Delivery / Amount Modification Requests (AED)</h3>
           <p class="text-xs text-slate-500 mt-0.5">
-            When an Admin modifies Product Amount (AED) or Delivery Charge (AED) later, the assigned Delivery Person must confirm the change here before financial records update.
+            When Product Amount or Delivery Charge is modified, the assigned Delivery Person must confirm the change here.
           </p>
           <div id="confirmationsList" class="mt-4 space-y-3"></div>
         </div>
       </div>
 
-      <!-- ================= TAB 3: PRODUCT VENDORS (ADMIN) ================= -->
+      <!-- ================= TAB 3: PRODUCT VENDORS ================= -->
       <div id="panel-vendors" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-2">
@@ -201,12 +199,12 @@
         </div>
       </div>
 
-      <!-- ================= TAB 4: DELIVERY PERSONNEL (ADMIN) ================= -->
+      <!-- ================= TAB 4: DELIVERY PERSONNEL ================= -->
       <div id="panel-agents" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 class="font-bold text-sm text-slate-900">Delivery Personnel Directory</h3>
-            <p class="text-xs text-slate-500">Deactivating or removing an account retains all historical consignment and financial data.</p>
+            <p class="text-xs text-slate-500">Deactivating or removing an account retains historical data.</p>
           </div>
           <button onclick="openAgentModal()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2 rounded-lg">
             + Add Delivery Person
@@ -223,7 +221,7 @@
                 <th class="p-3">Mobile</th>
                 <th class="p-3">Status</th>
                 <th class="p-3">Handled Orders</th>
-                <th class="p-3">Admin Actions (Blind Password Reset / Status)</th>
+                <th class="p-3">Actions</th>
               </tr>
             </thead>
             <tbody id="agentTableBody" class="divide-y divide-slate-200"></tbody>
@@ -231,10 +229,10 @@
         </div>
       </div>
 
-      <!-- ================= TAB 5: VENDOR INVOICES & SETTLEMENTS (ADMIN) ================= -->
+      <!-- ================= TAB 5: VENDOR INVOICES & SETTLEMENTS ================= -->
       <div id="panel-invoices" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
-          <h3 class="font-bold text-sm text-slate-900">Generate Vendor Settlement Invoice in AED (PDF / Print / Excel)</h3>
+          <h3 class="font-bold text-sm text-slate-900">Generate Vendor Settlement Statement in AED (PDF / Print / Excel)</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Select Vendor</label>
@@ -245,7 +243,6 @@
               <select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
                 <option value="ALL">All Dates</option>
                 <option value="DATE">Specific Date</option>
-                <option value="WEEK">Specific Week</option>
                 <option value="MONTH">Specific Month</option>
                 <option value="YEAR">Specific Year</option>
                 <option value="RANGE">Date Range</option>
@@ -266,10 +263,13 @@
           </div>
           <div class="flex flex-wrap gap-2 pt-2">
             <button onclick="window.print()" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">
-              Print / Save as PDF
+              Print / Save PDF
+            </button>
+            <button onclick="exportInvoicePdfFile()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold px-4 py-2 rounded-lg">
+              Download PDF Statement
             </button>
             <button onclick="exportInvoiceExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-lg">
-              Download Invoice Excel (.xlsx)
+              Download Excel (.xlsx)
             </button>
             <button onclick="shareInvoiceWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg">
               Send Summary via WhatsApp
@@ -277,64 +277,15 @@
           </div>
         </div>
 
-        <!-- ================= TAB 6: BACKUP & RESTORE & CLOUD SYNC (ADMIN) ================= -->
-      <div id="panel-system" class="hidden space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          <!-- FIRESTORE / FIREBASE CONFIGURATION CARD -->
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3 md:col-span-2">
-            <h3 class="font-bold text-sm text-slate-900">🔗 Real-Time Cloud Database Link (Firebase Realtime DB / Firestore)</h3>
-            <p class="text-xs text-slate-600">
-              Enter your Firebase/Firestore Database URL and configuration below to sync orders, statuses, and delivery personnel actions in real-time across multiple mobile devices.
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">Firebase Database URL / Link</label>
-                <input id="settingFirebaseUrl" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" 
-                  class="w-full border rounded-lg px-3 py-2" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">Firebase API Key (Optional / Web App)</label>
-                <input id="settingFirebaseApiKey" type="text" placeholder="AIzaSy..." 
-                  class="w-full border rounded-lg px-3 py-2" />
-              </div>
-            </div>
-            <button onclick="saveFirebaseConfigSettings()" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg">
-              Save & Connect Real-Time Database
-            </button>
-          </div>
-
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="font-bold text-sm text-slate-900">Encrypted-Hash Database Backup</h3>
-            <p class="text-xs text-slate-600">
-              Export all Vendors, Consignments (AED), Photos, Delivery Personnel, and System Settings into a portable JSON snapshot.
-            </p>
-            <button onclick="downloadBackup()" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg">
-              Download Complete Backup (.json)
-            </button>
-          </div>
-
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="font-bold text-sm text-slate-900">Restore Database from Backup</h3>
-            <p class="text-xs text-slate-600">
-              Select a previously exported NEXT WAY backup file to restore all records immediately.
-            </p>
-            <input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)"
-              class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-900" />
-          </div>
-        </div>
-      </div>
-
         <!-- PRINTABLE INVOICE SHEET -->
         <div id="printableInvoice" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-4">
             <div>
               <h2 class="text-lg font-black text-blue-900">NEXT WAY DELIVERY SERVICES LLC</h2>
-              <p class="text-xs text-slate-500">Official Vendor Consignment Settlement Statement (Currency: AED)</p>
-              <p id="invAdminPhoneDisplay" class="text-xs text-slate-500"></p>
+              <p class="text-xs text-slate-500">Official Consignment Settlement Statement (Currency: AED)</p>
             </div>
             <div class="text-left sm:text-right mt-3 sm:mt-0">
-              <p class="text-xs font-bold text-slate-700">INVOICE STATEMENT (AED)</p>
+              <p class="text-xs font-bold text-slate-700">SETTLEMENT STATEMENT (AED)</p>
               <p id="invVendorHeader" class="text-sm font-bold text-slate-900"></p>
               <p id="invPeriodHeader" class="text-xs text-slate-500"></p>
             </div>
@@ -377,16 +328,50 @@
               <tbody id="invTableBody" class="divide-y divide-slate-200"></tbody>
             </table>
           </div>
+
+          <!-- Authorized Signature Section -->
+          <div class="pt-10 flex justify-between items-end mt-8 border-t border-slate-200">
+            <div>
+              <p class="text-xs text-slate-500">Computer generated statement. Valid without physical stamp if verified digitally.</p>
+              <p class="text-xs font-bold text-slate-800 mt-1">NEXT WAY DELIVERY SERVICES LLC, Dubai, UAE</p>
+            </div>
+            <div class="text-right space-y-8">
+              <div class="inline-block border-b border-slate-400 w-48 pb-1"></div>
+              <p class="text-xs font-bold text-slate-800 uppercase tracking-wide">Authorized Signature</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- ================= TAB 6: BACKUP & RESTORE (ADMIN) ================= -->
+      <!-- ================= TAB 6: BACKUP & RESTORE ================= -->
       <div id="panel-system" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="font-bold text-sm text-slate-900">Encrypted-Hash Database Backup</h3>
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3 md:col-span-2">
+            <h3 class="font-bold text-sm text-slate-900">🔗 Real-Time Cloud Database Link (Firebase / Firestore)</h3>
             <p class="text-xs text-slate-600">
-              Export all Vendors, Consignments (AED), Photos, Delivery Personnel (including archived staff), and System Settings into a portable JSON snapshot.
+              Enter your Firebase Realtime Database URL to sync orders and delivery status in real-time across multiple mobiles.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Firebase Database URL / Link</label>
+                <input id="settingFirebaseUrl" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" 
+                  class="w-full border rounded-lg px-3 py-2" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Firebase API Key (Optional)</label>
+                <input id="settingFirebaseApiKey" type="text" placeholder="AIzaSy..." 
+                  class="w-full border rounded-lg px-3 py-2" />
+              </div>
+            </div>
+            <button onclick="saveFirebaseConfigSettings()" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg">
+              Save & Connect Real-Time Database
+            </button>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900">Encrypted Database Backup</h3>
+            <p class="text-xs text-slate-600">
+              Export all Vendors, Consignments, Photos, Delivery Personnel, and Settings into a portable JSON snapshot.
             </p>
             <button onclick="downloadBackup()" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg">
               Download Complete Backup (.json)
@@ -396,7 +381,7 @@
           <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
             <h3 class="font-bold text-sm text-slate-900">Restore Database from Backup</h3>
             <p class="text-xs text-slate-600">
-              Select a previously exported NEXT WAY backup file to restore all records immediately.
+              Select a previously exported NEXT WAY backup file to restore records immediately.
             </p>
             <input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)"
               class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-900" />
@@ -417,7 +402,7 @@
       <form onsubmit="saveNewConsignment(event)" class="space-y-3 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">Consignment ID (Manual or Auto)</label>
+            <label class="font-semibold text-slate-700 block mb-1">Consignment ID</label>
             <div class="flex gap-1">
               <input id="cIdInput" type="text" required placeholder="e.g. NW-9001" class="w-full border rounded-lg px-3 py-2" />
               <button type="button" onclick="generateRandomConsignmentId()" class="bg-slate-200 hover:bg-slate-300 px-2.5 rounded-lg font-semibold">Auto</button>
@@ -430,7 +415,7 @@
         </div>
 
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Pick Up From (Auto-filled from Vendor on Pickup, Editable)</label>
+          <label class="font-semibold text-slate-700 block mb-1">Pick Up From Address</label>
           <input id="cPickupFrom" type="text" required class="w-full border rounded-lg px-3 py-2 bg-slate-50" />
         </div>
 
@@ -473,10 +458,10 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: PICKUP / DELIVERY ACTION + PHOTO + OTP ================= -->
+  <!-- ================= MODAL: ACTION (PICKUP / DELIVERY / STATUS) ================= -->
   <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 my-8 text-xs">
-      <div class="flex justify-between items-center border-b pb-3">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 my-8 text-xs max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3 sticky top-0 bg-white z-10">
         <h3 id="actionModalTitle" class="font-bold text-base text-slate-900">Complete Action</h3>
         <button onclick="closeModal('actionModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
       </div>
@@ -484,14 +469,14 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: INSPECT CONSIGNMENT (QR CODE & PHOTOS) ================= -->
+  <!-- ================= MODAL: INSPECT CONSIGNMENT (DECREASED HEIGHT / SCROLLABLE) ================= -->
   <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-4 my-8 text-xs">
-      <div class="flex justify-between items-center border-b pb-3">
-        <h3 id="inspectTitle" class="font-bold text-base text-slate-900">Consignment Details</h3>
-        <button onclick="closeModal('inspectModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+    <div class="bg-white rounded-2xl max-w-lg w-full p-4 shadow-xl space-y-3 my-6 text-xs max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-2.5 shrink-0">
+        <h3 id="inspectTitle" class="font-bold text-sm text-slate-900">Consignment Details</h3>
+        <button onclick="closeModal('inspectModal')" class="text-slate-500 hover:text-slate-800 text-base font-black px-2 py-0.5 bg-slate-100 rounded-full">✕</button>
       </div>
-      <div id="inspectContent" class="space-y-4"></div>
+      <div id="inspectContent" class="space-y-3 overflow-y-auto pr-1 flex-1"></div>
     </div>
   </div>
 
@@ -548,7 +533,7 @@
           <input id="aPhone" type="text" required placeholder="+971..." class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Initial Password (Stored as SHA-256 Hash)</label>
+          <label class="font-semibold text-slate-700 block mb-1">Initial Password</label>
           <input id="aPass" type="password" required class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
@@ -559,7 +544,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: SELF PROFILE & PASSWORD ================= -->
+  <!-- ================= MODAL: SELF PROFILE & SECURITY ================= -->
   <div id="accountModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -587,38 +572,20 @@
     </div>
   </div>
 
-  <!-- APPLICATION JAVASCRIPT ENGINE -->
+  <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
     const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';
     const CURRENCY = 'AED';
     let db = null;
     let currentUser = null;
     let deferredPrompt = null;
+    let firebaseDbRef = null;
+    let isApplyingRemoteUpdate = false;
 
-    // Unified AED Currency Formatter
     function formatAED(value) {
       const num = Number(value) || 0;
-      return `${CURRENCY} ${num.toFixed(2)}`;
+      return `${CURRENCY}${num.toFixed(2)}`;
     }
-
-    // Cloud Sync Configuration (Set provider to 'FIREBASE' or 'SUPABASE' when ready)
-    const CLOUD_CONFIG = {
-      provider: 'LOCAL', // Change to 'FIREBASE' or 'SUPABASE' after pasting keys
-      firebase: {
-        apiKey: "YOUR_FIREBASE_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID"
-      },
-      supabase: {
-        url: "https://YOUR_PROJECT_ID.supabase.co",
-        anonKey: "YOUR_SUPABASE_ANON_PUBLIC_KEY"
-      }
-    };
-
-    let firebaseDbRef = null;
-    let supabaseClient = null;
-    let isApplyingRemoteUpdate = false;
 
     function updateSyncBadge(state, label) {
       const badge = document.getElementById('syncStatusBadge');
@@ -639,7 +606,6 @@
       }
     }
 
-    // SHA-256 One-Way Password Hashing (Ensures Admin never sees Delivery Person passwords)
     async function hashPassword(plain) {
       const msgBuffer = new TextEncoder().encode(plain + '_NEXTWAY_SALT');
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -654,7 +620,9 @@
         settings: {
           companyName: 'NEXT WAY DELIVERY SERVICES LLC',
           currency: 'AED',
-          otpMandatory: true
+          otpMandatory: true,
+          firebaseUrl: '',
+          firebaseApiKey: ''
         },
         users: [
           {
@@ -718,7 +686,7 @@
     function normalizeCloudPayload(raw) {
       if (!raw) return null;
       return {
-        settings: raw.settings || { companyName: 'NEXT WAY DELIVERY SERVICES LLC', currency: 'AED', otpMandatory: true },
+        settings: raw.settings || { companyName: 'NEXT WAY DELIVERY SERVICES LLC', currency: 'AED', otpMandatory: true, firebaseUrl: '', firebaseApiKey: '' },
         users: Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {}),
         vendors: Array.isArray(raw.vendors) ? raw.vendors : Object.values(raw.vendors || {}),
         consignments: Array.isArray(raw.consignments) ? raw.consignments : Object.values(raw.consignments || {})
@@ -750,49 +718,71 @@
       isApplyingRemoteUpdate = false;
     }
 
+    function initFirebaseRealtimeConnection(databaseURL, apiKey) {
+      if (!databaseURL) {
+        updateSyncBadge('OFFLINE', 'Local Storage Mode');
+        return;
+      }
+
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp({
+            apiKey: apiKey || "optional-key",
+            databaseURL: databaseURL
+          });
+        }
+        firebaseDbRef = firebase.database().ref('nextway_db');
+        
+        firebaseDbRef.on('value', (snapshot) => {
+          const val = snapshot.val();
+          if (val) {
+            applyIncomingCloudState(val);
+            updateSyncBadge('LIVE', 'Live Real-Time Sync Active');
+          } else {
+            firebaseDbRef.set(db);
+            updateSyncBadge('LIVE', 'Live Real-Time Sync Active');
+          }
+        }, () => updateSyncBadge('OFFLINE', 'Sync Error / Offline'));
+      } catch (e) {
+        console.error(e);
+        updateSyncBadge('OFFLINE', 'Connection Failed');
+      }
+    }
+
+    function saveFirebaseConfigSettings() {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        alert('Only Admin can update database links.');
+        return;
+      }
+      const url = document.getElementById('settingFirebaseUrl').value.trim();
+      const apiKey = document.getElementById('settingFirebaseApiKey').value.trim();
+
+      if (!db.settings) db.settings = {};
+      db.settings.firebaseUrl = url;
+      db.settings.firebaseApiKey = apiKey;
+      saveDB();
+      alert('Firebase database link saved successfully! Initializing real-time sync...');
+      initFirebaseRealtimeConnection(url, apiKey);
+    }
+
     async function initDB() {
       const saved = localStorage.getItem(DB_KEY);
       db = saved ? JSON.parse(saved) : await getDefaultSeedDB();
+      if (!db.settings) db.settings = { companyName: 'NEXT WAY DELIVERY SERVICES LLC', currency: 'AED', otpMandatory: true, firebaseUrl: '', firebaseApiKey: '' };
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
-      if (CLOUD_CONFIG.provider === 'FIREBASE' && !CLOUD_CONFIG.firebase.apiKey.startsWith('YOUR_')) {
-        try {
-          if (!firebase.apps.length) firebase.initializeApp(CLOUD_CONFIG.firebase);
-          firebaseDbRef = firebase.database().ref('nextway_db');
-          firebaseDbRef.on('value', (snapshot) => {
-            const val = snapshot.val();
-            if (val) {
-              applyIncomingCloudState(val);
-              updateSyncBadge('LIVE', 'Live Cloud Sync');
-            } else {
-              firebaseDbRef.set(db);
-              updateSyncBadge('LIVE', 'Live Cloud Sync');
-            }
-          }, () => updateSyncBadge('OFFLINE', 'Local Fallback'));
-          return;
-        } catch (e) { console.error(e); }
+      setTimeout(() => {
+        const urlInput = document.getElementById('settingFirebaseUrl');
+        const keyInput = document.getElementById('settingFirebaseApiKey');
+        if (urlInput && db.settings.firebaseUrl) urlInput.value = db.settings.firebaseUrl;
+        if (keyInput && db.settings.firebaseApiKey) keyInput.value = db.settings.firebaseApiKey;
+      }, 500);
+
+      if (db.settings.firebaseUrl) {
+        initFirebaseRealtimeConnection(db.settings.firebaseUrl, db.settings.firebaseApiKey);
+      } else {
+        updateSyncBadge('OFFLINE', 'Local Storage Mode');
       }
-
-      if (CLOUD_CONFIG.provider === 'SUPABASE' && !CLOUD_CONFIG.supabase.url.startsWith('https://YOUR_')) {
-        try {
-          supabaseClient = window.supabase.createClient(CLOUD_CONFIG.supabase.url, CLOUD_CONFIG.supabase.anonKey);
-          const { data, error } = await supabaseClient.from('nextway_state').select('payload').eq('id', 'MAIN_STATE').maybeSingle();
-          if (!error && data && data.payload) applyIncomingCloudState(data.payload);
-          else if (!data) await supabaseClient.from('nextway_state').upsert({ id: 'MAIN_STATE', payload: db, updated_at: new Date().toISOString() });
-
-          supabaseClient.channel('nextway-live-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'nextway_state', filter: 'id=eq.MAIN_STATE' }, (ev) => {
-              if (ev.new && ev.new.payload) {
-                applyIncomingCloudState(ev.new.payload);
-                updateSyncBadge('LIVE', 'Live Cloud Sync');
-              }
-            })
-            .subscribe((status) => { if (status === 'SUBSCRIBED') updateSyncBadge('LIVE', 'Live Cloud Sync'); });
-          return;
-        } catch (e) { console.error(e); }
-      }
-
-      updateSyncBadge('OFFLINE', 'Local Storage Mode');
     }
 
     async function saveDB() {
@@ -802,18 +792,8 @@
       if (firebaseDbRef) {
         updateSyncBadge('SYNCING', 'Syncing...');
         firebaseDbRef.set(db)
-          .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
+          .then(() => updateSyncBadge('LIVE', 'Live Real-Time Sync Active'))
           .catch(() => updateSyncBadge('OFFLINE', 'Offline Queued'));
-      }
-
-      if (supabaseClient) {
-        updateSyncBadge('SYNCING', 'Syncing...');
-        const { error } = await supabaseClient.from('nextway_state').upsert({
-          id: 'MAIN_STATE',
-          payload: db,
-          updated_at: new Date().toISOString()
-        });
-        updateSyncBadge(error ? 'OFFLINE' : 'LIVE', error ? 'Offline Queued' : 'Live Cloud Sync');
       }
     }
 
@@ -827,7 +807,7 @@
       return db.vendors.find(v => v.code.toUpperCase() === (code || '').toUpperCase());
     }
 
-    // ================= AUTHENTICATION MODULE =================
+    // ================= AUTHENTICATION =================
     async function handleLogin(e) {
       e.preventDefault();
       const uName = document.getElementById('loginUsername').value.trim();
@@ -973,11 +953,11 @@
       }
     }
 
-    // ================= MODULE: CONSIGNMENTS, PICKUP, QR & CAMERA (IN AED) =================
+    // ================= CONSIGNMENTS & SEARCH WITH AGENT NAME =================
     function openNewConsignmentModal() {
       document.getElementById('cIdInput').value = 'NW-' + Math.floor(1000 + Math.random() * 9000);
       const vSelect = document.getElementById('cVendorSelect');
-      vSelect.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.code} - ${v.name}</option>`).join('');
+      vSelect.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.code} -${v.name}</option>`).join('');
       syncVendorPickupAddress();
 
       const aSelect = document.getElementById('cAgentSelect');
@@ -1013,7 +993,7 @@
       e.preventDefault();
       const id = document.getElementById('cIdInput').value.trim().toUpperCase();
       if (db.consignments.some(c => c.id.toUpperCase() === id)) {
-        alert('Consignment ID already exists! Please enter a unique ID.');
+        alert('Consignment ID already exists!');
         return;
       }
       const assignedAgent = currentUser.role === 'ADMIN'
@@ -1058,7 +1038,8 @@
         if (!isAdmin && c.assignedTo && c.assignedTo !== currentUser.id) return false;
         if (statusFilter !== 'ALL' && c.status !== statusFilter) return false;
         if (query) {
-          const hay = `${c.id} ${c.customerName} ${c.customerPhone} ${c.vendorCode} ${c.pickupFrom}`.toLowerCase();
+          const agentName = getAgentName(c.assignedTo).toLowerCase();
+          const hay = `${c.id}${c.customerName} ${c.customerPhone}${c.vendorCode} ${c.pickupFrom}${agentName}`.toLowerCase();
           if (!hay.includes(query)) return false;
         }
         return true;
@@ -1084,11 +1065,7 @@
                   <span class="font-black text-sm text-blue-900">${c.id}</span>
                   <span class="ml-1.5 text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">${c.vendorCode}</span>
                 </div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  c.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' :
-                  c.status === 'Picked Up' ? 'bg-amber-100 text-amber-800' :
-                  'bg-blue-100 text-blue-800'
-                }">${c.status}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${ c.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : c.status === 'Picked Up' ? 'bg-amber-100 text-amber-800' : c.status === 'In-Transit' ? 'bg-indigo-100 text-indigo-800' : 'bg-blue-100 text-blue-800' }">${c.status}</span>
               </div>
 
               <div class="mt-2 space-y-1 text-xs text-slate-600">
@@ -1099,24 +1076,22 @@
                 <p><strong>Assigned Agent:</strong> ${getAgentName(c.assignedTo)}</p>
               </div>
 
-              <!-- Financials in AED & Modification Controls -->
               <div class="mt-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <div>
                   <p>Product Amt: <strong class="text-slate-900">${formatAED(c.productAmount)}</strong></p>
                   <p>Delivery Fee: <strong class="text-slate-900">${formatAED(c.deliveryCharge)}</strong></p>
                 </div>
                 <div class="text-right">
-                  ${c.pendingModification ? `<span class="block text-amber-700 font-bold mb-1">Pending Agent Approval</span>` : ''}
+                  ${c.pendingModification ? `<span class="block text-amber-700 font-bold mb-1">Pending Approval</span>` : ''}
                   ${(!isDelivered || isAdmin) ? `
                     <button onclick="openAmountEditModal('${c.id}')" class="text-blue-700 hover:underline font-semibold">
-                      Edit AED Amounts
+                      Edit Amounts
                     </button>
                   ` : `<span class="text-slate-400">Locked</span>`}
                 </div>
               </div>
             </div>
 
-            <!-- Role-Based Assignment & Workflow Actions -->
             <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
               ${isAdmin ? `
                 <div class="flex items-center gap-1">
@@ -1130,24 +1105,37 @@
                   <button onclick="agentSelfAssign('${c.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded">
                     Self-Assign / Claim from Pool
                   </button>
-                ` : `<p class="text-slate-400 italic">Assigned to you (Reassignment restricted to Admin)</p>`}
+                ` : ``}
               `}
 
               <div class="flex flex-wrap gap-1.5">
-                ${c.status !== 'Picked Up' && c.status !== 'Delivered' ? `
+                ${c.status !== 'Picked Up' && c.status !== 'In-Transit' && c.status !== 'Delivered' ? `
                   <button onclick="openPickupModal('${c.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-1.5 px-2 rounded">
                     Pick Up + Photo/QR
                   </button>
                 ` : ''}
 
                 ${c.status === 'Picked Up' ? `
+                  <button onclick="setConsignmentStatus('${c.id}', 'In-Transit')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-2 rounded">
+                    Mark In-Transit
+                  </button>
+                ` : ''}
+
+                ${c.status === 'Picked Up' || c.status === 'In-Transit' ? `
                   <button onclick="openDeliveryModal('${c.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2 rounded">
                     Mark Delivered
                   </button>
                 ` : ''}
 
+                <!-- Delivery Person Receipt Option -->
+                ${!isAdmin ? `
+                  <button onclick="generateAgentReceipt('${c.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-2 rounded">
+                    Generate Receipt
+                  </button>
+                ` : ''}
+
                 <button onclick="sendWhatsAppStatus('${c.id}')" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-2.5 rounded">
-                  WhatsApp Status
+                  WhatsApp
                 </button>
 
                 <button onclick="showConsignmentDetails('${c.id}')" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-1.5 px-2.5 rounded">
@@ -1158,6 +1146,14 @@
           </div>
         `;
       }).join('');
+    }
+
+    function setConsignmentStatus(consignmentId, status) {
+      const c = db.consignments.find(x => x.id === consignmentId);
+      if (!c) return;
+      c.status = status;
+      saveDB();
+      renderConsignments();
     }
 
     function adminAssignAgent(consignmentId, agentId) {
@@ -1214,17 +1210,17 @@
       document.getElementById('actionModalBody').innerHTML = `
         <div class="space-y-3">
           <div class="p-2.5 bg-blue-50 border border-blue-200 rounded text-blue-900">
-            <strong>Auto-Synced Vendor Pickup Location:</strong> Automatically populated from vendor <strong>${c.vendorCode}</strong>. You may edit if picked up from an alternate branch.
+            <strong>Vendor Pickup Location:</strong> ${autoAddress}
           </div>
           <div>
-            <label class="font-semibold block mb-1">Pick Up From Address</label>
+            <label class="font-semibold block mb-1">Pick Up Address</label>
             <input id="modalPickupAddress" type="text" value="${autoAddress}" class="w-full border rounded-lg px-3 py-2" />
           </div>
           <div>
-            <label class="font-semibold block mb-1">Capture Pickup Consignment Photo</label>
+            <label class="font-semibold block mb-1">Capture Pickup Photo</label>
             <input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)"
               class="block w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-blue-700 file:text-white" />
-            <img id="modalPhotoPreview" src="${tempPhotoData || ''}" class="${tempPhotoData ? '' : 'hidden'} mt-2 max-h-40 rounded border" />
+            <img id="modalPhotoPreview" src="${tempPhotoData || ''}" class="${tempPhotoData ? '' : 'hidden'} mt-2 max-h-36 rounded border" />
           </div>
           <button onclick="confirmPickup('${c.id}')" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg">
             Confirm Pickup & Generate QR Code
@@ -1275,7 +1271,7 @@
         <div class="space-y-3">
           <div class="p-3 bg-slate-100 rounded-lg space-y-1">
             <p><strong>Customer:</strong> ${c.customerName} (${c.customerPhone})</p>
-            <p><strong>Amount to Collect:</strong> Product ${formatAED(c.productAmount)} + Delivery ${formatAED(c.deliveryCharge)} = <strong>${formatAED(c.productAmount + c.deliveryCharge)}</strong></p>
+            <p><strong>Amount to Collect:</strong> <strong>${formatAED(c.productAmount + c.deliveryCharge)}</strong></p>
           </div>
 
           <div class="p-3 border rounded-lg space-y-2 ${otpRequired ? 'border-red-300 bg-red-50' : 'border-emerald-300 bg-emerald-50'}">
@@ -1284,18 +1280,18 @@
                 Customer OTP (${otpRequired ? 'MANDATORY' : 'OPTIONAL'})
               </span>
               <button type="button" onclick="sendWhatsAppOtp('${c.id}')" class="bg-green-600 hover:bg-green-700 text-white px-2.5 py-1 rounded font-bold">
-                Send OTP via WhatsApp
+                Send WhatsApp OTP
               </button>
             </div>
-            <input id="deliveryOtpInput" type="text" placeholder="${otpRequired ? 'Enter 4-digit OTP from customer' : 'OTP Optional (leave blank or enter)'}"
+            <input id="deliveryOtpInput" type="text" placeholder="${otpRequired ? 'Enter 4-digit OTP' : 'OTP Optional'}"
               class="w-full border rounded px-3 py-2 bg-white" />
           </div>
 
           <div>
-            <label class="font-semibold block mb-1">Capture Proof of Delivery Photo</label>
+            <label class="font-semibold block mb-1">Proof of Delivery Photo</label>
             <input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)"
               class="block w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-emerald-700 file:text-white" />
-            <img id="modalPhotoPreview" src="${tempPhotoData || ''}" class="${tempPhotoData ? '' : 'hidden'} mt-2 max-h-40 rounded border" />
+            <img id="modalPhotoPreview" src="${tempPhotoData || ''}" class="${tempPhotoData ? '' : 'hidden'} mt-2 max-h-36 rounded border" />
           </div>
 
           <button onclick="confirmDelivery('${c.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg">
@@ -1312,7 +1308,7 @@
       if (!c.otpCode) c.otpCode = String(Math.floor(1000 + Math.random() * 9000));
       saveDB();
       const cleanPhone = c.customerPhone.replace(/[^0-9]/g, '');
-      const msg = `Hello ${c.customerName}, your NEXT WAY DELIVERY SERVICES LLC verification OTP for Consignment ${c.id} (${formatAED(c.productAmount + c.deliveryCharge)}) is *${c.otpCode}*. Please share this with your delivery agent.`;
+      const msg = `Hello ${c.customerName}, your NEXT WAY DELIVERY SERVICES LLC OTP for Consignment ${c.id} is *${c.otpCode}*.`;
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
@@ -1322,7 +1318,7 @@
       const enteredOtp = document.getElementById('deliveryOtpInput').value.trim();
 
       if (db.settings.otpMandatory && enteredOtp !== c.otpCode) {
-        alert('Invalid OTP! Admin has set OTP verification as MANDATORY for all deliveries.');
+        alert('Invalid OTP!');
         return;
       }
 
@@ -1335,34 +1331,73 @@
       renderConsignments();
     }
 
+    // Delivery Person Receipt Generator
+    function generateAgentReceipt(consignmentId) {
+      const c = db.consignments.find(x => x.id === consignmentId);
+      if (!c) return;
+      const vendor = getVendorByCode(c.vendorCode);
+      const agent = db.users.find(u => u.id === c.assignedTo);
+
+      const receiptWindow = window.open('', '_blank');
+      receiptWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Receipt - ${c.id}</title>
+          <script src="https://cdn.tailwindcss.com"><\/script>
+        </head>
+        <body class="p-8 bg-slate-50 font-sans">
+          <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow border space-y-4">
+            <div class="text-center border-b pb-3">
+              <h2 class="font-black text-blue-900 text-base">NEXT WAY DELIVERY SERVICES LLC</h2>
+              <p class="text-xs text-slate-500">Official Delivery & Collection Receipt</p>
+            </div>
+            <div class="text-xs space-y-1.5">
+              <p><strong>Consignment ID:</strong> ${c.id}</p>
+              <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+              <p><strong>Vendor:</strong> ${vendor ? vendor.name : c.vendorCode}</p>
+              <p><strong>Customer:</strong> ${c.customerName} (${c.customerPhone})</p>
+              <p><strong>Delivery Address:</strong> ${c.deliveryAddress}</p>
+              <p><strong>Delivery Status:</strong> <span class="font-bold text-blue-700">${c.status}</span></p>
+              <p><strong>Delivery Person:</strong> ${agent ? agent.name : 'N/A'}</p>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border text-xs space-y-1">
+              <p class="flex justify-between"><span>Product Amount:</span> <strong>${formatAED(c.productAmount)}</strong></p>
+              <p class="flex justify-between"><span>Delivery Charge:</span> <strong>${formatAED(c.deliveryCharge)}</strong></p>
+              <p class="flex justify-between border-t pt-1 font-bold text-sm text-blue-900"><span>Total Collected:</span> <span>${formatAED(c.productAmount + c.deliveryCharge)}</span></p>
+            </div>
+            <div class="pt-6 border-t flex justify-between items-end text-xs">
+              <div>
+                <p class="font-bold">Authorized Signature</p>
+                <div class="border-b border-slate-400 w-36 mt-8"></div>
+              </div>
+              <button onclick="window.print()" class="bg-blue-800 text-white px-4 py-2 rounded font-bold no-print">Print Receipt</button>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      receiptWindow.document.close();
+    }
+
     function sendWhatsAppStatus(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
       const cleanPhone = c.customerPhone.replace(/[^0-9]/g, '');
       const total = formatAED(c.productAmount + c.deliveryCharge);
-      const msg = `*NEXT WAY DELIVERY SERVICES LLC*\nConsignment ID: *${c.id}*\nCurrent Status: *${c.status}*\nProduct Amount: ${formatAED(c.productAmount)}\nDelivery Charge: ${formatAED(c.deliveryCharge)}\nTotal Payable: *${total}*`;
+      const msg = `*NEXT WAY DELIVERY SERVICES LLC*\nConsignment: *${c.id}*\nStatus: *${c.status}*\nTotal Payable: *${total}*`;
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // ================= MODULE: FINANCIAL MODIFICATION & AGENT CONFIRMATION (IN AED) =================
+    // ================= FINANCIAL MODIFICATION & CONFIRMATION =================
     function openAmountEditModal(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
       const isAgent = currentUser.role === 'AGENT';
 
-      if (isAgent && c.status === 'Delivered') {
-        alert('Delivery personnel can only modify Product Amount and Delivery Charge BEFORE delivery.');
-        return;
-      }
-
       document.getElementById('actionModalTitle').textContent = `Modify Financials (AED): ${c.id}`;
       document.getElementById('actionModalBody').innerHTML = `
         <div class="space-y-3">
-          <p class="text-slate-600">
-            ${isAgent
-              ? 'As the assigned Delivery Person, you may update AED amounts directly prior to delivery.'
-              : 'Admin post-modification: Updating these AED amounts will send a confirmation request to the assigned Delivery Person before taking effect.'}
-          </p>
           <div>
             <label class="font-semibold block mb-1">Product Amount (AED)</label>
             <input id="editProdAmt" type="number" step="0.01" value="${c.productAmount}" class="w-full border rounded-lg px-3 py-2" />
@@ -1372,7 +1407,7 @@
             <input id="editDelivFee" type="number" step="0.01" value="${c.deliveryCharge}" class="w-full border rounded-lg px-3 py-2" />
           </div>
           <button onclick="saveAmountModification('${c.id}')" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg">
-            ${isAgent ? 'Update AED Amounts Immediately' : 'Submit for Delivery Person Confirmation'}
+            ${isAgent ? 'Update AED Amounts' : 'Submit for Confirmation'}
           </button>
         </div>
       `;
@@ -1386,7 +1421,6 @@
       const newFee = parseFloat(document.getElementById('editDelivFee').value) || 0;
 
       if (currentUser.role === 'AGENT') {
-        if (c.status === 'Delivered') return;
         c.productAmount = newProd;
         c.deliveryCharge = newFee;
       } else {
@@ -1419,7 +1453,7 @@
       document.getElementById('confirmBadge').textContent = pending.length;
 
       if (pending.length === 0) {
-        container.innerHTML = `<div class="p-4 bg-slate-50 rounded-lg text-xs text-slate-500">No pending AED amount modifications awaiting confirmation.</div>`;
+        container.innerHTML = `<div class="p-4 bg-slate-50 rounded-lg text-xs text-slate-500">No pending amount modifications awaiting confirmation.</div>`;
         return;
       }
 
@@ -1438,9 +1472,9 @@
             <div>
               ${canConfirm ? `
                 <button onclick="agentConfirmModification('${c.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg">
-                  Confirm Modified AED Amounts
+                  Confirm Amounts
                 </button>
-              ` : `<span class="text-amber-900 font-semibold">Awaiting Delivery Person Confirmation</span>`}
+              ` : `<span class="text-amber-900 font-semibold">Awaiting Agent Confirmation</span>`}
             </div>
           </div>
         `;
@@ -1457,13 +1491,17 @@
       refreshAllViews();
     }
 
-    // ================= MODULE: INSPECT CONSIGNMENT (SEARCH BY ID -> VIEW QR & PHOTOS) =================
+    // ================= INSPECT CONSIGNMENT =================
     function inspectConsignmentById() {
-      const id = document.getElementById('globalConsignmentSearch').value.trim().toUpperCase();
-      if (!id) return;
-      const found = db.consignments.find(c => c.id.toUpperCase() === id);
+      const query = document.getElementById('globalConsignmentSearch').value.trim().toLowerCase();
+      if (!query) return;
+      
+      const found = db.consignments.find(c => 
+        c.id.toLowerCase() === query || getAgentName(c.assignedTo).toLowerCase().includes(query)
+      );
+
       if (!found) {
-        alert(`No consignment found with ID "${id}".`);
+        alert(`No consignment found matching "${query}".`);
         return;
       }
       showConsignmentDetails(found.id);
@@ -1472,39 +1510,36 @@
     function showConsignmentDetails(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
-      document.getElementById('inspectTitle').textContent = `Consignment ${c.id} — QR & Photo Evidence`;
+      document.getElementById('inspectTitle').textContent = `Consignment ${c.id} — QR & Photos`;
       document.getElementById('inspectContent').innerHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-slate-50 p-3 rounded-xl border">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center bg-slate-50 p-2.5 rounded-lg border">
           <div class="space-y-1">
             <p><strong>Status:</strong> ${c.status}</p>
-            <p><strong>Vendor Code:</strong> ${c.vendorCode}</p>
-            <p><strong>Pick Up From:</strong> ${c.pickupFrom}</p>
+            <p><strong>Vendor:</strong> ${c.vendorCode}</p>
             <p><strong>Customer:</strong> ${c.customerName} (${c.customerPhone})</p>
-            <p><strong>Delivery Address:</strong> ${c.deliveryAddress}</p>
-            <p><strong>Product Amount:</strong> ${formatAED(c.productAmount)}</p>
-            <p><strong>Delivery Charge:</strong> ${formatAED(c.deliveryCharge)}</p>
+            <p><strong>Address:</strong> ${c.deliveryAddress}</p>
             <p><strong>Total COD:</strong> <strong>${formatAED(c.productAmount + c.deliveryCharge)}</strong></p>
           </div>
-          <div class="flex flex-col items-center justify-center p-3 bg-white rounded-lg border">
+          <div class="flex flex-col items-center justify-center p-2 bg-white rounded border">
             ${c.qrGenerated
-              ? `<div id="qrCodeCanvas" class="p-2"></div><p class="text-[11px] text-emerald-700 font-bold mt-1">Auto-Generated Post-Pickup QR</p>`
-              : `<p class="text-slate-400 text-center py-6">QR Code generates automatically once Pickup is completed.</p>`
+              ? `<div id="qrCodeCanvas" class="p-1"></div><p class="text-[10px] text-emerald-700 font-bold mt-1">QR Active</p>`
+              : `<p class="text-slate-400 text-center py-4 text-[11px]">QR generates after pickup.</p>`
             }
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="border rounded-lg p-2.5">
-            <p class="font-bold mb-1.5 text-slate-700">Pickup Photo</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div class="border rounded p-2">
+            <p class="font-bold mb-1 text-slate-700">Pickup Photo</p>
             ${c.pickupPhoto
-              ? `<img src="${c.pickupPhoto}" class="w-full h-44 object-cover rounded" />`
-              : `<div class="h-32 bg-slate-100 rounded flex items-center justify-center text-slate-400">No Pickup Photo Captured</div>`}
+              ? `<img src="${c.pickupPhoto}" class="w-full h-32 object-cover rounded" />`
+              : `<div class="h-24 bg-slate-100 rounded flex items-center justify-center text-slate-400 text-[11px]">No Pickup Photo</div>`}
           </div>
-          <div class="border rounded-lg p-2.5">
-            <p class="font-bold mb-1.5 text-slate-700">Delivery Photo</p>
+          <div class="border rounded p-2">
+            <p class="font-bold mb-1 text-slate-700">Delivery Photo</p>
             ${c.deliveryPhoto
-              ? `<img src="${c.deliveryPhoto}" class="w-full h-44 object-cover rounded" />`
-              : `<div class="h-32 bg-slate-100 rounded flex items-center justify-center text-slate-400">No Delivery Photo Captured</div>`}
+              ? `<img src="${c.deliveryPhoto}" class="w-full h-32 object-cover rounded" />`
+              : `<div class="h-24 bg-slate-100 rounded flex items-center justify-center text-slate-400 text-[11px]">No Delivery Photo</div>`}
           </div>
         </div>
       `;
@@ -1514,21 +1549,14 @@
         const qrContainer = document.getElementById('qrCodeCanvas');
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
-          text: JSON.stringify({
-            company: 'NEXT WAY DELIVERY SERVICES LLC',
-            id: c.id,
-            vendor: c.vendorCode,
-            customer: c.customerName,
-            currency: 'AED',
-            codAED: (c.productAmount + c.deliveryCharge).toFixed(2)
-          }),
-          width: 128,
-          height: 128
+          text: JSON.stringify({ id: c.id, customer: c.customerName, cod: (c.productAmount + c.deliveryCharge).toFixed(2) }),
+          width: 100,
+          height: 100
         });
       }
     }
 
-    // ================= MODULE: PRODUCT VENDORS & EXCEL EXPORT =================
+    // ================= VENDORS =================
     function openVendorModal() {
       document.getElementById('vCode').value = 'VND-00' + (db.vendors.length + 1);
       document.getElementById('vName').value = '';
@@ -1541,7 +1569,7 @@
       e.preventDefault();
       const code = document.getElementById('vCode').value.trim().toUpperCase();
       if (db.vendors.some(v => v.code.toUpperCase() === code)) {
-        alert('Vendor Code must be unique! This code is already registered.');
+        alert('Vendor Code must be unique!');
         return;
       }
       db.vendors.push({
@@ -1558,9 +1586,7 @@
     function getFilteredVendors() {
       const q = (document.getElementById('vendorCodeSearch')?.value || '').trim().toLowerCase();
       if (!q) return db.vendors;
-      return db.vendors.filter(v =>
-        v.code.toLowerCase().includes(q) || v.name.toLowerCase().includes(q)
-      );
+      return db.vendors.filter(v => v.code.toLowerCase().includes(q) || v.name.toLowerCase().includes(q));
     }
 
     function renderVendors() {
@@ -1583,19 +1609,19 @@
     function exportVendorsExcel(filteredOnly) {
       const source = filteredOnly ? getFilteredVendors() : db.vendors;
       const rows = source.map(v => ({
-        'Unique Vendor Code': v.code,
+        'Unique Code': v.code,
         'Vendor Name': v.name,
-        'Phone Number': v.phone,
-        'Default Pick Up From Address': v.address,
-        'Total Consignments': db.consignments.filter(c => c.vendorCode === v.code).length
+        'Phone': v.phone,
+        'Address': v.address,
+        'Consignments': db.consignments.filter(c => c.vendorCode === v.code).length
       }));
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Vendors');
-      XLSX.writeFile(wb, `NEXTWAY_Vendors_${filteredOnly ? 'Filtered' : 'Complete'}.xlsx`);
+      XLSX.writeFile(wb, `NEXTWAY_Vendors.xlsx`);
     }
 
-    // ================= MODULE: DELIVERY PERSONNEL & SOFT-DELETE RETENTION =================
+    // ================= DELIVERY PERSONNEL =================
     function openAgentModal() {
       document.getElementById('aName').value = '';
       document.getElementById('aUser').value = '';
@@ -1639,31 +1665,16 @@
             <td class="p-3">${a.username}</td>
             <td class="p-3">${a.phone}</td>
             <td class="p-3">
-              <span class="px-2 py-0.5 rounded-full text-xs font-bold ${
-                a.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
-                a.status === 'DEACTIVATED' ? 'bg-amber-100 text-amber-800' :
-                'bg-red-100 text-red-800'
-              }">${a.status}</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold ${a.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${a.status}</span>
             </td>
-            <td class="p-3 font-bold">${orderCount} (Retained)</td>
+            <td class="p-3 font-bold">${orderCount}</td>
             <td class="p-3 space-x-1">
-              <button onclick="adminBlindPasswordReset('${a.id}')" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 rounded">
-                Reset Password
-              </button>
+              <button onclick="adminBlindPasswordReset('${a.id}')" class="bg-blue-700 text-white px-2 py-1 rounded">Reset</button>
               ${a.status === 'ACTIVE' ? `
-                <button onclick="setAgentStatus('${a.id}', 'DEACTIVATED')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-2.5 py-1 rounded">
-                  Deactivate
-                </button>
+                <button onclick="setAgentStatus('${a.id}', 'DEACTIVATED')" class="bg-amber-500 text-slate-950 px-2 py-1 rounded font-semibold">Deactivate</button>
               ` : `
-                <button onclick="setAgentStatus('${a.id}', 'ACTIVE')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded">
-                  Activate
-                </button>
+                <button onclick="setAgentStatus('${a.id}', 'ACTIVE')" class="bg-emerald-600 text-white px-2 py-1 rounded font-semibold">Activate</button>
               `}
-              ${a.status !== 'REMOVED' ? `
-                <button onclick="setAgentStatus('${a.id}', 'REMOVED')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded">
-                  Remove (Retain Data)
-                </button>
-              ` : ''}
             </td>
           </tr>
         `;
@@ -1673,11 +1684,11 @@
     async function adminBlindPasswordReset(agentId) {
       const agent = db.users.find(u => u.id === agentId);
       if (!agent) return;
-      const newPass = prompt(`Enter new password for ${agent.name} (${agent.username}).\nCurrent password is hidden and not required:`);
+      const newPass = prompt(`Enter new password for ${agent.name}:`);
       if (!newPass) return;
       agent.passwordHash = await hashPassword(newPass);
       saveDB();
-      alert(`Password for ${agent.name} has been securely updated.`);
+      alert('Password updated successfully.');
     }
 
     function setAgentStatus(agentId, status) {
@@ -1689,10 +1700,11 @@
       renderConsignments();
     }
 
-    // ================= MODULE: VENDOR INVOICING IN AED (WEEK, MONTH, YEAR, DATE, RANGE) =================
+    // ================= TAB 5: VENDOR INVOICES & REPORTS =================
     function populateInvoiceVendors() {
       const sel = document.getElementById('invVendorSelect');
-      sel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.code} - ${v.name}</option>`).join('');
+      sel.innerHTML = `<option value="ALL">-- ALL VENDORS (Combined) --</option>` +
+        db.vendors.map(v => `<option value="${v.code}">${v.code} - ${v.name}</option>`).join('');
     }
 
     function updateInvoiceFilterInputs() {
@@ -1711,10 +1723,6 @@
         singleWrap.classList.remove('hidden');
         singleLabel.textContent = 'Select Date';
         singleInput.type = 'date';
-      } else if (type === 'WEEK') {
-        singleWrap.classList.remove('hidden');
-        singleLabel.textContent = 'Select Week';
-        singleInput.type = 'week';
       } else if (type === 'MONTH') {
         singleWrap.classList.remove('hidden');
         singleLabel.textContent = 'Select Month';
@@ -1739,19 +1747,11 @@
       const endVal = document.getElementById('invEndDate').value;
 
       return db.consignments.filter(c => {
-        if (c.vendorCode !== vendorCode) return false;
+        if (vendorCode !== 'ALL' && c.vendorCode !== vendorCode) return false;
         const d = c.createdAt;
         if (type === 'DATE' && singleVal) return d === singleVal;
         if (type === 'MONTH' && singleVal) return d.startsWith(singleVal);
         if (type === 'YEAR' && singleVal) return d.startsWith(String(singleVal));
-        if (type === 'WEEK' && singleVal) {
-          const [y, w] = singleVal.split('-W').map(Number);
-          const dateObj = new Date(d + 'T00:00:00');
-          const jan4 = new Date(y, 0, 4);
-          const dayDiff = (dateObj - jan4) / 86400000;
-          const weekNum = 1 + Math.round((dayDiff - 3 + ((jan4.getDay() + 6) % 7)) / 7);
-          return dateObj.getFullYear() === y && weekNum === w;
-        }
         if (type === 'RANGE') {
           if (startVal && d < startVal) return false;
           if (endVal && d > endVal) return false;
@@ -1762,13 +1762,11 @@
 
     function generateInvoicePreview() {
       const vendorCode = document.getElementById('invVendorSelect').value;
-      const vendor = getVendorByCode(vendorCode);
+      const vendor = vendorCode === 'ALL' ? null : getVendorByCode(vendorCode);
       const rows = getFilteredInvoiceConsignments();
-      const adminUser = db.users.find(u => u.role === 'ADMIN');
 
-      document.getElementById('invAdminPhoneDisplay').textContent = `Admin Contact: ${adminUser ? adminUser.phone : ''}`;
-      document.getElementById('invVendorHeader').textContent = vendor ? `${vendor.name} (${vendor.code})` : vendorCode;
-      document.getElementById('invPeriodHeader').textContent = `Filter: ${document.getElementById('invFilterType').value} | Generated: ${new Date().toLocaleDateString()}`;
+      document.getElementById('invVendorHeader').textContent = vendorCode === 'ALL' ? 'ALL VENDORS SUMMARY' : (vendor ? `${vendor.name} (${vendor.code})` : vendorCode);
+      document.getElementById('invPeriodHeader').textContent = `Generated: ${new Date().toLocaleDateString()}`;
 
       let totalProd = 0;
       let totalFee = 0;
@@ -1800,12 +1798,17 @@
       const netLabel = document.getElementById('invNetLabel');
       const netAmount = document.getElementById('invNetAmount');
       if (netDiff >= 0) {
-        netLabel.textContent = 'NET PAYABLE TO VENDOR (AED)';
+        netLabel.textContent = 'NET SETTLEMENT (AED)';
         netAmount.textContent = `${formatAED(netDiff)} (Payable)`;
       } else {
-        netLabel.textContent = 'NET RECEIVABLE FROM VENDOR (AED)';
+        netLabel.textContent = 'NET SETTLEMENT (AED)';
         netAmount.textContent = `${formatAED(Math.abs(netDiff))} (Receivable)`;
       }
+    }
+
+    // Export PDF via Print Window
+    function exportInvoicePdfFile() {
+      window.print();
     }
 
     function exportInvoiceExcel() {
@@ -1824,54 +1827,34 @@
           'Customer': c.customerName,
           'Delivery Agent': getAgentName(c.assignedTo),
           'Status': c.status,
-          'Currency': 'AED',
           'Product Amount (AED)': Number(c.productAmount.toFixed(2)),
           'Delivery Charge (AED)': Number(c.deliveryCharge.toFixed(2)),
-          'Net Line Balance (AED)': Number((c.productAmount - c.deliveryCharge).toFixed(2))
+          'Net Balance (AED)': Number((c.productAmount - c.deliveryCharge).toFixed(2))
         };
-      });
-
-      const netDiff = totalProd - totalFee;
-      sheetData.push({
-        'Date': 'TOTAL SUMMARY',
-        'Consignment ID': `${rows.length} Orders`,
-        'Vendor Code': vendorCode,
-        'Customer': '',
-        'Delivery Agent': '',
-        'Status': netDiff >= 0 ? 'NET PAYABLE TO VENDOR (AED)' : 'NET RECEIVABLE FROM VENDOR (AED)',
-        'Currency': 'AED',
-        'Product Amount (AED)': Number(totalProd.toFixed(2)),
-        'Delivery Charge (AED)': Number(totalFee.toFixed(2)),
-        'Net Line Balance (AED)': Number(netDiff.toFixed(2))
       });
 
       const ws = XLSX.utils.json_to_sheet(sheetData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Vendor_Invoice_AED');
-      XLSX.writeFile(wb, `NEXTWAY_Invoice_${vendorCode}_AED.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, 'Statement');
+      XLSX.writeFile(wb, `NEXTWAY_Statement_${vendorCode}.xlsx`);
     }
 
     function shareInvoiceWhatsApp() {
-      const vendorCode = document.getElementById('invVendorSelect').value;
-      const vendor = getVendorByCode(vendorCode);
-      if (!vendor) return;
       const count = document.getElementById('invCount').textContent;
       const prod = document.getElementById('invTotalProduct').textContent;
       const fee = document.getElementById('invTotalDelivery').textContent;
-      const netTitle = document.getElementById('invNetLabel').textContent;
       const netVal = document.getElementById('invNetAmount').textContent;
 
-      const cleanPhone = vendor.phone.replace(/[^0-9]/g, '');
-      const text = `*NEXT WAY DELIVERY SERVICES LLC - INVOICE SUMMARY (AED)*\nVendor: *${vendor.name} (${vendor.code})*\nTotal Consignments: ${count}\nProduct Amount Collected: ${prod}\nTotal Delivery Charges: ${fee}\n*${netTitle}: ${netVal}*`;
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
+      const text = `*NEXT WAY DELIVERY SERVICES LLC*\nConsignments: ${count}\nProduct Collected: ${prod}\nDelivery Fees: ${fee}\nNet: ${netVal}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // ================= MODULE: BACKUP & RESTORE =================
+    // ================= BACKUP & RESTORE =================
     function downloadBackup() {
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
       const a = document.createElement('a');
       a.setAttribute('href', dataStr);
-      a.setAttribute('download', `NEXTWAY_Backup_AED_${new Date().toISOString().split('T')[0]}.json`);
+      a.setAttribute('download', `NEXTWAY_Backup_${new Date().toISOString().split('T')[0]}.json`);
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1883,14 +1866,9 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
-          const parsed = JSON.parse(evt.target.result);
-          if (!parsed.users || !parsed.vendors || !parsed.consignments) {
-            alert('Invalid backup file structure.');
-            return;
-          }
-          db = parsed;
+          db = JSON.parse(evt.target.result);
           saveDB();
-          alert('Database restored successfully! Reloading workspace.');
+          alert('Database restored successfully! Reloading.');
           location.reload();
         } catch (err) {
           alert('Failed to parse backup JSON file.');
@@ -1903,7 +1881,6 @@
       document.getElementById(id).classList.add('hidden');
     }
 
-    // PWA Installation & Service Worker Registration
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
