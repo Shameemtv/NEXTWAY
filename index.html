@@ -9,10 +9,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Optional Cloud Sync SDKs (Firebase & Supabase) -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
   <style>
     @media print {
       body * { visibility: hidden; }
@@ -40,6 +39,9 @@
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="syncText">Connecting...</span>
         </span>
+        <button onclick="openConfigModal()" class="bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded border border-blue-600">
+          Database URL
+        </button>
         <button id="installPwaBtn" class="hidden bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-bold px-3 py-1.5 rounded shadow">
           Install App
         </button>
@@ -87,6 +89,28 @@
 
     <!-- ================= MODULE: APPLICATION WORKSPACE ================= -->
     <section id="appView" class="hidden space-y-4">
+
+      <!-- AGENT DASHBOARD BANNER (Only visible for Delivery Agents) -->
+      <div id="agentDashboardBanner" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Deliveries</p>
+            <h3 id="agentPendingCount" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+          </div>
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed Deliveries</p>
+            <h3 id="agentCompletedCount" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+          </div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </div>
+        </div>
+      </div>
 
       <!-- GLOBAL STATUS BAR & QUICK SEARCH BY CONSIGNMENT ID -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
@@ -370,6 +394,27 @@
     </section>
   </main>
 
+  <!-- ================= MODAL: MANUAL DATABASE CONFIG ================= -->
+  <div id="configModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-base text-slate-900">Configure Realtime Database URL</h3>
+        <button onclick="closeModal('configModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+      <div class="space-y-3">
+        <p class="text-slate-600">Enter your Firebase Realtime Database URL manually below. This will establish live sync instantly without modifying source code.</p>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
+          <input id="customDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
+          <button type="button" onclick="saveCustomDatabaseUrl()" class="px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">Save & Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= MODAL: ADD / EDIT CONSIGNMENT ================= -->
   <div id="consignmentModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-4 my-8">
@@ -553,6 +598,7 @@
   <!-- APPLICATION JAVASCRIPT ENGINE -->
   <script>
     const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';
+    const CUSTOM_DB_URL_KEY = 'NEXTWAY_CUSTOM_RTDB_URL';
     let db = null;
     let currentUser = null;
     let deferredPrompt = null;
@@ -563,23 +609,15 @@
       return num.toFixed(2);
     }
 
-    // Cloud Sync Configuration (Updated with your Firebase credentials)
-    const CLOUD_CONFIG = {
-      provider: 'FIREBASE', 
-      firebase: {
-        apiKey: "AIzaSyDxYdcs6Y--yeFrWOHzuYI9eRnmfY6YetA",
-        authDomain: "nextway-eda94.firebaseapp.com",
-        databaseURL: "https://nextway-eda94-default-rtdb.firebaseio.com",
-        projectId: "nextway-eda94"
-      },
-      supabase: {
-        url: "https://YOUR_PROJECT_ID.supabase.co",
-        anonKey: "YOUR_SUPABASE_ANON_PUBLIC_KEY"
-      }
+    // Default Cloud Configuration (Can be overridden manually via UI button)
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDxYdcs6Y--yeFrWOHzuYI9eRnmfY6YetA",
+      authDomain: "nextway-eda94.firebaseapp.com",
+      databaseURL: "https://nextway-eda94-default-rtdb.firebaseio.com",
+      projectId: "nextway-eda94"
     };
 
     let firebaseDbRef = null;
-    let supabaseClient = null;
     let isApplyingRemoteUpdate = false;
 
     function updateSyncBadge(state, label) {
@@ -713,14 +751,28 @@
     }
 
     async function initDB() {
+      // 1. Load initial state from LocalStorage immediately for instant UI load
       const saved = localStorage.getItem(DB_KEY);
       db = saved ? JSON.parse(saved) : await getDefaultSeedDB();
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
-      if (CLOUD_CONFIG.provider === 'FIREBASE' && !CLOUD_CONFIG.firebase.apiKey.startsWith('YOUR_')) {
+      // 2. Initialize Firebase Realtime Database with Manual or Default URL
+      const customUrl = localStorage.getItem(CUSTOM_DB_URL_KEY);
+      const activeDbUrl = customUrl || DEFAULT_FIREBASE_CONFIG.databaseURL;
+
+      if (activeDbUrl) {
         try {
-          if (!firebase.apps.length) firebase.initializeApp(CLOUD_CONFIG.firebase);
+          const configToUse = { ...DEFAULT_FIREBASE_CONFIG, databaseURL: activeDbUrl };
+          if (!firebase.apps.length) {
+            firebase.initializeApp(configToUse);
+          } else {
+            // Re-initialize if already initialized with different config
+            firebase.app().options.databaseURL = activeDbUrl;
+          }
+          
           firebaseDbRef = firebase.database().ref('nextway_db');
+          
+          // Listen to live data changes from Firebase Realtime Database
           firebaseDbRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val) {
@@ -730,33 +782,36 @@
               firebaseDbRef.set(db);
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             }
-          }, () => updateSyncBadge('OFFLINE', 'Local Fallback'));
+          }, () => updateSyncBadge('OFFLINE', 'Local Storage Fallback'));
           return;
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+          console.error(e); 
+          updateSyncBadge('OFFLINE', 'Local Storage Mode');
+        }
+      } else {
+        updateSyncBadge('OFFLINE', 'Local Storage Mode');
       }
-
-      if (CLOUD_CONFIG.provider === 'SUPABASE' && !CLOUD_CONFIG.supabase.url.startsWith('https://YOUR_')) {
-        try {
-          supabaseClient = window.supabase.createClient(CLOUD_CONFIG.supabase.url, CLOUD_CONFIG.supabase.anonKey);
-          const { data, error } = await supabaseClient.from('nextway_state').select('payload').eq('id', 'MAIN_STATE').maybeSingle();
-          if (!error && data && data.payload) applyIncomingCloudState(data.payload);
-          else if (!data) await supabaseClient.from('nextway_state').upsert({ id: 'MAIN_STATE', payload: db, updated_at: new Date().toISOString() });
-
-          supabaseClient.channel('nextway-live-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'nextway_state', filter: 'id=eq.MAIN_STATE' }, (ev) => {
-              if (ev.new && ev.new.payload) {
-                applyIncomingCloudState(ev.new.payload);
-                updateSyncBadge('LIVE', 'Live Cloud Sync');
-              }
-            })
-            .subscribe((status) => { if (status === 'SUBSCRIBED') updateSyncBadge('LIVE', 'Live Cloud Sync'); });
-          return;
-        } catch (e) { console.error(e); }
-      }
-
-      updateSyncBadge('OFFLINE', 'Local Storage Mode');
     }
 
+    function openConfigModal() {
+      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || DEFAULT_FIREBASE_CONFIG.databaseURL;
+      document.getElementById('customDbUrlInput').value = currentUrl;
+      document.getElementById('configModal').classList.remove('hidden');
+    }
+
+    function saveCustomDatabaseUrl() {
+      const url = document.getElementById('customDbUrlInput').value.trim();
+      if (!url) {
+        alert('Please enter a valid Realtime Database URL.');
+        return;
+      }
+      localStorage.setItem(CUSTOM_DB_URL_KEY, url);
+      closeModal('configModal');
+      alert('Database URL updated! Reloading application to connect...');
+      location.reload();
+    }
+
+    // Hybrid save function: updates Local Storage AND pushes to Firebase Realtime Database simultaneously
     async function saveDB() {
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       if (isApplyingRemoteUpdate) return;
@@ -766,16 +821,6 @@
         firebaseDbRef.set(db)
           .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
           .catch(() => updateSyncBadge('OFFLINE', 'Offline Queued'));
-      }
-
-      if (supabaseClient) {
-        updateSyncBadge('SYNCING', 'Syncing...');
-        const { error } = await supabaseClient.from('nextway_state').upsert({
-          id: 'MAIN_STATE',
-          payload: db,
-          updated_at: new Date().toISOString()
-        });
-        updateSyncBadge(error ? 'OFFLINE' : 'LIVE', error ? 'Offline Queued' : 'Live Cloud Sync');
       }
     }
 
@@ -835,6 +880,9 @@
       document.querySelectorAll('.admin-only').forEach(el => {
         el.classList.toggle('hidden', !isAdmin);
       });
+
+      // Show/hide agent dashboard banner
+      document.getElementById('agentDashboardBanner').classList.toggle('hidden', isAdmin);
 
       document.getElementById('adminOtpControl').classList.toggle('hidden', !isAdmin);
       document.getElementById('agentOtpBanner').classList.toggle('hidden', isAdmin);
@@ -938,7 +986,22 @@
         renderVendors();
         renderAgents();
         populateAgentSlicer();
+      } else {
+        updateAgentDashboardStats();
       }
+    }
+
+    function updateAgentDashboardStats() {
+      if (!currentUser || currentUser.role !== 'AGENT') return;
+      const agentConsignments = db.consignments.filter(c => c.assignedTo === currentUser.id);
+      
+      // Pending: Assigned, Picked Up, Out for delivery
+      const pendingCount = agentConsignments.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status)).length;
+      // Completed: Delivered
+      const completedCount = agentConsignments.filter(c => c.status === 'Delivered').length;
+
+      document.getElementById('agentPendingCount').textContent = pendingCount;
+      document.getElementById('agentCompletedCount').textContent = completedCount;
     }
 
     function populateAgentSlicer() {
@@ -1043,7 +1106,6 @@
           if (agentSlicer !== 'UNASSIGNED' && c.assignedTo !== agentSlicer) return false;
         }
         if (query) {
-          // Exclude delivery agent name from search filter as requested
           const hay = `${c.id} ${c.customerName} ${c.customerPhone} ${c.vendorCode} ${c.pickupFrom}`.toLowerCase();
           if (!hay.includes(query)) return false;
         }
@@ -1097,7 +1159,7 @@
                 </div>
                 <div class="text-right">
                   ${c.pendingModification ? `<span class="block text-amber-700 font-bold mb-1">Pending Agent Approval</span>` : ''}
-                  {(!isDelivered && !isReturned || isAdmin) ? `
+                  ${(!isDelivered && !isReturned || isAdmin) ? `
                     <button onclick="openAmountEditModal('${c.id}')" class="text-blue-700 hover:underline font-semibold">
                       Edit Amounts
                     </button>
@@ -1298,7 +1360,6 @@
           </button>
         </div>
       `;
-      document.getElementById('actionModal').classList.add('hidden'); // Fix modal toggle
       document.getElementById('actionModal').classList.remove('hidden');
     }
 
@@ -1654,7 +1715,6 @@
       const wsVendors = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, wsVendors, 'Vendors');
 
-      // Include individual consignment details including vendor and delivery agent name in second sheet
       const consignmentRows = db.consignments.map(c => {
         const v = getVendorByCode(c.vendorCode);
         return {
@@ -1741,7 +1801,7 @@
                 </button>
               `}
               ${a.status !== 'REMOVED' ? `
-                <button onclick="setAgentStatus('${a.id}', 'REMOVED')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded">
+                <button onclick="setAgentStatus('${a.id}', 'REMOVED')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-2.5 py-1 rounded">
                   Remove (Retain Data)
                 </button>
               ` : ''}
@@ -1793,7 +1853,7 @@
         singleLabel.textContent = 'Select Date';
         singleInput.type = 'date';
       } else if (type === 'WEEK') {
-        singleWrap.classList.add('hidden'); // Simplified
+        singleWrap.classList.add('hidden');
       } else if (type === 'MONTH') {
         singleWrap.classList.remove('hidden');
         singleLabel.textContent = 'Select Month';
@@ -1877,7 +1937,6 @@
         netAmount.textContent = `${formatAmt(Math.abs(netDiff))} (Receivable)`;
       }
 
-      // Generate QR Code inside PDF Statement
       const qrEl = document.getElementById('pdfQrCodeCanvas');
       if (qrEl) {
         qrEl.innerHTML = '';
@@ -1908,7 +1967,7 @@
           'Consignment ID': c.id,
           'Vendor Code': c.vendorCode,
           'Customer': c.customerName,
-          'Delivery Agent': getAgentName(c.assignedTo), // Retained in Excel as requested
+          'Delivery Agent': getAgentName(c.assignedTo),
           'Status': c.status,
           'Product Amount': Number(c.productAmount.toFixed(2)),
           'Delivery Charge': Number(c.deliveryCharge.toFixed(2)),
@@ -1987,7 +2046,6 @@
       document.getElementById(id).classList.add('hidden');
     }
 
-    // PWA Installation & Service Worker Registration
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
