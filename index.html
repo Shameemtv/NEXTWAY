@@ -400,7 +400,6 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Period Filter Type</label>
-              <!-- 'WEEK' removed as requested -->
               <select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
                 <option value="ALL">All Dates</option>
                 <option value="DATE">Specific Date</option>
@@ -435,46 +434,44 @@
           </div>
         </div>
 
-        <!-- PRINTABLE INVOICE SHEET (CLEANED UP VERBIAGES) -->
+        <!-- PRINTABLE INVOICE SHEET (DELIVERY FEE REMOVED, SETTLED AMOUNT DEDUCTED, MONTH FORMATTED AS NAME) -->
         <div id="printableInvoice" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-4">
             <div>
               <h2 class="text-lg font-black text-blue-900">NEXT WAY DELIVERY SERVICES LLC</h2>
               <p class="text-xs text-slate-500">Official Vendor Consignment Settlement Statement</p>
-              <!-- Removed verbiage "Admin" -->
               <p id="invContactPhoneDisplay" class="text-xs text-slate-500 font-semibold mt-0.5"></p>
             </div>
             <div class="text-left sm:text-right mt-3 sm:mt-0">
               <p class="text-xs font-bold text-slate-700">INVOICE STATEMENT</p>
-              <!-- Vendor Name without Unique Code -->
               <p id="invVendorHeader" class="text-sm font-bold text-slate-900"></p>
-              <!-- Dynamic Period Display: Month : (Month), Date : (Date), etc. (Without 'Filter') -->
               <p id="invPeriodHeader" class="text-xs text-slate-600 font-semibold"></p>
             </div>
           </div>
 
-          <!-- Financial Summary Cards -->
+          <!-- Financial Summary Cards (Delivery fee removed, Settled Amount included in calculation) -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <p class="text-xs text-slate-500">Total Consignments</p>
               <p id="invCount" class="text-lg font-bold text-slate-900">0</p>
             </div>
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <p class="text-xs text-slate-500">Product Amount Collected (A)</p>
+              <p class="text-xs text-slate-500">Product Amount Collected</p>
               <p id="invTotalProduct" class="text-lg font-bold text-emerald-700">0.00</p>
             </div>
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <p class="text-xs text-slate-500">Total Delivery Charges (B)</p>
-              <p id="invTotalDelivery" class="text-lg font-bold text-blue-700">0.00</p>
+              <p class="text-xs text-slate-500">Settled Amount (Ledger)</p>
+              <p id="invSettledAmount" class="text-lg font-bold text-blue-700">0.00</p>
             </div>
             <div id="invNetBox" class="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p id="invNetLabel" class="text-xs font-bold text-blue-900">Net Settlement (A - B)</p>
+              <p id="invNetLabel" class="text-xs font-bold text-blue-900">Net Payable Balance</p>
               <p id="invNetAmount" class="text-lg font-black text-blue-900">0.00</p>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-            <div class="md:col-span-3 overflow-x-auto">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+            <div class="md:col-span-3 space-y-4 overflow-x-auto">
+              <!-- Consignments Table without Delivery Fee -->
               <table class="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr class="bg-slate-100 text-slate-700 border-b border-slate-300">
@@ -482,14 +479,29 @@
                     <th class="p-2">Consignment ID</th>
                     <th class="p-2">Customer</th>
                     <th class="p-2">Status</th>
-                    <th class="p-2 text-right">Product Amt</th>
-                    <th class="p-2 text-right">Delivery Fee</th>
-                    <th class="p-2 text-right">Net Line</th>
+                    <th class="p-2 text-right">Product Amount</th>
                   </tr>
                 </thead>
                 <tbody id="invTableBody" class="divide-y divide-slate-200"></tbody>
               </table>
+
+              <!-- Deducted Settlement & Payment Ledger Table -->
+              <div id="invSettledLedgerWrap" class="hidden pt-3 border-t">
+                <p class="text-xs font-bold text-slate-800 mb-1.5">Settlement & Payment Ledger Records Deducted</p>
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-700 border-b">
+                      <th class="p-1.5">Date</th>
+                      <th class="p-1.5">Type</th>
+                      <th class="p-1.5">Reference / Notes</th>
+                      <th class="p-1.5 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invSettledTableBody" class="divide-y divide-slate-200"></tbody>
+                </table>
+              </div>
             </div>
+
             <div class="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-lg border">
               <div id="pdfQrCodeCanvas" class="p-1 bg-white border rounded"></div>
               <p class="text-[10px] text-slate-600 font-bold mt-1">Statement Verification QR</p>
@@ -509,7 +521,6 @@
             </button>
           </div>
 
-          <!-- Vendor Ledger Balances Filtered -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
               <p class="text-xs font-medium text-emerald-800">Total Paid Amount to Vendors</p>
@@ -602,18 +613,22 @@
     </section>
   </main>
 
-  <!-- ================= MODAL: MANUAL DATABASE CONFIG ================= -->
+  <!-- ================= MODAL: MANUAL DATABASE & API KEY CONFIG ================= -->
   <div id="configModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-bold text-base text-slate-900">Configure Realtime Database URL</h3>
+        <h3 class="font-bold text-base text-slate-900">Configure Realtime Database & API Key</h3>
         <button onclick="closeModal('configModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
       </div>
       <div class="space-y-3">
-        <p class="text-slate-600">Enter your Firebase Realtime Database URL manually below. This establishes live sync instantly without modifying source code.</p>
+        <p class="text-slate-600">Enter your Firebase Realtime Database URL and optional API Key below to establish live cloud sync.</p>
         <div>
           <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
           <input id="customDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Firebase API Key <span class="text-slate-400 font-normal">(Optional)</span></label>
+          <input id="customApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
@@ -878,17 +893,16 @@
   <script>
     const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';
     const CUSTOM_DB_URL_KEY = 'NEXTWAY_CUSTOM_RTDB_URL';
+    const CUSTOM_API_KEY = 'NEXTWAY_CUSTOM_API_KEY';
     let db = null;
     let currentUser = null;
     let deferredPrompt = null;
 
-    // Currency Formatter without verbiage
     function formatAmt(value) {
       const num = Number(value) || 0;
       return num.toFixed(2);
     }
 
-    // Default Cloud Configuration
     const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDxYdcs6Y--yeFrWOHzuYI9eRnmfY6YetA",
       authDomain: "nextway-eda94.firebaseapp.com",
@@ -918,7 +932,6 @@
       }
     }
 
-    // SHA-256 One-Way Password Hashing
     async function hashPassword(plain) {
       const msgBuffer = new TextEncoder().encode(plain + '_NEXTWAY_SALT');
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -1044,15 +1057,18 @@
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
       const customUrl = localStorage.getItem(CUSTOM_DB_URL_KEY);
+      const customApiKey = localStorage.getItem(CUSTOM_API_KEY);
       const activeDbUrl = customUrl || DEFAULT_FIREBASE_CONFIG.databaseURL;
+      const activeApiKey = customApiKey || DEFAULT_FIREBASE_CONFIG.apiKey;
 
       if (activeDbUrl) {
         try {
-          const configToUse = { ...DEFAULT_FIREBASE_CONFIG, databaseURL: activeDbUrl };
+          const configToUse = { ...DEFAULT_FIREBASE_CONFIG, databaseURL: activeDbUrl, apiKey: activeApiKey };
           if (!firebase.apps.length) {
             firebase.initializeApp(configToUse);
           } else {
             firebase.app().options.databaseURL = activeDbUrl;
+            if (activeApiKey) firebase.app().options.apiKey = activeApiKey;
           }
           
           firebaseDbRef = firebase.database().ref('nextway_db');
@@ -1078,19 +1094,27 @@
 
     function openConfigModal() {
       const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || DEFAULT_FIREBASE_CONFIG.databaseURL;
+      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || DEFAULT_FIREBASE_CONFIG.apiKey || '';
       document.getElementById('customDbUrlInput').value = currentUrl;
+      document.getElementById('customApiKeyInput').value = currentKey;
       document.getElementById('configModal').classList.remove('hidden');
     }
 
     function saveCustomDatabaseUrl() {
       const url = document.getElementById('customDbUrlInput').value.trim();
+      const apiKey = document.getElementById('customApiKeyInput').value.trim();
       if (!url) {
         alert('Please enter a valid Realtime Database URL.');
         return;
       }
       localStorage.setItem(CUSTOM_DB_URL_KEY, url);
+      if (apiKey) {
+        localStorage.setItem(CUSTOM_API_KEY, apiKey);
+      } else {
+        localStorage.removeItem(CUSTOM_API_KEY);
+      }
       closeModal('configModal');
-      alert('Database URL updated! Reloading application to connect...');
+      alert('Configuration updated! Reloading application to connect...');
       location.reload();
     }
 
@@ -1305,7 +1329,7 @@
       slicer.value = currentVal || 'ALL';
     }
 
-    // ================= MODULE: CONSIGNMENTS, PICKUP, QR & CAMERA =================
+    // ================= MODULE: CONSIGNMENTS =================
     function openNewConsignmentModal() {
       document.getElementById('cIdInput').value = 'NW-' + Math.floor(1000 + Math.random() * 9000);
       const vSelect = document.getElementById('cVendorSelect');
@@ -1458,7 +1482,7 @@
               </div>
             </div>
 
-            <!-- Role-Based Assignment (LOCKED AFTER DELIVERED) & Workflow Actions -->
+            <!-- Role-Based Assignment (LOCKED AFTER DELIVERED) -->
             <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
               ${isAdmin ? `
                 ${isDelivered ? `
@@ -1512,7 +1536,6 @@
       }).join('');
     }
 
-    // STRICT REASSIGNMENT LOCK: Cannot reassign once consignment is delivered
     function adminAssignAgent(consignmentId, agentId) {
       if (currentUser.role !== 'ADMIN') return;
       const c = db.consignments.find(x => x.id === consignmentId);
@@ -1762,7 +1785,7 @@
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // ================= MODULE: FINANCIAL MODIFICATION & FIXED AGENT DELIVERY FEE =================
+    // ================= MODULE: FINANCIAL MODIFICATION =================
     function openAmountEditModal(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
@@ -1806,7 +1829,6 @@
 
       if (currentUser.role === 'AGENT') {
         if (c.status === 'Delivered') return;
-        // Retain option to edit product amount; KEEP DELIVERY FEE FIXED
         c.productAmount = newProd;
       } else {
         const newFee = parseFloat(document.getElementById('editDelivFee').value) || 0;
@@ -1877,7 +1899,7 @@
       refreshAllViews();
     }
 
-    // ================= MODULE: INSPECT CONSIGNMENT (SCROLLABLE & CLEANED) =================
+    // ================= MODULE: INSPECT CONSIGNMENT =================
     function inspectConsignmentById() {
       const id = document.getElementById('globalConsignmentSearch').value.trim().toUpperCase();
       if (!id) return;
@@ -2137,7 +2159,7 @@
       renderConsignments();
     }
 
-    // ================= MODULE: AGENT DAILY REPORT (PDF & EXCEL) =================
+    // ================= MODULE: AGENT DAILY REPORT =================
     function populateAgentReportDropdowns() {
       const sel = document.getElementById('agentReportSelect');
       if (!sel) return;
@@ -2188,7 +2210,6 @@
         totalProd += prodAmt;
         totalNextWay += feeAmt;
         const totalLine = prodAmt + feeAmt;
-        const vendor = getVendorByCode(c.vendorCode);
 
         return `
           <tr>
@@ -2263,8 +2284,7 @@
       XLSX.writeFile(wb, `NEXTWAY_Daily_Report_${agent ? agent.name.replace(/\s+/g, '_') : agentId}_${selectedDate}.xlsx`);
     }
 
-    // ================= MODULE: VENDOR INVOICES, PERIOD LABELS & NO-VERBIAGE PDF =================
-    // Added 'ALL' option in select vendor slicer
+    // ================= MODULE: VENDOR INVOICES & SETTLEMENT CALCULATION =================
     function populateInvoiceVendors() {
       const sel = document.getElementById('invVendorSelect');
       const currentVal = sel.value;
@@ -2273,7 +2293,6 @@
       sel.value = currentVal || 'ALL';
     }
 
-    // Filter Type updated: 'WEEK' removed
     function updateInvoiceFilterInputs() {
       const type = document.getElementById('invFilterType').value;
       const singleWrap = document.getElementById('invSingleDateWrap');
@@ -2327,7 +2346,27 @@
       });
     }
 
-    // Precise Invoice PDF verbiage compliance
+    function getFilteredVendorPayments() {
+      const vendorCode = document.getElementById('invVendorSelect').value;
+      const type = document.getElementById('invFilterType').value;
+      const singleVal = document.getElementById('invSingleInput').value;
+      const startVal = document.getElementById('invStartDate').value;
+      const endVal = document.getElementById('invEndDate').value;
+
+      return (db.vendorPayments || []).filter(p => {
+        if (vendorCode !== 'ALL' && p.vendorCode !== vendorCode) return false;
+        const d = p.date || (p.createdAt ? p.createdAt.split('T')[0] : '');
+        if (type === 'DATE' && singleVal) return d === singleVal;
+        if (type === 'MONTH' && singleVal) return d.startsWith(singleVal);
+        if (type === 'YEAR' && singleVal) return d.startsWith(String(singleVal));
+        if (type === 'RANGE') {
+          if (startVal && d < startVal) return false;
+          if (endVal && d > endVal) return false;
+        }
+        return true;
+      });
+    }
+
     function generateInvoicePreview() {
       const vendorCode = document.getElementById('invVendorSelect').value;
       const vendor = vendorCode === 'ALL' ? null : getVendorByCode(vendorCode);
@@ -2338,20 +2377,22 @@
       const startVal = document.getElementById('invStartDate').value;
       const endVal = document.getElementById('invEndDate').value;
 
-      // Removed verbiage "Admin"
       document.getElementById('invContactPhoneDisplay').textContent = adminUser && adminUser.phone ? `Contact: ${adminUser.phone}` : '';
 
-      // Removed Vendor Unique Code from PDF
       if (vendorCode === 'ALL') {
         document.getElementById('invVendorHeader').textContent = 'ALL VENDORS';
       } else {
         document.getElementById('invVendorHeader').textContent = vendor ? vendor.name : '';
       }
 
-      // Formatting Period Details without verbiage "Filter" and filter tags
+      // Display month by name (January, February, etc.) instead of 2026-01, 2026-02
       let periodLabel = '';
       if (type === 'MONTH' && singleVal) {
-        periodLabel = `Month : ${singleVal}`;
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const parts = singleVal.split('-');
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        const monthName = (monthIndex >= 0 && monthIndex < 12) ? monthNames[monthIndex] : singleVal;
+        periodLabel = `Month : ${monthName}`;
       } else if (type === 'DATE' && singleVal) {
         periodLabel = `Date : ${singleVal}`;
       } else if (type === 'RANGE') {
@@ -2364,39 +2405,63 @@
       document.getElementById('invPeriodHeader').textContent = periodLabel;
 
       let totalProd = 0;
-      let totalFee = 0;
-
       const tbody = document.getElementById('invTableBody');
       tbody.innerHTML = rows.map(c => {
         totalProd += c.productAmount;
-        totalFee += c.deliveryCharge;
-        const lineNet = c.productAmount - c.deliveryCharge;
         return `
           <tr>
             <td class="p-2">${c.createdAt}</td>
             <td class="p-2 font-bold">${c.id}</td>
             <td class="p-2">${c.customerName}</td>
             <td class="p-2">${c.status}</td>
-            <td class="p-2 text-right">${formatAmt(c.productAmount)}</td>
-            <td class="p-2 text-right">${formatAmt(c.deliveryCharge)}</td>
-            <td class="p-2 text-right font-semibold">${formatAmt(lineNet)}</td>
+            <td class="p-2 text-right font-semibold">${formatAmt(c.productAmount)}</td>
           </tr>
         `;
       }).join('');
 
-      const netDiff = totalProd - totalFee;
+      // Include Settled Amount from Tab 6 Vendor Payments & Receipts Ledger
+      const filteredPayments = getFilteredVendorPayments();
+      let totalSettledPaid = 0;
+      let totalSettledReceived = 0;
+      filteredPayments.forEach(p => {
+        if (p.type === 'PAID') totalSettledPaid += Number(p.amount) || 0;
+        if (p.type === 'RECEIVED') totalSettledReceived += Number(p.amount) || 0;
+      });
+      const netSettled = totalSettledPaid - totalSettledReceived;
+
+      // Net balance calculation: Total Product Amount collected minus Settled Amount
+      const netBalance = totalProd - netSettled;
+
       document.getElementById('invCount').textContent = rows.length;
       document.getElementById('invTotalProduct').textContent = formatAmt(totalProd);
-      document.getElementById('invTotalDelivery').textContent = formatAmt(totalFee);
+      document.getElementById('invSettledAmount').textContent = formatAmt(netSettled);
 
       const netLabel = document.getElementById('invNetLabel');
       const netAmount = document.getElementById('invNetAmount');
-      if (netDiff >= 0) {
-        netLabel.textContent = 'Net Settlement (Payable to Vendor)';
-        netAmount.textContent = `${formatAmt(netDiff)} (Payable)`;
+      if (netBalance >= 0) {
+        netLabel.textContent = 'Net Payable Balance';
+        netAmount.textContent = `${formatAmt(netBalance)} (Payable)`;
       } else {
-        netLabel.textContent = 'Net Settlement (Receivable from Vendor)';
-        netAmount.textContent = `${formatAmt(Math.abs(netDiff))} (Receivable)`;
+        netLabel.textContent = 'Net Balance (Overpaid / Receivable)';
+        netAmount.textContent = `${formatAmt(Math.abs(netBalance))} (Receivable)`;
+      }
+
+      // Render deducted ledger records on printable sheet
+      const settledWrap = document.getElementById('invSettledLedgerWrap');
+      const settledTbody = document.getElementById('invSettledTableBody');
+      if (filteredPayments.length > 0) {
+        settledWrap.classList.remove('hidden');
+        settledTbody.innerHTML = filteredPayments.map(p => `
+          <tr>
+            <td class="p-1.5">${p.date}</td>
+            <td class="p-1.5"><span class="font-bold ${p.type === 'PAID' ? 'text-emerald-700' : 'text-blue-700'}">${p.type === 'PAID' ? 'Paid to Vendor' : 'Received from Vendor'}</span></td>
+            <td class="p-1.5 text-slate-600">${p.notes || '-'}</td>
+            <td class="p-1.5 text-right font-semibold">${formatAmt(p.amount)}</td>
+          </tr>
+        `).join('');
+      } else {
+        settledWrap.classList.add('hidden');
+        settledTbody.innerHTML = '';
       }
 
       const qrEl = document.getElementById('pdfQrCodeCanvas');
@@ -2406,7 +2471,9 @@
           text: JSON.stringify({
             vendor: vendorCode === 'ALL' ? 'All Vendors' : (vendor ? vendor.name : vendorCode),
             totalOrders: rows.length,
-            netSettlement: formatAmt(netDiff),
+            productAmount: formatAmt(totalProd),
+            settledAmount: formatAmt(netSettled),
+            netPayable: formatAmt(netBalance),
             period: periodLabel,
             timestamp: new Date().toISOString()
           }),
@@ -2426,12 +2493,11 @@
       const vendorCode = document.getElementById('invVendorSelect').value;
       const vendor = vendorCode === 'ALL' ? null : getVendorByCode(vendorCode);
       const rows = getFilteredInvoiceConsignments();
+      const filteredPayments = getFilteredVendorPayments();
       let totalProd = 0;
-      let totalFee = 0;
 
       const sheetData = rows.map(c => {
         totalProd += c.productAmount;
-        totalFee += c.deliveryCharge;
         const v = getVendorByCode(c.vendorCode);
         return {
           'Date': c.createdAt,
@@ -2440,23 +2506,49 @@
           'Customer': c.customerName,
           'Delivery Agent': getAgentName(c.assignedTo),
           'Status': c.status,
-          'Product Amount': Number(c.productAmount.toFixed(2)),
-          'Delivery Charge': Number(c.deliveryCharge.toFixed(2)),
-          'Net Line Balance': Number((c.productAmount - c.deliveryCharge).toFixed(2))
+          'Product Amount': Number(c.productAmount.toFixed(2))
         };
       });
 
-      const netDiff = totalProd - totalFee;
+      let totalSettledPaid = 0;
+      let totalSettledReceived = 0;
+      filteredPayments.forEach(p => {
+        if (p.type === 'PAID') totalSettledPaid += Number(p.amount) || 0;
+        if (p.type === 'RECEIVED') totalSettledReceived += Number(p.amount) || 0;
+      });
+      const netSettled = totalSettledPaid - totalSettledReceived;
+      const netBalance = totalProd - netSettled;
+
       sheetData.push({
-        'Date': 'TOTAL SUMMARY',
-        'Consignment ID': `${rows.length} Orders`,
+        'Date': 'TOTAL PRODUCT COLLECTED',
+        'Consignment ID': `${rows.length} Consignments`,
         'Vendor': vendor ? vendor.name : 'ALL VENDORS',
         'Customer': '',
         'Delivery Agent': '',
-        'Status': netDiff >= 0 ? 'NET PAYABLE TO VENDOR' : 'NET RECEIVABLE FROM VENDOR',
-        'Product Amount': Number(totalProd.toFixed(2)),
-        'Delivery Charge': Number(totalFee.toFixed(2)),
-        'Net Line Balance': Number(netDiff.toFixed(2))
+        'Status': '',
+        'Product Amount': Number(totalProd.toFixed(2))
+      });
+
+      if (filteredPayments.length > 0) {
+        sheetData.push({
+          'Date': 'LESS: SETTLED AMOUNT (PAID)',
+          'Consignment ID': `${filteredPayments.length} Ledger Payments`,
+          'Vendor': '',
+          'Customer': '',
+          'Delivery Agent': '',
+          'Status': 'DEDUCTED',
+          'Product Amount': -Number(netSettled.toFixed(2))
+        });
+      }
+
+      sheetData.push({
+        'Date': 'NET PAYABLE BALANCE',
+        'Consignment ID': '',
+        'Vendor': '',
+        'Customer': '',
+        'Delivery Agent': '',
+        'Status': netBalance >= 0 ? 'NET PAYABLE TO VENDOR' : 'NET RECEIVABLE FROM VENDOR',
+        'Product Amount': Number(netBalance.toFixed(2))
       });
 
       const ws = XLSX.utils.json_to_sheet(sheetData);
@@ -2475,17 +2567,22 @@
       if (!vendor) return;
       const count = document.getElementById('invCount').textContent;
       const prod = document.getElementById('invTotalProduct').textContent;
-      const fee = document.getElementById('invTotalDelivery').textContent;
+      const settled = document.getElementById('invSettledAmount').textContent;
       const netTitle = document.getElementById('invNetLabel').textContent;
       const netVal = document.getElementById('invNetAmount').textContent;
       const period = document.getElementById('invPeriodHeader').textContent;
 
       const cleanPhone = vendor.phone.replace(/[^0-9]/g, '');
-      const text = `*NEXT WAY DELIVERY SERVICES LLC - STATEMENT SUMMARY*\nVendor: *${vendor.name}*\n${period}\nTotal Consignments: ${count}\nProduct Amount Collected: ${prod}\nTotal Delivery Charges: ${fee}\n*${netTitle}: ${netVal}*`;
+      let text = `*NEXT WAY DELIVERY SERVICES LLC - STATEMENT SUMMARY*\nVendor: *${vendor.name}*\n${period}\nTotal Consignments: ${count}\nTotal Product Amount Collected: ${prod}`;
+      if (Number(settled) > 0) {
+        text += `\nSettled Amount (Ledger): ${settled}`;
+      }
+      text += `\n*${netTitle}: ${netVal}*`;
+
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // ================= MODULE: VENDOR PAYMENTS LEDGER (PAID & RECEIVED) =================
+    // ================= MODULE: VENDOR PAYMENTS LEDGER =================
     function openVendorPaymentModal() {
       const sel = document.getElementById('vpVendorSelect');
       sel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
@@ -2506,7 +2603,7 @@
       const newEntry = {
         id: 'LED-' + Date.now(),
         vendorCode,
-        type, // 'PAID' or 'RECEIVED'
+        type,
         amount,
         date,
         notes,
@@ -2518,6 +2615,7 @@
       saveDB();
       closeModal('vendorPaymentModal');
       renderVendorLedger();
+      generateInvoicePreview();
       alert(`Ledger record saved: ${type === 'PAID' ? 'Paid to' : 'Received from'} Vendor successfully.`);
     }
 
@@ -2566,9 +2664,10 @@
       db.vendorPayments = db.vendorPayments.filter(p => p.id !== entryId);
       saveDB();
       renderVendorLedger();
+      generateInvoicePreview();
     }
 
-    // ================= MODULE: VENDOR NET PAYABLE OTP SECURITY (ANTI-FRAUD) =================
+    // ================= MODULE: VENDOR NET PAYABLE OTP SECURITY =================
     function openGenerateVendorOtpModal() {
       const vSel = document.getElementById('vOtpVendorSelect');
       vSel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
@@ -2608,7 +2707,6 @@
       closeModal('generateVendorOtpModal');
       renderVendorOtpsTable();
 
-      // Send to Vendor via WhatsApp
       if (vendor && vendor.phone) {
         const cleanPhone = vendor.phone.replace(/[^0-9]/g, '');
         const msg = `Hello *${vendor.name}*,\nNEXT WAY Delivery Agent *${agent ? agent.name : ''}* is scheduled to hand over Net Settlement Cash of *AED ${formatAmt(amount)}* to you.\n\n*YOUR CONFIDENTIAL VERIFICATION OTP IS: ${otp}*\n\nPlease give this OTP to the delivery agent ONLY AFTER you have received the full cash payment.`;
@@ -2674,13 +2772,13 @@
         saveDB();
         renderVendorOtpsTable();
         renderVendorLedger();
+        generateInvoicePreview();
         alert('Vendor OTP verified successfully! Amount automatically credited to Paid to Vendor ledger.');
       } else {
         alert('Invalid OTP! Please verify with the vendor and delivery agent.');
       }
     }
 
-    // Agent portal view to submit Vendor OTP
     function renderAgentPendingOtps() {
       const container = document.getElementById('agentPendingOtpsList');
       if (!container || !currentUser) return;
