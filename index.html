@@ -1131,14 +1131,22 @@
           }
           
           firebaseDbRef = firebase.database().ref('nextway_db');
-          firebaseDbRef.on('value', (snapshot) => {
+          firebaseDbRef.on('value', async (snapshot) => {
             const val = snapshot.val();
-            if (val) {
+            // Automatically detect valid nested schema or auto-push full seed JSON if empty/string placeholder
+            if (val && typeof val === 'object' && val.users) {
               applyIncomingCloudState(val);
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
-              firebaseDbRef.set(db);
-              updateSyncBadge('LIVE', 'Live Cloud Sync');
+              const freshSeed = await getDefaultSeedDB();
+              firebaseDbRef.set(freshSeed)
+                .then(() => {
+                  db = freshSeed;
+                  localStorage.setItem(DB_KEY, JSON.stringify(db));
+                  updateSyncBadge('LIVE', 'Live Cloud Sync');
+                  refreshAllViews();
+                })
+                .catch(() => updateSyncBadge('OFFLINE', 'Offline Mode'));
             }
           }, () => updateSyncBadge('OFFLINE', 'Offline Mode'));
           return;
