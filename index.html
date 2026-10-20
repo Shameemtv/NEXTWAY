@@ -48,9 +48,6 @@
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="syncText">Offline Mode</span>
         </span>
-        <button onclick="openConfigModal()" class="bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded border border-blue-600">
-          Database URL
-        </button>
         <button id="installPwaBtn" class="hidden bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-bold px-3 py-1.5 rounded shadow">
           Install App
         </button>
@@ -90,6 +87,11 @@
           Sign In Securely
         </button>
       </form>
+      <div class="mt-3 text-right">
+        <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-blue-700 hover:underline font-semibold">
+          Forgot Password?
+        </button>
+      </div>
       <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
         <p><strong>Default Admin:</strong> Username <code class="bg-slate-100 px-1 rounded">NEXTWAY</code> / Pass <code class="bg-slate-100 px-1 rounded">admin123</code></p>
         <p><strong>Default Agent:</strong> Username <code class="bg-slate-100 px-1 rounded">agent1</code> / Pass <code class="bg-slate-100 px-1 rounded">agent123</code></p>
@@ -175,6 +177,9 @@
         </button>
         <button onclick="switchTab('system')" id="tab-system" class="admin-only py-3 whitespace-nowrap text-slate-600 hover:text-slate-900">
           Backup & Restore
+        </button>
+        <button onclick="switchTab('agent-settings')" id="tab-agent-settings" class="agent-only py-3 whitespace-nowrap text-slate-600 hover:text-slate-900">
+          Cloud Sync Settings
         </button>
       </div>
 
@@ -573,7 +578,7 @@
         </div>
       </div>
 
-      <!-- TAB 6: BACKUP & RESTORE -->
+      <!-- TAB 6: BACKUP & RESTORE (ADMIN) + CONFIG -->
       <div id="panel-system" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
@@ -595,33 +600,78 @@
               class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-900" />
           </div>
         </div>
+
+        <!-- Admin Cloud Database Config Card -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <h3 class="font-bold text-sm text-slate-900">Live Cloud Database Configuration</h3>
+          <p class="text-xs text-slate-600">Enter your Firebase Realtime Database URL and optional API Key below to establish live cloud sync across multiple mobile devices.</p>
+          <div class="space-y-3 max-w-xl text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
+              <input id="adminCustomDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Firebase API Key <span class="text-slate-400 font-normal">(Optional)</span></label>
+              <input id="adminCustomApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-lg px-3 py-2" />
+            </div>
+            <button type="button" onclick="saveCustomDatabaseUrlFromTab('admin')" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold">
+              Save & Connect Cloud Database
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: AGENT CLOUD SYNC SETTINGS (AGENT ONLY) -->
+      <div id="panel-agent-settings" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3 max-w-xl">
+          <h3 class="font-bold text-sm text-slate-900">Live Cloud Database Configuration</h3>
+          <p class="text-xs text-slate-600">Enter your Firebase Realtime Database URL and optional API Key below to link this mobile with your team.</p>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
+              <input id="agentCustomDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Firebase API Key <span class="text-slate-400 font-normal">(Optional)</span></label>
+              <input id="agentCustomApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-lg px-3 py-2" />
+            </div>
+            <button type="button" onclick="saveCustomDatabaseUrlFromTab('agent')" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold">
+              Save & Connect Cloud Database
+            </button>
+          </div>
+        </div>
       </div>
 
     </section>
   </main>
 
-  <!-- MODAL: MANUAL DATABASE & API KEY CONFIG -->
-  <div id="configModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+  <!-- MODAL: FORGOT PASSWORD -->
+  <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-bold text-base text-slate-900">Configure Realtime Database & API Key</h3>
-        <button onclick="closeModal('configModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+        <h3 class="font-bold text-base text-slate-900">Reset Forgotten Password</h3>
+        <button onclick="closeModal('forgotPasswordModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
       </div>
-      <div class="space-y-3">
-        <p class="text-slate-600">Enter your Firebase Realtime Database URL and optional API Key below to establish live cloud sync.</p>
+      <form onsubmit="handleForgotPassword(event)" class="space-y-3">
+        <p class="text-slate-600">Enter your username and registered mobile phone number. If verified, you can set a new password.</p>
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
-          <input id="customDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+          <label class="font-semibold text-slate-700 block mb-1">Username</label>
+          <input id="fpUsername" type="text" required placeholder="e.g. NEXTWAY or agent1" class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Firebase API Key <span class="text-slate-400 font-normal">(Optional)</span></label>
-          <input id="customApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-lg px-3 py-2" />
+          <label class="font-semibold text-slate-700 block mb-1">Registered Mobile Number</label>
+          <input id="fpPhone" type="text" required placeholder="+971..." class="w-full border rounded-lg px-3 py-2" />
         </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">New Password</label>
+          <input id="fpNewPass" type="password" required placeholder="Enter new password" class="w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div id="fpError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded border border-red-200"></div>
         <div class="flex justify-end gap-2 pt-3 border-t">
-          <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
-          <button type="button" onclick="saveCustomDatabaseUrl()" class="px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">Save & Connect</button>
+          <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold">Reset Password</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -1073,17 +1123,68 @@
       }
     }
 
-    function openConfigModal() {
-      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
-      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || '';
-      document.getElementById('customDbUrlInput').value = currentUrl;
-      document.getElementById('customApiKeyInput').value = currentKey;
-      document.getElementById('configModal').classList.remove('hidden');
+    function openForgotPasswordModal() {
+      document.getElementById('fpUsername').value = '';
+      document.getElementById('fpPhone').value = '';
+      document.getElementById('fpNewPass').value = '';
+      document.getElementById('fpError').classList.add('hidden');
+      document.getElementById('forgotPasswordModal').classList.remove('hidden');
     }
 
-    function saveCustomDatabaseUrl() {
-      const url = document.getElementById('customDbUrlInput').value.trim();
-      const apiKey = document.getElementById('customApiKeyInput').value.trim();
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const uName = document.getElementById('fpUsername').value.trim();
+      const phone = document.getElementById('fpPhone').value.trim();
+      const newPass = document.getElementById('fpNewPass').value;
+      const errBox = document.getElementById('fpError');
+      errBox.classList.add('hidden');
+
+      const user = db.users.find(u => u.username.toLowerCase() === uName.toLowerCase());
+      if (!user) {
+        errBox.textContent = 'Username not found.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      // Normalize phone number comparison (removing whitespace/symbols if needed)
+      const cleanUserPhone = user.phone.replace(/[^0-9+]/g, '');
+      const cleanInputPhone = phone.replace(/[^0-9+]/g, '');
+
+      if (cleanUserPhone !== cleanInputPhone) {
+        errBox.textContent = 'Registered mobile phone number does not match.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      user.passwordHash = await hashPassword(newPass);
+      saveDB();
+      closeModal('forgotPasswordModal');
+      alert('Password successfully reset! You can now sign in with your new password.');
+    }
+
+    function openConfigModalInTabs() {
+      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
+      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || '';
+      if (currentUser && currentUser.role === 'ADMIN') {
+        document.getElementById('adminCustomDbUrlInput').value = currentUrl;
+        document.getElementById('adminCustomApiKeyInput').value = currentKey;
+      } else if (currentUser && currentUser.role === 'AGENT') {
+        document.getElementById('agentCustomDbUrlInput').value = currentUrl;
+        document.getElementById('agentCustomApiKeyInput').value = currentKey;
+      }
+    }
+
+    function saveCustomDatabaseUrlFromTab(roleType) {
+      let url = '';
+      let apiKey = '';
+      if (roleType === 'admin') {
+        url = document.getElementById('adminCustomDbUrlInput').value.trim();
+        apiKey = document.getElementById('adminCustomApiKeyInput').value.trim();
+      } else {
+        url = document.getElementById('agentCustomDbUrlInput').value.trim();
+        apiKey = document.getElementById('agentCustomApiKeyInput').value.trim();
+      }
+
       if (!url) {
         alert('Please enter a valid Realtime Database URL.');
         return;
@@ -1094,7 +1195,6 @@
       } else {
         localStorage.removeItem(CUSTOM_API_KEY);
       }
-      closeModal('configModal');
       alert('Configuration updated! Reloading application to connect...');
       location.reload();
     }
@@ -1166,6 +1266,9 @@
 
       document.querySelectorAll('.admin-only').forEach(el => {
         el.classList.toggle('hidden', !isAdmin);
+      });
+      document.querySelectorAll('.agent-only').forEach(el => {
+        el.classList.toggle('hidden', isAdmin);
       });
 
       document.getElementById('agentDashboardBanner').classList.toggle('hidden', isAdmin);
@@ -1256,7 +1359,7 @@
     }
 
     function switchTab(tabName) {
-      ['consignments', 'confirmations', 'vendors', 'agents', 'agent-reports', 'invoices', 'system'].forEach(t => {
+      ['consignments', 'confirmations', 'vendors', 'agents', 'agent-reports', 'invoices', 'system', 'agent-settings'].forEach(t => {
         const panel = document.getElementById(`panel-${t}`);
         const btn = document.getElementById(`tab-${t}`);
         if (panel) panel.classList.toggle('hidden', t !== tabName);
@@ -1271,6 +1374,8 @@
       } else if (tabName === 'agent-reports') {
         populateAgentReportDropdowns();
         generateAgentDailyReport();
+      } else if (tabName === 'system' || tabName === 'agent-settings') {
+        openConfigModalInTabs();
       }
     }
 
