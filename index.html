@@ -697,7 +697,7 @@
         <div id="fpError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded border border-red-200"></div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold">Reset Password</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">Reset Password</button>
         </div>
       </form>
     </div>
@@ -1133,20 +1133,16 @@
           firebaseDbRef = firebase.database().ref('nextway_db');
           firebaseDbRef.on('value', async (snapshot) => {
             const val = snapshot.val();
-            // Automatically detect valid nested schema or auto-push full seed JSON if empty/string placeholder
             if (val && typeof val === 'object' && val.users) {
               applyIncomingCloudState(val);
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
               const freshSeed = await getDefaultSeedDB();
-              firebaseDbRef.set(freshSeed)
-                .then(() => {
-                  db = freshSeed;
-                  localStorage.setItem(DB_KEY, JSON.stringify(db));
-                  updateSyncBadge('LIVE', 'Live Cloud Sync');
-                  refreshAllViews();
-                })
-                .catch(() => updateSyncBadge('OFFLINE', 'Offline Mode'));
+              await firebaseDbRef.set(freshSeed);
+              db = freshSeed;
+              localStorage.setItem(DB_KEY, JSON.stringify(db));
+              updateSyncBadge('LIVE', 'Live Cloud Sync');
+              refreshAllViews();
             }
           }, () => updateSyncBadge('OFFLINE', 'Offline Mode'));
           return;
