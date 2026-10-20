@@ -697,7 +697,7 @@
         <div id="fpError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded border border-red-200"></div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">Reset Password</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold">Reset Password</button>
         </div>
       </form>
     </div>
@@ -1069,10 +1069,16 @@
     }
 
     function normalizeCloudPayload(raw) {
-      if (!raw) return null;
+      if (!raw || typeof raw !== 'object') return null;
+      const users = Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {});
+      const validUsers = users.filter(u => u && typeof u === 'object' && u.username);
+      if (validUsers.length === 0) return null;
+
       return {
-        settings: raw.settings || { companyName: 'NEXT WAY DELIVERY SERVICES LLC', otpMandatory: true },
-        users: Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {}),
+        settings: (raw.settings && typeof raw.settings === 'object')
+          ? raw.settings
+          : { companyName: 'NEXT WAY DELIVERY SERVICES LLC', otpMandatory: true },
+        users: validUsers,
         vendors: Array.isArray(raw.vendors) ? raw.vendors : Object.values(raw.vendors || {}),
         consignments: Array.isArray(raw.consignments) ? raw.consignments : Object.values(raw.consignments || {}),
         vendorPayments: Array.isArray(raw.vendorPayments) ? raw.vendorPayments : Object.values(raw.vendorPayments || {}),
@@ -1082,7 +1088,9 @@
 
     function applyIncomingCloudState(remoteData) {
       const normalized = normalizeCloudPayload(remoteData);
-      if (!normalized || !normalized.users) return;
+      if (!normalized || !Array.isArray(normalized.users) || normalized.users.length === 0) {
+        return false;
+      }
 
       isApplyingRemoteUpdate = true;
       db = normalized;
@@ -1097,7 +1105,7 @@
             alert(`Your account status was changed to ${updatedSelf.status} by Admin.`);
             logout();
             isApplyingRemoteUpdate = false;
-            return;
+            return true;
           }
           currentUser = updatedSelf;
         }
@@ -1105,19 +1113,42 @@
         refreshAllViews();
       }
       isApplyingRemoteUpdate = false;
+      return true;
+    }
+
+    function sanitizeDatabaseUrl(url) {
+      if (!url) return '';
+      let clean = url.trim().replace(/\/+$/, '');
+      clean = clean.replace(/\/nextway_db(\.json)?$/i, '').replace(/\.json$/i, '');
+      return clean;
     }
 
     async function initDB() {
-      const saved = localStorage.getItem(DB_KEY);
-      db = saved ? JSON.parse(saved) : await getDefaultSeedDB();
+      const seedDB = await getDefaultSeedDB();
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(DB_KEY));
+      } catch (e) {
+        saved = null;
+      }
+
+      if (!saved || !Array.isArray(saved.users) || saved.users.length === 0) {
+        db = seedDB;
+      } else {
+        db = saved;
+      }
       db.vendorPayments = db.vendorPayments || [];
       db.vendorSettlementOtps = db.vendorSettlementOtps || [];
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
-      const customUrl = localStorage.getItem(CUSTOM_DB_URL_KEY);
+      const rawCustomUrl = localStorage.getItem(CUSTOM_DB_URL_KEY);
+      const customUrl = sanitizeDatabaseUrl(rawCustomUrl);
       const customApiKey = localStorage.getItem(CUSTOM_API_KEY);
 
       if (customUrl) {
+        if (customUrl !== rawCustomUrl) {
+          localStorage.setItem(CUSTOM_DB_URL_KEY, customUrl);
+        }
         try {
           const configToUse = {
             databaseURL: customUrl,
@@ -1129,25 +1160,28 @@
             firebase.app().options.databaseURL = customUrl;
             if (customApiKey) firebase.app().options.apiKey = customApiKey;
           }
-          
+
           firebaseDbRef = firebase.database().ref('nextway_db');
-          firebaseDbRef.on('value', async (snapshot) => {
+          firebaseDbRef.on('value', (snapshot) => {
             const val = snapshot.val();
-            if (val && typeof val === 'object' && val.users) {
-              applyIncomingCloudState(val);
+            const applied = applyIncomingCloudState(val);
+            if (applied) {
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
-              const freshSeed = await getDefaultSeedDB();
-              await firebaseDbRef.set(freshSeed);
-              db = freshSeed;
-              localStorage.setItem(DB_KEY, JSON.stringify(db));
-              updateSyncBadge('LIVE', 'Live Cloud Sync');
-              refreshAllViews();
+              firebaseDbRef.set(db)
+                .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
+                .catch((err) => {
+                  console.error('Firebase write error:', err);
+                  updateSyncBadge('OFFLINE', 'Offline Mode');
+                });
             }
-          }, () => updateSyncBadge('OFFLINE', 'Offline Mode'));
+          }, (err) => {
+            console.error('Firebase read error:', err);
+            updateSyncBadge('OFFLINE', 'Offline Mode');
+          });
           return;
-        } catch (e) { 
-          console.error(e); 
+        } catch (e) {
+          console.error(e);
           updateSyncBadge('OFFLINE', 'Offline Mode');
         }
       } else {
@@ -1164,7 +1198,7 @@
     }
 
     function saveCustomDatabaseUrl() {
-      const url = document.getElementById('customDbUrlInput').value.trim();
+      const url = sanitizeDatabaseUrl(document.getElementById('customDbUrlInput').value);
       const apiKey = document.getElementById('customApiKeyInput').value.trim();
       if (!url) {
         alert('Please enter a valid Realtime Database URL.');
@@ -1197,10 +1231,10 @@
       let url = '';
       let apiKey = '';
       if (roleType === 'admin') {
-        url = document.getElementById('adminCustomDbUrlInput').value.trim();
+        url = sanitizeDatabaseUrl(document.getElementById('adminCustomDbUrlInput').value);
         apiKey = document.getElementById('adminCustomApiKeyInput').value.trim();
       } else {
-        url = document.getElementById('agentCustomDbUrlInput').value.trim();
+        url = sanitizeDatabaseUrl(document.getElementById('agentCustomDbUrlInput').value);
         apiKey = document.getElementById('agentCustomApiKeyInput').value.trim();
       }
 
@@ -1248,7 +1282,12 @@
       const errBox = document.getElementById('loginError');
       errBox.classList.add('hidden');
 
-      const user = db.users.find(u => u.username.toLowerCase() === uName.toLowerCase());
+      if (!db || !Array.isArray(db.users) || db.users.length === 0) {
+        db = await getDefaultSeedDB();
+        saveDB();
+      }
+
+      const user = db.users.find(u => u && u.username && u.username.toLowerCase() === uName.toLowerCase());
       if (!user) {
         errBox.textContent = 'Invalid username or password.';
         errBox.classList.remove('hidden');
@@ -1261,15 +1300,53 @@
       }
 
       const inputHash = await hashPassword(pass);
-      if (inputHash !== user.passwordHash) {
+      const isHashMatch = (inputHash === user.passwordHash);
+      const isPlainMatch = (pass === user.passwordHash || pass === user.password);
+
+      if (!isHashMatch && !isPlainMatch) {
         errBox.textContent = 'Invalid username or password.';
         errBox.classList.remove('hidden');
         return;
       }
 
+      if (isPlainMatch && !isHashMatch) {
+        user.passwordHash = inputHash;
+        delete user.password;
+        saveDB();
+      }
+
       currentUser = user;
       document.getElementById('loginPassword').value = '';
       enterWorkspace();
+    }
+
+    function openForgotPasswordModal() {
+      document.getElementById('fpUsername').value = '';
+      document.getElementById('fpPhone').value = '';
+      document.getElementById('fpNewPass').value = '';
+      document.getElementById('fpError').classList.add('hidden');
+      document.getElementById('forgotPasswordModal').classList.remove('hidden');
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const uName = document.getElementById('fpUsername').value.trim();
+      const phone = document.getElementById('fpPhone').value.trim().replace(/\s+/g, '');
+      const newPass = document.getElementById('fpNewPass').value;
+      const errBox = document.getElementById('fpError');
+      errBox.classList.add('hidden');
+
+      const user = (db.users || []).find(u => u && u.username && u.username.toLowerCase() === uName.toLowerCase());
+      if (!user || (user.phone || '').replace(/\s+/g, '') !== phone) {
+        errBox.textContent = 'Username and registered mobile number do not match.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      user.passwordHash = await hashPassword(newPass);
+      saveDB();
+      closeModal('forgotPasswordModal');
+      alert('Password reset successfully! You can now sign in.');
     }
 
     function enterWorkspace() {
@@ -2310,7 +2387,6 @@
     function exportAgentDailyExcel() {
       const agentId = document.getElementById('agentReportSelect').value;
       const selectedDate = document.getElementById('agentReportDate').value;
-      const agent = db.users.find(u => u.id === agentId);
       const rows = getAgentDailyReportData();
 
       let totalProd = 0;
