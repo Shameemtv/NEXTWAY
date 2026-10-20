@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nextway-pwa-v2';
+const CACHE_NAME = 'nextway-pwa-v3';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -23,14 +23,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first so updated HTML/JS always loads when online
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (event.request.method === 'GET' && response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
       })
       .catch(() => caches.match(event.request))
