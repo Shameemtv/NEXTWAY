@@ -48,6 +48,9 @@
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="syncText">Offline Mode</span>
         </span>
+        <button onclick="openConfigModal()" class="bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded border border-blue-600">
+          Database URL
+        </button>
         <button id="installPwaBtn" class="hidden bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-bold px-3 py-1.5 rounded shadow">
           Install App
         </button>
@@ -645,6 +648,31 @@
     </section>
   </main>
 
+  <!-- MODAL: MANUAL DATABASE & API KEY CONFIG -->
+  <div id="configModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-base text-slate-900">Configure Realtime Database & API Key</h3>
+        <button onclick="closeModal('configModal')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+      <div class="space-y-3">
+        <p class="text-slate-600">Enter your Firebase Realtime Database URL and optional API Key below to establish live cloud sync.</p>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Firebase Realtime Database URL</label>
+          <input id="customDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Firebase API Key <span class="text-slate-400 font-normal">(Optional)</span></label>
+          <input id="customApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg border">Cancel</button>
+          <button type="button" onclick="saveCustomDatabaseUrl()" class="px-4 py-2 rounded-lg bg-blue-700 text-white font-bold">Save & Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: FORGOT PASSWORD -->
   <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
@@ -1123,43 +1151,30 @@
       }
     }
 
-    function openForgotPasswordModal() {
-      document.getElementById('fpUsername').value = '';
-      document.getElementById('fpPhone').value = '';
-      document.getElementById('fpNewPass').value = '';
-      document.getElementById('fpError').classList.add('hidden');
-      document.getElementById('forgotPasswordModal').classList.remove('hidden');
+    function openConfigModal() {
+      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
+      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || '';
+      document.getElementById('customDbUrlInput').value = currentUrl;
+      document.getElementById('customApiKeyInput').value = currentKey;
+      document.getElementById('configModal').classList.remove('hidden');
     }
 
-    async function handleForgotPassword(e) {
-      e.preventDefault();
-      const uName = document.getElementById('fpUsername').value.trim();
-      const phone = document.getElementById('fpPhone').value.trim();
-      const newPass = document.getElementById('fpNewPass').value;
-      const errBox = document.getElementById('fpError');
-      errBox.classList.add('hidden');
-
-      const user = db.users.find(u => u.username.toLowerCase() === uName.toLowerCase());
-      if (!user) {
-        errBox.textContent = 'Username not found.';
-        errBox.classList.remove('hidden');
+    function saveCustomDatabaseUrl() {
+      const url = document.getElementById('customDbUrlInput').value.trim();
+      const apiKey = document.getElementById('customApiKeyInput').value.trim();
+      if (!url) {
+        alert('Please enter a valid Realtime Database URL.');
         return;
       }
-
-      // Normalize phone number comparison (removing whitespace/symbols if needed)
-      const cleanUserPhone = user.phone.replace(/[^0-9+]/g, '');
-      const cleanInputPhone = phone.replace(/[^0-9+]/g, '');
-
-      if (cleanUserPhone !== cleanInputPhone) {
-        errBox.textContent = 'Registered mobile phone number does not match.';
-        errBox.classList.remove('hidden');
-        return;
+      localStorage.setItem(CUSTOM_DB_URL_KEY, url);
+      if (apiKey) {
+        localStorage.setItem(CUSTOM_API_KEY, apiKey);
+      } else {
+        localStorage.removeItem(CUSTOM_API_KEY);
       }
-
-      user.passwordHash = await hashPassword(newPass);
-      saveDB();
-      closeModal('forgotPasswordModal');
-      alert('Password successfully reset! You can now sign in with your new password.');
+      closeModal('configModal');
+      alert('Configuration updated! Reloading application to connect...');
+      location.reload();
     }
 
     function openConfigModalInTabs() {
