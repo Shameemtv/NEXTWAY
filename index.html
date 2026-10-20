@@ -46,7 +46,7 @@
       <div class="flex items-center gap-2">
         <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200 flex items-center gap-1.5">
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="syncText">Connecting...</span>
+          <span id="syncText">Offline Mode</span>
         </span>
         <button onclick="openConfigModal()" class="bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded border border-blue-600">
           Database URL
@@ -99,7 +99,7 @@
     <!-- ================= MODULE: APPLICATION WORKSPACE ================= -->
     <section id="appView" class="hidden space-y-4">
 
-      <!-- AGENT DASHBOARD BANNER (Only visible for Delivery Agents) -->
+      <!-- AGENT DASHBOARD BANNER -->
       <div id="agentDashboardBanner" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
@@ -121,7 +121,7 @@
         </div>
       </div>
 
-      <!-- DELIVERY AGENT VENDOR SETTLEMENT OTP SUBMISSION BOX -->
+      <!-- VENDOR SETTLEMENT OTP SUBMISSION BOX -->
       <div id="agentOtpSubmissionCard" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-3 no-print">
         <div class="flex items-center justify-between">
           <div>
@@ -133,7 +133,7 @@
         <div id="agentPendingOtpsList" class="space-y-2"></div>
       </div>
 
-      <!-- GLOBAL STATUS BAR & QUICK SEARCH BY CONSIGNMENT ID -->
+      <!-- GLOBAL STATUS BAR & QUICK SEARCH -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <div class="flex flex-wrap items-center gap-3">
           <span id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900"></span>
@@ -144,7 +144,6 @@
           <div id="agentOtpBanner" class="hidden text-xs font-semibold px-3 py-1 rounded-lg"></div>
         </div>
 
-        <!-- Global Consignment Search with Photo & QR Inspection -->
         <div class="flex items-center gap-2 w-full md:w-auto">
           <input id="globalConsignmentSearch" type="text" placeholder="Search Consignment ID (View Photos/QR)..."
             class="w-full md:w-72 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" />
@@ -179,7 +178,7 @@
         </button>
       </div>
 
-      <!-- ================= TAB 1: CONSIGNMENTS & DISPATCH ================= -->
+      <!-- TAB 1: CONSIGNMENTS & DISPATCH -->
       <div id="panel-consignments" class="space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-2">
@@ -193,7 +192,6 @@
               <option value="Returned">Returned</option>
               <option value="Cancelled">Cancelled</option>
             </select>
-            <!-- Admin Delivery Agent Slicer -->
             <div id="adminAgentSlicerWrap" class="hidden">
               <select id="filterAgentSlicer" onchange="renderConsignments()" class="text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
                 <option value="ALL">All Agents (Slicer)</option>
@@ -210,7 +208,7 @@
         <div id="consignmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- ================= TAB 2: AMOUNT MODIFICATION CONFIRMATIONS ================= -->
+      <!-- TAB 2: AMOUNT CONFIRMATIONS -->
       <div id="panel-confirmations" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
           <h3 class="font-bold text-base text-slate-900">Post-Delivery / Admin Amount Modification Requests</h3>
@@ -221,7 +219,7 @@
         </div>
       </div>
 
-      <!-- ================= TAB 3: PRODUCT VENDORS (ADMIN) ================= -->
+      <!-- TAB 3: PRODUCT VENDORS -->
       <div id="panel-vendors" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-2">
@@ -255,7 +253,7 @@
         </div>
       </div>
 
-      <!-- ================= TAB 4: DELIVERY PERSONNEL (ADMIN) ================= -->
+      <!-- TAB 4: DELIVERY PERSONNEL -->
       <div id="panel-agents" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -277,7 +275,7 @@
                 <th class="p-3">Mobile</th>
                 <th class="p-3">Status</th>
                 <th class="p-3">Handled Orders</th>
-                <th class="p-3">Admin Actions (Blind Password Reset / Status)</th>
+                <th class="p-3">Admin Actions</th>
               </tr>
             </thead>
             <tbody id="agentTableBody" class="divide-y divide-slate-200"></tbody>
@@ -285,7 +283,7 @@
         </div>
       </div>
 
-      <!-- ================= TAB: AGENT DAILY REPORTS (ADMIN) ================= -->
+      <!-- TAB: AGENT DAILY REPORTS -->
       <div id="panel-agent-reports" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
           <div>
@@ -319,7 +317,6 @@
           </div>
         </div>
 
-        <!-- PRINTABLE AGENT DAILY REPORT SHEET -->
         <div id="printableAgentReport" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-4">
             <div>
@@ -333,7 +330,6 @@
             </div>
           </div>
 
-          <!-- Financial Summary Cards -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <p class="text-xs text-slate-500 font-medium">Deliveries Handled</p>
@@ -387,10 +383,8 @@
         </div>
       </div>
 
-      <!-- ================= TAB 5: VENDOR INVOICES & SETTLEMENTS (ADMIN) ================= -->
+      <!-- TAB 5: VENDOR INVOICES & SETTLEMENTS -->
       <div id="panel-invoices" class="hidden space-y-6">
-
-        <!-- SUBSECTION A: VENDOR INVOICE GENERATOR -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
           <h3 class="font-bold text-sm text-slate-900">Generate Vendor Settlement Statement (Print / Excel)</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -434,7 +428,6 @@
           </div>
         </div>
 
-        <!-- PRINTABLE INVOICE SHEET (DELIVERY FEE REMOVED, SETTLED AMOUNT DEDUCTED, MONTH FORMATTED AS NAME) -->
         <div id="printableInvoice" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-4">
             <div>
@@ -449,7 +442,6 @@
             </div>
           </div>
 
-          <!-- Financial Summary Cards (Delivery fee removed, Settled Amount included in calculation) -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <p class="text-xs text-slate-500">Total Consignments</p>
@@ -471,7 +463,6 @@
 
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
             <div class="md:col-span-3 space-y-4 overflow-x-auto">
-              <!-- Consignments Table without Delivery Fee -->
               <table class="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr class="bg-slate-100 text-slate-700 border-b border-slate-300">
@@ -485,7 +476,6 @@
                 <tbody id="invTableBody" class="divide-y divide-slate-200"></tbody>
               </table>
 
-              <!-- Deducted Settlement & Payment Ledger Table -->
               <div id="invSettledLedgerWrap" class="hidden pt-3 border-t">
                 <p class="text-xs font-bold text-slate-800 mb-1.5">Settlement & Payment Ledger Records Deducted</p>
                 <table class="w-full text-left text-xs border-collapse">
@@ -509,7 +499,6 @@
           </div>
         </div>
 
-        <!-- SUBSECTION B: ADMIN VENDOR PAYMENTS LEDGER (PAID AMOUNT & RECEIVED AMOUNT) -->
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
             <div>
@@ -554,7 +543,6 @@
           </div>
         </div>
 
-        <!-- SUBSECTION C: VENDOR NET PAYABLE OTP SECURITY (ANTI-FRAUD) -->
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 no-print">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
             <div>
@@ -583,10 +571,9 @@
             </table>
           </div>
         </div>
-
       </div>
 
-      <!-- ================= TAB 6: BACKUP & RESTORE (ADMIN) ================= -->
+      <!-- TAB 6: BACKUP & RESTORE -->
       <div id="panel-system" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
@@ -613,7 +600,7 @@
     </section>
   </main>
 
-  <!-- ================= MODAL: MANUAL DATABASE & API KEY CONFIG ================= -->
+  <!-- MODAL: MANUAL DATABASE & API KEY CONFIG -->
   <div id="configModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -638,7 +625,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: ADD / EDIT CONSIGNMENT ================= -->
+  <!-- MODAL: ADD / EDIT CONSIGNMENT -->
   <div id="consignmentModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-4 my-auto max-h-[92vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-3 shrink-0">
@@ -704,7 +691,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: PICKUP / DELIVERY / RETURN ACTION + PHOTO + OTP ================= -->
+  <!-- MODAL: ACTION / PHOTO / OTP -->
   <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 my-auto max-h-[92vh] flex flex-col text-xs">
       <div class="flex justify-between items-center border-b pb-3 shrink-0">
@@ -715,7 +702,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: INSPECT CONSIGNMENT (SCROLLABLE & RESPONSIVE WITH FIXED CLOSE BUTTON) ================= -->
+  <!-- MODAL: INSPECT CONSIGNMENT -->
   <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-xl space-y-3 my-auto max-h-[90vh] flex flex-col text-xs">
       <div class="flex justify-between items-center border-b pb-2.5 shrink-0">
@@ -729,7 +716,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: ADD VENDOR ================= -->
+  <!-- MODAL: ADD VENDOR -->
   <div id="vendorModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -761,7 +748,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: RECORD VENDOR PAYMENT / RECEIPT ================= -->
+  <!-- MODAL: RECORD VENDOR PAYMENT / RECEIPT -->
   <div id="vendorPaymentModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -800,7 +787,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: GENERATE & SEND VENDOR OTP (ANTI-FRAUD) ================= -->
+  <!-- MODAL: GENERATE & SEND VENDOR OTP -->
   <div id="generateVendorOtpModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -829,7 +816,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: ADD DELIVERY PERSON ================= -->
+  <!-- MODAL: ADD DELIVERY PERSON -->
   <div id="agentModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -850,7 +837,7 @@
           <input id="aPhone" type="text" required placeholder="+971..." class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Initial Password (Stored as SHA-256 Hash)</label>
+          <label class="font-semibold text-slate-700 block mb-1">Initial Password</label>
           <input id="aPass" type="password" required class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
@@ -861,7 +848,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: SELF PROFILE & PASSWORD ================= -->
+  <!-- MODAL: SELF PROFILE & PASSWORD -->
   <div id="accountModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
@@ -902,13 +889,6 @@
       const num = Number(value) || 0;
       return num.toFixed(2);
     }
-
-    const DEFAULT_FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDxYdcs6Y--yeFrWOHzuYI9eRnmfY6YetA",
-      authDomain: "nextway-eda94.firebaseapp.com",
-      databaseURL: "https://nextway-eda94-default-rtdb.firebaseio.com",
-      projectId: "nextway-eda94"
-    };
 
     let firebaseDbRef = null;
     let isApplyingRemoteUpdate = false;
@@ -1058,17 +1038,18 @@
 
       const customUrl = localStorage.getItem(CUSTOM_DB_URL_KEY);
       const customApiKey = localStorage.getItem(CUSTOM_API_KEY);
-      const activeDbUrl = customUrl || DEFAULT_FIREBASE_CONFIG.databaseURL;
-      const activeApiKey = customApiKey || DEFAULT_FIREBASE_CONFIG.apiKey;
 
-      if (activeDbUrl) {
+      if (customUrl) {
         try {
-          const configToUse = { ...DEFAULT_FIREBASE_CONFIG, databaseURL: activeDbUrl, apiKey: activeApiKey };
+          const configToUse = {
+            databaseURL: customUrl,
+            apiKey: customApiKey || undefined
+          };
           if (!firebase.apps.length) {
             firebase.initializeApp(configToUse);
           } else {
-            firebase.app().options.databaseURL = activeDbUrl;
-            if (activeApiKey) firebase.app().options.apiKey = activeApiKey;
+            firebase.app().options.databaseURL = customUrl;
+            if (customApiKey) firebase.app().options.apiKey = customApiKey;
           }
           
           firebaseDbRef = firebase.database().ref('nextway_db');
@@ -1081,20 +1062,20 @@
               firebaseDbRef.set(db);
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             }
-          }, () => updateSyncBadge('OFFLINE', 'Local Storage Fallback'));
+          }, () => updateSyncBadge('OFFLINE', 'Offline Mode'));
           return;
         } catch (e) { 
           console.error(e); 
-          updateSyncBadge('OFFLINE', 'Local Storage Mode');
+          updateSyncBadge('OFFLINE', 'Offline Mode');
         }
       } else {
-        updateSyncBadge('OFFLINE', 'Local Storage Mode');
+        updateSyncBadge('OFFLINE', 'Offline Mode');
       }
     }
 
     function openConfigModal() {
-      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || DEFAULT_FIREBASE_CONFIG.databaseURL;
-      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || DEFAULT_FIREBASE_CONFIG.apiKey || '';
+      const currentUrl = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
+      const currentKey = localStorage.getItem(CUSTOM_API_KEY) || '';
       document.getElementById('customDbUrlInput').value = currentUrl;
       document.getElementById('customApiKeyInput').value = currentKey;
       document.getElementById('configModal').classList.remove('hidden');
@@ -1140,7 +1121,7 @@
       return db.vendors.find(v => v.code.toUpperCase() === (code || '').toUpperCase());
     }
 
-    // ================= AUTHENTICATION MODULE =================
+    // AUTHENTICATION MODULE
     async function handleLogin(e) {
       e.preventDefault();
       const uName = document.getElementById('loginUsername').value.trim();
@@ -1329,7 +1310,7 @@
       slicer.value = currentVal || 'ALL';
     }
 
-    // ================= MODULE: CONSIGNMENTS =================
+    // CONSIGNMENTS MODULE
     function openNewConsignmentModal() {
       document.getElementById('cIdInput').value = 'NW-' + Math.floor(1000 + Math.random() * 9000);
       const vSelect = document.getElementById('cVendorSelect');
@@ -1465,7 +1446,6 @@
                 ${isReturned && c.returnReason ? `<p class="text-red-600"><strong>Return Reason:</strong> ${c.returnReason}</p>` : ''}
               </div>
 
-              <!-- Financials & Modification Controls -->
               <div class="mt-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <div>
                   <p>Product Amt: <strong class="text-slate-900">${formatAmt(c.productAmount)}</strong> ${isPrepaid ? '<span class="text-emerald-700 font-bold">(Prepaid)</span>' : '<span class="text-amber-700 font-bold">(COD)</span>'}</p>
@@ -1482,7 +1462,6 @@
               </div>
             </div>
 
-            <!-- Role-Based Assignment (LOCKED AFTER DELIVERED) -->
             <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
               ${isAdmin ? `
                 ${isDelivered ? `
@@ -1785,7 +1764,7 @@
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // ================= MODULE: FINANCIAL MODIFICATION =================
+    // FINANCIAL MODIFICATION MODULE
     function openAmountEditModal(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
@@ -1812,7 +1791,6 @@
             <label class="font-semibold block mb-1">Delivery Charge ${isAgent ? '<span class="text-red-600 font-bold">(Fixed for Agent)</span>' : ''}</label>
             <input id="editDelivFee" type="number" step="0.01" value="${c.deliveryCharge}"
               ${isAgent ? 'disabled class="w-full border rounded-lg px-3 py-2 bg-slate-100 text-slate-500 cursor-not-allowed"' : 'class="w-full border rounded-lg px-3 py-2"'} />
-            ${isAgent ? '<p class="text-[10px] text-slate-500 mt-0.5">Delivery fee is locked and cannot be edited after assignment.</p>' : ''}
           </div>
           <button onclick="saveAmountModification('${c.id}')" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg">
             ${isAgent ? 'Update Product Amount' : 'Submit Modification'}
@@ -1899,7 +1877,7 @@
       refreshAllViews();
     }
 
-    // ================= MODULE: INSPECT CONSIGNMENT =================
+    // INSPECT CONSIGNMENT MODULE
     function inspectConsignmentById() {
       const id = document.getElementById('globalConsignmentSearch').value.trim().toUpperCase();
       if (!id) return;
@@ -1978,7 +1956,7 @@
       }
     }
 
-    // ================= MODULE: PRODUCT VENDORS =================
+    // VENDORS MODULE
     function openVendorModal() {
       document.getElementById('vCode').value = 'VND-00' + (db.vendors.length + 1);
       document.getElementById('vName').value = '';
@@ -1991,7 +1969,7 @@
       e.preventDefault();
       const code = document.getElementById('vCode').value.trim().toUpperCase();
       if (db.vendors.some(v => v.code.toUpperCase() === code)) {
-        alert('Vendor Code must be unique! This code is already registered.');
+        alert('Vendor Code must be unique!');
         return;
       }
       db.vendors.push({
@@ -2009,9 +1987,7 @@
     function getFilteredVendors() {
       const q = (document.getElementById('vendorCodeSearch')?.value || '').trim().toLowerCase();
       if (!q) return db.vendors;
-      return db.vendors.filter(v =>
-        v.code.toLowerCase().includes(q) || v.name.toLowerCase().includes(q)
-      );
+      return db.vendors.filter(v => v.code.toLowerCase().includes(q) || v.name.toLowerCase().includes(q));
     }
 
     function renderVendors() {
@@ -2043,28 +2019,10 @@
       const wb = XLSX.utils.book_new();
       const wsVendors = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, wsVendors, 'Vendors');
-
-      const consignmentRows = db.consignments.map(c => {
-        const v = getVendorByCode(c.vendorCode);
-        return {
-          'Consignment ID': c.id,
-          'Vendor': v ? v.name : c.vendorCode,
-          'Customer Name': c.customerName,
-          'Customer Phone': c.customerPhone,
-          'Delivery Agent': getAgentName(c.assignedTo),
-          'Status': c.status,
-          'Product Amount': Number(c.productAmount.toFixed(2)),
-          'Delivery Charge': Number(c.deliveryCharge.toFixed(2)),
-          'Created Date': c.createdAt
-        };
-      });
-      const wsConsignments = XLSX.utils.json_to_sheet(consignmentRows);
-      XLSX.utils.book_append_sheet(wb, wsConsignments, 'Consignments Details');
-
-      XLSX.writeFile(wb, `NEXTWAY_Vendors_And_Consignments_${filteredOnly ? 'Filtered' : 'Complete'}.xlsx`);
+      XLSX.writeFile(wb, `NEXTWAY_Vendors_${filteredOnly ? 'Filtered' : 'Complete'}.xlsx`);
     }
 
-    // ================= MODULE: DELIVERY PERSONNEL =================
+    // DELIVERY PERSONNEL MODULE
     function openAgentModal() {
       document.getElementById('aName').value = '';
       document.getElementById('aUser').value = '';
@@ -2117,23 +2075,12 @@
             </td>
             <td class="p-3 font-bold">${orderCount} (Retained)</td>
             <td class="p-3 space-x-1">
-              <button onclick="adminBlindPasswordReset('${a.id}')" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 rounded">
-                Reset Password
-              </button>
+              <button onclick="adminBlindPasswordReset('${a.id}')" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 rounded">Reset Pass</button>
               ${a.status === 'ACTIVE' ? `
-                <button onclick="setAgentStatus('${a.id}', 'DEACTIVATED')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-2.5 py-1 rounded">
-                  Deactivate
-                </button>
+                <button onclick="setAgentStatus('${a.id}', 'DEACTIVATED')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-2.5 py-1 rounded font-semibold">Deactivate</button>
               ` : `
-                <button onclick="setAgentStatus('${a.id}', 'ACTIVE')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded">
-                  Activate
-                </button>
+                <button onclick="setAgentStatus('${a.id}', 'ACTIVE')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded font-semibold">Activate</button>
               `}
-              ${a.status !== 'REMOVED' ? `
-                <button onclick="setAgentStatus('${a.id}', 'REMOVED')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-2.5 py-1 rounded">
-                  Remove (Retain Data)
-                </button>
-              ` : ''}
             </td>
           </tr>
         `;
@@ -2143,11 +2090,11 @@
     async function adminBlindPasswordReset(agentId) {
       const agent = db.users.find(u => u.id === agentId);
       if (!agent) return;
-      const newPass = prompt(`Enter new password for ${agent.name} (${agent.username}).\nCurrent password is hidden and not required:`);
+      const newPass = prompt(`Enter new password for ${agent.name} (${agent.username}):`);
       if (!newPass) return;
       agent.passwordHash = await hashPassword(newPass);
       saveDB();
-      alert(`Password for ${agent.name} has been securely updated.`);
+      alert(`Password for ${agent.name} updated.`);
     }
 
     function setAgentStatus(agentId, status) {
@@ -2159,7 +2106,7 @@
       renderConsignments();
     }
 
-    // ================= MODULE: AGENT DAILY REPORT =================
+    // AGENT DAILY REPORT MODULE
     function populateAgentReportDropdowns() {
       const sel = document.getElementById('agentReportSelect');
       if (!sel) return;
@@ -2260,31 +2207,18 @@
           'Vendor': vendor ? vendor.name : c.vendorCode,
           'Status': c.status,
           'Product Amount (COD)': Number(prodAmt.toFixed(2)),
-          'Amount to give to NEXT WAY (Delivery Fee)': Number(feeAmt.toFixed(2)),
+          'Delivery Fee': Number(feeAmt.toFixed(2)),
           'Total Collected': Number((prodAmt + feeAmt).toFixed(2))
         };
-      });
-
-      sheetData.push({
-        'Consignment ID': 'TOTAL SUMMARY',
-        'Date': selectedDate,
-        'Customer': `${rows.length} Consignments`,
-        'Phone': '',
-        'Address': '',
-        'Vendor': '',
-        'Status': 'SETTLED',
-        'Product Amount (COD)': Number(totalProd.toFixed(2)),
-        'Amount to give to NEXT WAY (Delivery Fee)': Number(totalNextWay.toFixed(2)),
-        'Total Collected': Number((totalProd + totalNextWay).toFixed(2))
       });
 
       const ws = XLSX.utils.json_to_sheet(sheetData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Agent_Daily_Report');
-      XLSX.writeFile(wb, `NEXTWAY_Daily_Report_${agent ? agent.name.replace(/\s+/g, '_') : agentId}_${selectedDate}.xlsx`);
+      XLSX.writeFile(wb, `NEXTWAY_Daily_Report_${selectedDate}.xlsx`);
     }
 
-    // ================= MODULE: VENDOR INVOICES & SETTLEMENT CALCULATION =================
+    // VENDOR INVOICES & LEDGER MODULE
     function populateInvoiceVendors() {
       const sel = document.getElementById('invVendorSelect');
       const currentVal = sel.value;
@@ -2378,21 +2312,14 @@
       const endVal = document.getElementById('invEndDate').value;
 
       document.getElementById('invContactPhoneDisplay').textContent = adminUser && adminUser.phone ? `Contact: ${adminUser.phone}` : '';
+      document.getElementById('invVendorHeader').textContent = vendorCode === 'ALL' ? 'ALL VENDORS' : (vendor ? vendor.name : '');
 
-      if (vendorCode === 'ALL') {
-        document.getElementById('invVendorHeader').textContent = 'ALL VENDORS';
-      } else {
-        document.getElementById('invVendorHeader').textContent = vendor ? vendor.name : '';
-      }
-
-      // Display month by name (January, February, etc.) instead of 2026-01, 2026-02
       let periodLabel = '';
       if (type === 'MONTH' && singleVal) {
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         const parts = singleVal.split('-');
         const monthIndex = parseInt(parts[1], 10) - 1;
-        const monthName = (monthIndex >= 0 && monthIndex < 12) ? monthNames[monthIndex] : singleVal;
-        periodLabel = `Month : ${monthName}`;
+        periodLabel = `Month : ${(monthIndex >= 0 && monthIndex < 12) ? monthNames[monthIndex] : singleVal}`;
       } else if (type === 'DATE' && singleVal) {
         periodLabel = `Date : ${singleVal}`;
       } else if (type === 'RANGE') {
@@ -2419,7 +2346,6 @@
         `;
       }).join('');
 
-      // Include Settled Amount from Tab 6 Vendor Payments & Receipts Ledger
       const filteredPayments = getFilteredVendorPayments();
       let totalSettledPaid = 0;
       let totalSettledReceived = 0;
@@ -2428,8 +2354,6 @@
         if (p.type === 'RECEIVED') totalSettledReceived += Number(p.amount) || 0;
       });
       const netSettled = totalSettledPaid - totalSettledReceived;
-
-      // Net balance calculation: Total Product Amount collected minus Settled Amount
       const netBalance = totalProd - netSettled;
 
       document.getElementById('invCount').textContent = rows.length;
@@ -2446,7 +2370,6 @@
         netAmount.textContent = `${formatAmt(Math.abs(netBalance))} (Receivable)`;
       }
 
-      // Render deducted ledger records on printable sheet
       const settledWrap = document.getElementById('invSettledLedgerWrap');
       const settledTbody = document.getElementById('invSettledTableBody');
       if (filteredPayments.length > 0) {
@@ -2471,10 +2394,7 @@
           text: JSON.stringify({
             vendor: vendorCode === 'ALL' ? 'All Vendors' : (vendor ? vendor.name : vendorCode),
             totalOrders: rows.length,
-            productAmount: formatAmt(totalProd),
-            settledAmount: formatAmt(netSettled),
             netPayable: formatAmt(netBalance),
-            period: periodLabel,
             timestamp: new Date().toISOString()
           }),
           width: 96,
@@ -2490,99 +2410,35 @@
     }
 
     function exportInvoiceExcel() {
-      const vendorCode = document.getElementById('invVendorSelect').value;
-      const vendor = vendorCode === 'ALL' ? null : getVendorByCode(vendorCode);
       const rows = getFilteredInvoiceConsignments();
-      const filteredPayments = getFilteredVendorPayments();
-      let totalProd = 0;
-
-      const sheetData = rows.map(c => {
-        totalProd += c.productAmount;
-        const v = getVendorByCode(c.vendorCode);
-        return {
-          'Date': c.createdAt,
-          'Consignment ID': c.id,
-          'Vendor': v ? v.name : c.vendorCode,
-          'Customer': c.customerName,
-          'Delivery Agent': getAgentName(c.assignedTo),
-          'Status': c.status,
-          'Product Amount': Number(c.productAmount.toFixed(2))
-        };
-      });
-
-      let totalSettledPaid = 0;
-      let totalSettledReceived = 0;
-      filteredPayments.forEach(p => {
-        if (p.type === 'PAID') totalSettledPaid += Number(p.amount) || 0;
-        if (p.type === 'RECEIVED') totalSettledReceived += Number(p.amount) || 0;
-      });
-      const netSettled = totalSettledPaid - totalSettledReceived;
-      const netBalance = totalProd - netSettled;
-
-      sheetData.push({
-        'Date': 'TOTAL PRODUCT COLLECTED',
-        'Consignment ID': `${rows.length} Consignments`,
-        'Vendor': vendor ? vendor.name : 'ALL VENDORS',
-        'Customer': '',
-        'Delivery Agent': '',
-        'Status': '',
-        'Product Amount': Number(totalProd.toFixed(2))
-      });
-
-      if (filteredPayments.length > 0) {
-        sheetData.push({
-          'Date': 'LESS: SETTLED AMOUNT (PAID)',
-          'Consignment ID': `${filteredPayments.length} Ledger Payments`,
-          'Vendor': '',
-          'Customer': '',
-          'Delivery Agent': '',
-          'Status': 'DEDUCTED',
-          'Product Amount': -Number(netSettled.toFixed(2))
-        });
-      }
-
-      sheetData.push({
-        'Date': 'NET PAYABLE BALANCE',
-        'Consignment ID': '',
-        'Vendor': '',
-        'Customer': '',
-        'Delivery Agent': '',
-        'Status': netBalance >= 0 ? 'NET PAYABLE TO VENDOR' : 'NET RECEIVABLE FROM VENDOR',
-        'Product Amount': Number(netBalance.toFixed(2))
-      });
-
+      const sheetData = rows.map(c => ({
+        'Date': c.createdAt,
+        'Consignment ID': c.id,
+        'Customer': c.customerName,
+        'Status': c.status,
+        'Product Amount': Number(c.productAmount.toFixed(2))
+      }));
       const ws = XLSX.utils.json_to_sheet(sheetData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Vendor_Statement');
-      XLSX.writeFile(wb, `NEXTWAY_Invoice_${vendor ? vendor.name.replace(/\s+/g, '_') : 'ALL_VENDORS'}.xlsx`);
+      XLSX.writeFile(wb, `NEXTWAY_Invoice.xlsx`);
     }
 
     function shareInvoiceWhatsApp() {
       const vendorCode = document.getElementById('invVendorSelect').value;
       if (vendorCode === 'ALL') {
-        alert('Please select a specific vendor from the slicer to send WhatsApp summary.');
+        alert('Please select a specific vendor to send WhatsApp summary.');
         return;
       }
       const vendor = getVendorByCode(vendorCode);
-      if (!vendor) return;
-      const count = document.getElementById('invCount').textContent;
-      const prod = document.getElementById('invTotalProduct').textContent;
-      const settled = document.getElementById('invSettledAmount').textContent;
       const netTitle = document.getElementById('invNetLabel').textContent;
       const netVal = document.getElementById('invNetAmount').textContent;
-      const period = document.getElementById('invPeriodHeader').textContent;
-
       const cleanPhone = vendor.phone.replace(/[^0-9]/g, '');
-      let text = `*NEXT WAY DELIVERY SERVICES LLC - STATEMENT SUMMARY*\nVendor: *${vendor.name}*\n${period}\nTotal Consignments: ${count}\nTotal Product Amount Collected: ${prod}`;
-      if (Number(settled) > 0) {
-        text += `\nSettled Amount (Ledger): ${settled}`;
-      }
-      text += `\n*${netTitle}: ${netVal}*`;
-
+      const text = `*NEXT WAY DELIVERY SERVICES LLC*\nVendor: *${vendor.name}*\n*${netTitle}: ${netVal}*`;
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // ================= MODULE: VENDOR PAYMENTS LEDGER =================
+    // VENDOR PAYMENTS & OTP MODULE
     function openVendorPaymentModal() {
       const sel = document.getElementById('vpVendorSelect');
       sel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
@@ -2600,7 +2456,7 @@
       const date = document.getElementById('vpDate').value;
       const notes = document.getElementById('vpNotes').value.trim();
 
-      const newEntry = {
+      db.vendorPayments.unshift({
         id: 'LED-' + Date.now(),
         vendorCode,
         type,
@@ -2609,20 +2465,16 @@
         notes,
         recordedBy: currentUser.username,
         createdAt: new Date().toISOString()
-      };
-
-      db.vendorPayments.unshift(newEntry);
+      });
       saveDB();
       closeModal('vendorPaymentModal');
       renderVendorLedger();
       generateInvoicePreview();
-      alert(`Ledger record saved: ${type === 'PAID' ? 'Paid to' : 'Received from'} Vendor successfully.`);
     }
 
     function renderVendorLedger() {
       const tbody = document.getElementById('vendorLedgerTableBody');
       if (!tbody) return;
-
       let totalPaid = 0;
       let totalReceived = 0;
 
@@ -2630,29 +2482,18 @@
         const v = getVendorByCode(p.vendorCode);
         if (p.type === 'PAID') totalPaid += p.amount;
         if (p.type === 'RECEIVED') totalReceived += p.amount;
-
         return `
           <tr class="hover:bg-slate-50">
             <td class="p-2.5">${p.date}</td>
             <td class="p-2.5 font-bold">${v ? v.name : p.vendorCode}</td>
-            <td class="p-2.5">
-              <span class="px-2 py-0.5 rounded text-xs font-bold ${p.type === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
-                ${p.type === 'PAID' ? 'Paid to Vendor' : 'Received from Vendor'}
-              </span>
-            </td>
+            <td class="p-2.5"><span class="px-2 py-0.5 rounded text-xs font-bold ${p.type === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${p.type}</span></td>
             <td class="p-2.5 font-black">${formatAmt(p.amount)}</td>
             <td class="p-2.5 text-slate-600">${p.notes || '-'}</td>
             <td class="p-2.5">${p.recordedBy}</td>
-            <td class="p-2.5">
-              <button onclick="deleteVendorLedgerEntry('${p.id}')" class="text-red-600 hover:underline font-bold">Delete</button>
-            </td>
+            <td class="p-2.5"><button onclick="deleteVendorLedgerEntry('${p.id}')" class="text-red-600 font-bold">Delete</button></td>
           </tr>
         `;
       }).join('');
-
-      if ((db.vendorPayments || []).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No vendor payment or receipt entries recorded yet.</td></tr>`;
-      }
 
       document.getElementById('ledgerTotalPaid').textContent = formatAmt(totalPaid);
       document.getElementById('ledgerTotalReceived').textContent = formatAmt(totalReceived);
@@ -2660,22 +2501,19 @@
     }
 
     function deleteVendorLedgerEntry(entryId) {
-      if (!confirm('Are you sure you want to delete this payment record?')) return;
+      if (!confirm('Delete this payment record?')) return;
       db.vendorPayments = db.vendorPayments.filter(p => p.id !== entryId);
       saveDB();
       renderVendorLedger();
       generateInvoicePreview();
     }
 
-    // ================= MODULE: VENDOR NET PAYABLE OTP SECURITY =================
     function openGenerateVendorOtpModal() {
       const vSel = document.getElementById('vOtpVendorSelect');
       vSel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
-
       const aSel = document.getElementById('vOtpAgentSelect');
       const activeAgents = db.users.filter(u => u.role === 'AGENT' && u.status === 'ACTIVE');
       aSel.innerHTML = activeAgents.map(a => `<option value="${a.id}">${a.name} (${a.id})</option>`).join('');
-
       document.getElementById('vOtpAmount').value = '';
       document.getElementById('generateVendorOtpModal').classList.remove('hidden');
     }
@@ -2685,12 +2523,11 @@
       const vendorCode = document.getElementById('vOtpVendorSelect').value;
       const agentId = document.getElementById('vOtpAgentSelect').value;
       const amount = parseFloat(document.getElementById('vOtpAmount').value) || 0;
-
       const vendor = getVendorByCode(vendorCode);
       const agent = db.users.find(u => u.id === agentId);
       const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-      const otpRecord = {
+      db.vendorSettlementOtps.unshift({
         id: 'VOTP-' + Math.floor(1000 + Math.random() * 9000),
         vendorCode,
         vendorName: vendor ? vendor.name : vendorCode,
@@ -2700,72 +2537,49 @@
         otp,
         status: 'PENDING',
         createdAt: new Date().toISOString()
-      };
-
-      db.vendorSettlementOtps.unshift(otpRecord);
+      });
       saveDB();
       closeModal('generateVendorOtpModal');
       renderVendorOtpsTable();
 
       if (vendor && vendor.phone) {
         const cleanPhone = vendor.phone.replace(/[^0-9]/g, '');
-        const msg = `Hello *${vendor.name}*,\nNEXT WAY Delivery Agent *${agent ? agent.name : ''}* is scheduled to hand over Net Settlement Cash of *AED ${formatAmt(amount)}* to you.\n\n*YOUR CONFIDENTIAL VERIFICATION OTP IS: ${otp}*\n\nPlease give this OTP to the delivery agent ONLY AFTER you have received the full cash payment.`;
+        const msg = `Hello *${vendor.name}*, your Net Settlement OTP is: *${otp}* (Amount: AED ${formatAmt(amount)})`;
         window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       }
-
-      alert(`Settlement OTP ${otp} generated! WhatsApp opened to send directly to vendor.`);
     }
 
     function renderVendorOtpsTable() {
       const tbody = document.getElementById('vendorOtpsTableBody');
       if (!tbody) return;
-
-      tbody.innerHTML = (db.vendorSettlementOtps || []).map(r => {
-        const isVerified = r.status === 'VERIFIED';
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="p-2.5 font-bold">${r.id}</td>
-            <td class="p-2.5">${r.vendorName}</td>
-            <td class="p-2.5">${r.agentName}</td>
-            <td class="p-2.5 font-black">${formatAmt(r.amount)}</td>
-            <td class="p-2.5 font-mono font-bold text-blue-900">${r.otp}</td>
-            <td class="p-2.5">
-              <span class="px-2.5 py-0.5 rounded text-xs font-bold ${isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                ${isVerified ? 'Verified & Settled' : 'Pending Vendor Handover'}
-              </span>
-            </td>
-            <td class="p-2.5">
-              ${!isVerified ? `
-                <button onclick="adminManualVerifyOtp('${r.id}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded text-xs font-semibold">
-                  Verify from Agent
-                </button>
-              ` : `<span class="text-emerald-700 font-bold">Cleared</span>`}
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      if ((db.vendorSettlementOtps || []).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No active settlement OTPs issued.</td></tr>`;
-      }
+      tbody.innerHTML = (db.vendorSettlementOtps || []).map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-2.5 font-bold">${r.id}</td>
+          <td class="p-2.5">${r.vendorName}</td>
+          <td class="p-2.5">${r.agentName}</td>
+          <td class="p-2.5 font-black">${formatAmt(r.amount)}</td>
+          <td class="p-2.5 font-mono font-bold text-blue-900">${r.otp}</td>
+          <td class="p-2.5"><span class="px-2.5 py-0.5 rounded text-xs font-bold ${r.status === 'VERIFIED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${r.status}</span></td>
+          <td class="p-2.5">
+            ${r.status !== 'VERIFIED' ? `<button onclick="adminManualVerifyOtp('${r.id}')" class="bg-emerald-700 text-white px-2.5 py-1 rounded text-xs">Verify</button>` : 'Cleared'}
+          </td>
+        </tr>
+      `).join('');
     }
 
     function adminManualVerifyOtp(recordId) {
       const r = db.vendorSettlementOtps.find(x => x.id === recordId);
       if (!r) return;
-      const entered = prompt(`Enter the 6-digit OTP given by the delivery agent for ${r.vendorName} (Amount: AED ${formatAmt(r.amount)}):`);
-      if (!entered) return;
-
-      if (entered.trim() === r.otp) {
+      const entered = prompt(`Enter 6-digit OTP for ${r.vendorName}:`);
+      if (entered && entered.trim() === r.otp) {
         r.status = 'VERIFIED';
-        r.verifiedAt = new Date().toISOString();
         db.vendorPayments.unshift({
           id: 'LED-' + Date.now(),
           vendorCode: r.vendorCode,
           type: 'PAID',
           amount: r.amount,
           date: new Date().toISOString().split('T')[0],
-          notes: `Net settlement verified via Vendor OTP (${r.id})`,
+          notes: `Verified via Vendor OTP (${r.id})`,
           recordedBy: currentUser.username,
           createdAt: new Date().toISOString()
         });
@@ -2773,34 +2587,29 @@
         renderVendorOtpsTable();
         renderVendorLedger();
         generateInvoicePreview();
-        alert('Vendor OTP verified successfully! Amount automatically credited to Paid to Vendor ledger.');
+        alert('OTP verified successfully!');
       } else {
-        alert('Invalid OTP! Please verify with the vendor and delivery agent.');
+        alert('Invalid OTP.');
       }
     }
 
     function renderAgentPendingOtps() {
       const container = document.getElementById('agentPendingOtpsList');
       if (!container || !currentUser) return;
-
       const myPending = (db.vendorSettlementOtps || []).filter(r => r.agentId === currentUser.id && r.status === 'PENDING');
       if (myPending.length === 0) {
         container.innerHTML = `<p class="text-xs text-amber-900/70 italic">No pending cash handovers assigned to you.</p>`;
         return;
       }
-
       container.innerHTML = myPending.map(r => `
         <div class="p-3 bg-white border border-amber-300 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div>
             <p><strong>Vendor:</strong> ${r.vendorName}</p>
-            <p><strong>Net Cash to Hand Over:</strong> <span class="text-base font-black text-amber-900">AED ${formatAmt(r.amount)}</span></p>
-            <p class="text-[11px] text-slate-500">Collect the 6-digit OTP from the vendor once you give the cash and enter it below:</p>
+            <p><strong>Net Cash:</strong> <span class="text-base font-black text-amber-900">AED ${formatAmt(r.amount)}</span></p>
           </div>
           <div class="flex items-center gap-2">
-            <input id="agentOtpInput_${r.id}" type="text" placeholder="6-digit Vendor OTP" class="border border-slate-300 rounded px-2.5 py-1.5 w-32 font-mono font-bold" />
-            <button onclick="agentSubmitVendorOtp('${r.id}')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded">
-              Verify Handover
-            </button>
+            <input id="agentOtpInput_${r.id}" type="text" placeholder="6-digit OTP" class="border rounded px-2.5 py-1.5 w-32 font-mono font-bold" />
+            <button onclick="agentSubmitVendorOtp('${r.id}')" class="bg-amber-600 text-white font-bold px-3 py-1.5 rounded">Verify</button>
           </div>
         </div>
       `).join('');
@@ -2810,30 +2619,27 @@
       const r = db.vendorSettlementOtps.find(x => x.id === recordId);
       if (!r) return;
       const inputEl = document.getElementById(`agentOtpInput_${recordId}`);
-      const val = inputEl ? inputEl.value.trim() : '';
-
-      if (val === r.otp) {
+      if (inputEl && inputEl.value.trim() === r.otp) {
         r.status = 'VERIFIED';
-        r.verifiedAt = new Date().toISOString();
         db.vendorPayments.unshift({
           id: 'LED-' + Date.now(),
           vendorCode: r.vendorCode,
           type: 'PAID',
           amount: r.amount,
           date: new Date().toISOString().split('T')[0],
-          notes: `Net settlement verified via Vendor OTP by agent ${currentUser.name}`,
+          notes: `Verified by agent ${currentUser.name}`,
           recordedBy: currentUser.username,
           createdAt: new Date().toISOString()
         });
         saveDB();
         renderAgentPendingOtps();
-        alert(`Success! Cash handover of AED ${formatAmt(r.amount)} to ${r.vendorName} has been verified and settled.`);
+        alert('Handover verified!');
       } else {
-        alert('Invalid OTP! Please collect the correct 6-digit OTP from the vendor.');
+        alert('Invalid OTP.');
       }
     }
 
-    // ================= MODULE: BACKUP & RESTORE =================
+    // BACKUP & RESTORE MODULE
     function downloadBackup() {
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
       const a = document.createElement('a');
@@ -2852,17 +2658,17 @@
         try {
           const parsed = JSON.parse(evt.target.result);
           if (!parsed.users || !parsed.vendors || !parsed.consignments) {
-            alert('Invalid backup file structure.');
+            alert('Invalid backup structure.');
             return;
           }
           db = parsed;
           db.vendorPayments = db.vendorPayments || [];
           db.vendorSettlementOtps = db.vendorSettlementOtps || [];
           saveDB();
-          alert('Database restored successfully! Reloading workspace.');
+          alert('Database restored! Reloading...');
           location.reload();
         } catch (err) {
-          alert('Failed to parse backup JSON file.');
+          alert('Failed to parse JSON.');
         }
       };
       reader.readAsText(file);
