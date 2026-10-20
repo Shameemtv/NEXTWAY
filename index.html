@@ -963,6 +963,15 @@
     let currentUser = null;
     let deferredPrompt = null;
 
+    // Automatically purge stuck v1 Service Worker caches so new code runs immediately
+    if ('caches' in window) {
+      caches.keys().then(keys => {
+        keys.forEach(k => {
+          if (k === 'nextway-pwa-v1') caches.delete(k);
+        });
+      });
+    }
+
     function formatAmt(value) {
       const num = Number(value) || 0;
       return num.toFixed(2);
@@ -984,6 +993,9 @@
       } else if (state === 'SYNCING') {
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-pulse';
+      } else if (state === 'ERROR') {
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900/90 text-red-100 border border-red-400 flex items-center gap-1.5';
+        dot.className = 'w-2 h-2 rounded-full bg-red-400 animate-pulse';
       } else {
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-900/80 text-amber-100 border border-amber-500 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-amber-400';
@@ -991,10 +1003,19 @@
     }
 
     async function hashPassword(plain) {
-      const msgBuffer = new TextEncoder().encode(plain + '_NEXTWAY_SALT');
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      const text = plain + '_NEXTWAY_SALT';
+      if (window.crypto && window.crypto.subtle) {
+        const msgBuffer = new TextEncoder().encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      let hash = 0;
+      for (let i = 0; i < text.length; i++) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'fallback_' + Math.abs(hash).toString(16);
     }
 
     async function getDefaultSeedDB() {
@@ -1068,10 +1089,21 @@
       };
     }
 
-    function normalizeCloudPayload(raw) {
+    function normalizeCloudPayload(raw, fallbackUsers) {
       if (!raw || typeof raw !== 'object') return null;
-      const users = Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {});
-      const validUsers = users.filter(u => u && typeof u === 'object' && u.username);
+      const rawUsers = Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {});
+      const validUsers = rawUsers
+        .filter(u => u && typeof u === 'object' && u.username)
+        .map(u => ({
+          id: u.id || (u.username.toUpperCase() === 'NEXTWAY' ? 'USR-ADMIN' : 'AG-' + Math.floor(100 + Math.random() * 900)),
+          username: u.username,
+          name: u.name || u.username,
+          role: u.role || (u.username.toUpperCase() === 'NEXTWAY' ? 'ADMIN' : 'AGENT'),
+          phone: u.phone || '+971500000000',
+          passwordHash: u.passwordHash || u.password || '',
+          status: u.status || 'ACTIVE'
+        }));
+
       if (validUsers.length === 0) return null;
 
       return {
@@ -1087,7 +1119,7 @@
     }
 
     function applyIncomingCloudState(remoteData) {
-      const normalized = normalizeCloudPayload(remoteData);
+      const normalized = normalizeCloudPayload(remoteData, db ? db.users : []);
       if (!normalized || !Array.isArray(normalized.users) || normalized.users.length === 0) {
         return false;
       }
@@ -1099,7 +1131,7 @@
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
       if (currentUser) {
-        const updatedSelf = db.users.find(u => u.id === currentUser.id);
+        const updatedSelf = db.users.find(u => u.id === currentUser.id || u.username.toLowerCase() === currentUser.username.toLowerCase());
         if (updatedSelf) {
           if (updatedSelf.status !== 'ACTIVE') {
             alert(`Your account status was changed to ${updatedSelf.status} by Admin.`);
@@ -1118,9 +1150,29 @@
 
     function sanitizeDatabaseUrl(url) {
       if (!url) return '';
-      let clean = url.trim().replace(/\/+$/, '');
-      clean = clean.replace(/\/nextway_db(\.json)?$/i, '').replace(/\.json$/i, '');
-      return clean;
+      let clean = url.trim().replace(/^["']|["']$/g, '');
+      if (!/^https?:\/\//i.test(clean)) {
+        clean = 'https://' + clean;
+      }
+      try {
+        const parsed = new URL(clean);
+        return parsed.origin;
+      } catch (e) {
+        return clean.replace(/\/+$/, '').replace(/\/nextway_db(\.json)?$/i, '').replace(/\.json$/i, '');
+      }
+    }
+
+    function pushLocalDBToCloud() {
+      if (!firebaseDbRef || !db) return;
+      const cleanPayload = JSON.parse(JSON.stringify(db));
+      updateSyncBadge('SYNCING', 'Syncing...');
+      firebaseDbRef.set(cleanPayload)
+        .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
+        .catch((err) => {
+          console.error('Firebase write error:', err);
+          const code = err && err.code ? err.code : 'Write Blocked';
+          updateSyncBadge('ERROR', `Sync Error: ${code}`);
+        });
     }
 
     async function initDB() {
@@ -1150,39 +1202,33 @@
           localStorage.setItem(CUSTOM_DB_URL_KEY, customUrl);
         }
         try {
-          const configToUse = {
-            databaseURL: customUrl,
-            apiKey: customApiKey || undefined
-          };
+          const configToUse = { databaseURL: customUrl };
+          if (customApiKey) configToUse.apiKey = customApiKey;
+
           if (!firebase.apps.length) {
             firebase.initializeApp(configToUse);
-          } else {
-            firebase.app().options.databaseURL = customUrl;
-            if (customApiKey) firebase.app().options.apiKey = customApiKey;
           }
 
-          firebaseDbRef = firebase.database().ref('nextway_db');
+          updateSyncBadge('SYNCING', 'Connecting...');
+          firebaseDbRef = firebase.app().database(customUrl).ref('nextway_db');
+
           firebaseDbRef.on('value', (snapshot) => {
             const val = snapshot.val();
             const applied = applyIncomingCloudState(val);
             if (applied) {
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
-              firebaseDbRef.set(db)
-                .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
-                .catch((err) => {
-                  console.error('Firebase write error:', err);
-                  updateSyncBadge('OFFLINE', 'Offline Mode');
-                });
+              pushLocalDBToCloud();
             }
           }, (err) => {
             console.error('Firebase read error:', err);
-            updateSyncBadge('OFFLINE', 'Offline Mode');
+            const code = err && err.code ? err.code : 'Read Blocked';
+            updateSyncBadge('ERROR', `Sync Error: ${code}`);
           });
           return;
         } catch (e) {
-          console.error(e);
-          updateSyncBadge('OFFLINE', 'Offline Mode');
+          console.error('Firebase init error:', e);
+          updateSyncBadge('ERROR', 'Invalid DB URL');
         }
       } else {
         updateSyncBadge('OFFLINE', 'Offline Mode');
@@ -1200,8 +1246,8 @@
     function saveCustomDatabaseUrl() {
       const url = sanitizeDatabaseUrl(document.getElementById('customDbUrlInput').value);
       const apiKey = document.getElementById('customApiKeyInput').value.trim();
-      if (!url) {
-        alert('Please enter a valid Realtime Database URL.');
+      if (!url || url.includes('console.firebase.google.com')) {
+        alert('Please enter your Firebase Realtime Database URL (ending in .firebaseio.com or .firebasedatabase.app), NOT the Firebase Console web link.');
         return;
       }
       localStorage.setItem(CUSTOM_DB_URL_KEY, url);
@@ -1211,7 +1257,6 @@
         localStorage.removeItem(CUSTOM_API_KEY);
       }
       closeModal('configModal');
-      alert('Configuration updated! Reloading application to connect...');
       location.reload();
     }
 
@@ -1238,8 +1283,8 @@
         apiKey = document.getElementById('agentCustomApiKeyInput').value.trim();
       }
 
-      if (!url) {
-        alert('Please enter a valid Realtime Database URL.');
+      if (!url || url.includes('console.firebase.google.com')) {
+        alert('Please enter your Firebase Realtime Database URL (ending in .firebaseio.com or .firebasedatabase.app), NOT the Firebase Console web link.');
         return;
       }
       localStorage.setItem(CUSTOM_DB_URL_KEY, url);
@@ -1248,19 +1293,14 @@
       } else {
         localStorage.removeItem(CUSTOM_API_KEY);
       }
-      alert('Configuration updated! Reloading application to connect...');
       location.reload();
     }
 
     async function saveDB() {
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       if (isApplyingRemoteUpdate) return;
-
       if (firebaseDbRef) {
-        updateSyncBadge('SYNCING', 'Syncing...');
-        firebaseDbRef.set(db)
-          .then(() => updateSyncBadge('LIVE', 'Live Cloud Sync'))
-          .catch(() => updateSyncBadge('OFFLINE', 'Offline Queued'));
+        pushLocalDBToCloud();
       }
     }
 
