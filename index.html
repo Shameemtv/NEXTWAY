@@ -6,6 +6,12 @@
   <meta name="theme-color" content="#1e40af" />
   <title>NEXT WAY DELIVERY SERVICES LLC</title>
   <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icon-512.png" />
+  <link rel="apple-touch-icon" href="./icon-512.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NEXT WAY" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -44,7 +50,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200 flex items-center gap-1.5 cursor-pointer">
+        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200 flex items-center gap-1.5">
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="syncText">Offline Mode</span>
         </span>
@@ -963,14 +969,11 @@
     let currentUser = null;
     let deferredPrompt = null;
 
-    // Remove legacy forced long-polling flag so mobile uses fast, native WebSockets
-    localStorage.removeItem('NEXTWAY_FORCE_LONGPOLL');
-
-    // Automatically purge old Service Worker caches so changes take effect immediately
+    // Automatically purge stuck service worker caches so code updates instantly
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(k => {
-          if (k !== 'nextway-pwa-v5') caches.delete(k);
+          if (k === 'nextway-pwa-v1' || k === 'nextway-pwa-v4') caches.delete(k);
         });
       });
     }
@@ -980,12 +983,15 @@
       return num.toFixed(2);
     }
 
-    const APP_VERSION = 'sync-v5';
+    const APP_VERSION = 'sync-v6-fast';
     let lastRemoteAt = null, lastPushAt = null;
     let firebaseDbRef = null;
+    let firebasePhotosRef = null;
     let isApplyingRemoteUpdate = false;
-    let isPushingToCloud = false;
-    let pushSyncTimer = null;
+    let lastSyncedHashes = {};
+
+    // Clear stuck long-polling flag so Firebase uses fast WebSockets
+    localStorage.removeItem('NEXTWAY_FORCE_LONGPOLL');
 
     function updateSyncBadge(state, label) {
       const badge = document.getElementById('syncStatusBadge');
@@ -995,16 +1001,16 @@
 
       text.textContent = label;
       if (state === 'LIVE') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-900/80 text-emerald-100 border border-emerald-500 flex items-center gap-1.5 cursor-pointer';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-900/80 text-emerald-100 border border-emerald-500 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
       } else if (state === 'SYNCING') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1.5 cursor-pointer';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-pulse';
       } else if (state === 'ERROR') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900/90 text-red-100 border border-red-400 flex items-center gap-1.5 cursor-pointer';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900/90 text-red-100 border border-red-400 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-red-400 animate-pulse';
       } else {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-900/80 text-amber-100 border border-amber-500 flex items-center gap-1.5 cursor-pointer';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-900/80 text-amber-100 border border-amber-500 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-amber-400';
       }
     }
@@ -1096,7 +1102,7 @@
       };
     }
 
-    function normalizeCloudPayload(raw, fallbackUsers) {
+    function normalizeCloudPayload(raw) {
       if (!raw || typeof raw !== 'object') return null;
       const rawUsers = Array.isArray(raw.users) ? raw.users : Object.values(raw.users || {});
       const validUsers = rawUsers
@@ -1113,20 +1119,54 @@
 
       if (validUsers.length === 0) return null;
 
+      const localPhotosMap = {};
+      if (db && Array.isArray(db.consignments)) {
+        db.consignments.forEach(c => {
+          if (c && c.id && (c.pickupPhoto || c.deliveryPhoto)) {
+            localPhotosMap[c.id] = { pickupPhoto: c.pickupPhoto, deliveryPhoto: c.deliveryPhoto };
+          }
+        });
+      }
+
+      const incomingConsignments = (Array.isArray(raw.consignments) ? raw.consignments : Object.values(raw.consignments || {}))
+        .filter(Boolean)
+        .map(c => ({
+          ...c,
+          pickupPhoto: c.pickupPhoto || (localPhotosMap[c.id] ? localPhotosMap[c.id].pickupPhoto : null),
+          deliveryPhoto: c.deliveryPhoto || (localPhotosMap[c.id] ? localPhotosMap[c.id].deliveryPhoto : null)
+        }));
+
       return {
         settings: (raw.settings && typeof raw.settings === 'object')
           ? raw.settings
           : { companyName: 'NEXT WAY DELIVERY SERVICES LLC', otpMandatory: true },
         users: validUsers,
         vendors: Array.isArray(raw.vendors) ? raw.vendors : Object.values(raw.vendors || {}),
-        consignments: Array.isArray(raw.consignments) ? raw.consignments : Object.values(raw.consignments || {}),
+        consignments: incomingConsignments,
         vendorPayments: Array.isArray(raw.vendorPayments) ? raw.vendorPayments : Object.values(raw.vendorPayments || {}),
         vendorSettlementOtps: Array.isArray(raw.vendorSettlementOtps) ? raw.vendorSettlementOtps : Object.values(raw.vendorSettlementOtps || {})
       };
     }
 
+    function buildLightweightCloudState(sourceDb) {
+      return {
+        settings: sourceDb.settings,
+        users: sourceDb.users,
+        vendors: sourceDb.vendors,
+        consignments: (sourceDb.consignments || []).map(c => ({
+          ...c,
+          hasPickupPhoto: Boolean(c.pickupPhoto || c.hasPickupPhoto),
+          hasDeliveryPhoto: Boolean(c.deliveryPhoto || c.hasDeliveryPhoto),
+          pickupPhoto: null,
+          deliveryPhoto: null
+        })),
+        vendorPayments: sourceDb.vendorPayments || [],
+        vendorSettlementOtps: sourceDb.vendorSettlementOtps || []
+      };
+    }
+
     function applyIncomingCloudState(remoteData) {
-      const normalized = normalizeCloudPayload(remoteData, db ? db.users : []);
+      const normalized = normalizeCloudPayload(remoteData);
       if (!normalized || !Array.isArray(normalized.users) || normalized.users.length === 0) {
         return false;
       }
@@ -1135,9 +1175,15 @@
       try {
         lastRemoteAt = new Date();
         db = normalized;
-        db.vendorPayments = db.vendorPayments || [];
-        db.vendorSettlementOtps = db.vendorSettlementOtps || [];
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+        const light = buildLightweightCloudState(db);
+        Object.keys(light).forEach(k => {
+          lastSyncedHashes[k] = JSON.stringify(light[k]);
+        });
+
+        try {
+          localStorage.setItem(DB_KEY, JSON.stringify(db));
+        } catch (storageErr) {}
 
         if (currentUser) {
           const updatedSelf = db.users.find(u => u.id === currentUser.id || u.username.toLowerCase() === currentUser.username.toLowerCase());
@@ -1149,12 +1195,8 @@
             }
             currentUser = updatedSelf;
           }
-          try {
-            refreshOtpIndicators();
-            refreshAllViews();
-          } catch (renderErr) {
-            console.error('View refresh error (data was still synced):', renderErr);
-          }
+          refreshOtpIndicators();
+          refreshAllViews();
         }
       } finally {
         isApplyingRemoteUpdate = false;
@@ -1178,31 +1220,46 @@
 
     function pushLocalDBToCloud() {
       if (!firebaseDbRef || !db) return;
-      const cleanPayload = JSON.parse(JSON.stringify(db));
-      cleanPayload._lastUpdatedBy = currentUser ? currentUser.username : 'system';
-      cleanPayload._lastUpdatedAt = Date.now();
 
-      isPushingToCloud = true;
-      clearTimeout(pushSyncTimer);
-      pushSyncTimer = setTimeout(() => {
-        if (isPushingToCloud) updateSyncBadge('SYNCING', 'Syncing...');
-      }, 400);
+      const lightPayload = buildLightweightCloudState(db);
+      const deltaPatch = {};
+      let hasChanges = false;
 
-      firebaseDbRef.update(cleanPayload)
-        .then(() => {
-          isPushingToCloud = false;
-          clearTimeout(pushSyncTimer);
-          lastPushAt = new Date();
-          updateSyncBadge('LIVE', 'Live Cloud Sync');
-        })
-        .catch((err) => {
-          isPushingToCloud = false;
-          clearTimeout(pushSyncTimer);
-          console.error('Firebase write error:', err);
-          const code = err && err.code ? err.code : 'Write Blocked';
-          window.syncDetail = (err && err.message) || code;
-          updateSyncBadge('ERROR', `Sync Error: ${code}`);
+      Object.keys(lightPayload).forEach(key => {
+        const serialized = JSON.stringify(lightPayload[key]);
+        if (lastSyncedHashes[key] !== serialized) {
+          deltaPatch[key] = JSON.parse(serialized);
+          lastSyncedHashes[key] = serialized;
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        firebaseDbRef.update(deltaPatch)
+          .then(() => {
+            lastPushAt = new Date();
+            updateSyncBadge('LIVE', 'Live Cloud Sync');
+          })
+          .catch((err) => {
+            console.error('Firebase write error:', err);
+            const code = err && err.code ? err.code : 'Write Blocked';
+            window.syncDetail = (err && err.message) || code;
+            updateSyncBadge('ERROR', `Sync Error: ${code}`);
+          });
+      }
+
+      if (firebasePhotosRef && Array.isArray(db.consignments)) {
+        db.consignments.forEach(c => {
+          if (c.pickupPhoto && !c._pickupPhotoSynced) {
+            c._pickupPhotoSynced = true;
+            firebasePhotosRef.child(c.id).update({ pickupPhoto: c.pickupPhoto }).catch(() => {});
+          }
+          if (c.deliveryPhoto && !c._deliveryPhotoSynced) {
+            c._deliveryPhotoSynced = true;
+            firebasePhotosRef.child(c.id).update({ deliveryPhoto: c.deliveryPhoto }).catch(() => {});
+          }
         });
+      }
     }
 
     async function diagnoseCloud(url) {
@@ -1214,11 +1271,10 @@
           detail = 'Firebase answered 401/403: Realtime Database > Rules must allow read and write (".read": true, ".write": true), then Publish.';
         } else if (r.status === 404) {
           msg = 'Database not found - check URL';
-          detail = 'Firebase answered 404: the URL is wrong or the database was deleted. Copy the URL shown at the top of Realtime Database page.';
+          detail = 'Firebase answered 404: the URL is wrong or the database was deleted.';
         } else if (r.ok) {
-          msg = 'Connected (Verifying socket...)';
-          detail = null;
-          return;
+          msg = 'Connecting via fallback...';
+          detail = 'Database answers over HTTPS; establishing realtime channel.';
         } else {
           msg = 'DB error HTTP ' + r.status;
           detail = 'Unexpected response ' + r.status + ' ' + r.statusText;
@@ -1236,7 +1292,7 @@
       if (window.syncDetail) { alert(window.syncDetail); return; }
       const t = d => d ? d.toLocaleTimeString() : 'never';
       alert([
-        'SYNC INFO (compare on both phones)',
+        'SYNC INFO (Fast WebSocket Delta Mode)',
         'Version: ' + APP_VERSION,
         'Database: ' + (localStorage.getItem(CUSTOM_DB_URL_KEY) || 'NOT SET'),
         'Logged in: ' + (currentUser ? currentUser.username : '-'),
@@ -1278,10 +1334,8 @@
 
           if (typeof firebase === 'undefined' || !firebase.database) {
             updateSyncBadge('ERROR', 'Firebase SDK not loaded');
-            window.syncDetail = 'The Firebase script from cdnjs could not load. Check internet / ad-blocker, then reload.';
             return;
           }
-
           if (!firebase.apps.length) {
             firebase.initializeApp(configToUse);
           }
@@ -1289,6 +1343,7 @@
           updateSyncBadge('SYNCING', 'Connecting...');
           const fbDatabase = firebase.app().database(customUrl);
           firebaseDbRef = fbDatabase.ref('nextway_db');
+          firebasePhotosRef = fbDatabase.ref('nextway_photos');
 
           let gotFirstSnapshot = false;
           let hadError = false;
@@ -1310,10 +1365,6 @@
             gotFirstSnapshot = true;
             hadError = false;
             clearTimeout(connectTimeout);
-
-            // Prevent local echo while our own push is in progress
-            if (isPushingToCloud) return;
-
             let applied = false;
             try {
               applied = applyIncomingCloudState(snapshot.val());
@@ -1323,6 +1374,7 @@
             if (applied) {
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
+              lastSyncedHashes = {};
               pushLocalDBToCloud();
             }
           }, (err) => {
@@ -1333,20 +1385,6 @@
             window.syncDetail = (err && err.message) || code;
             updateSyncBadge('ERROR', code === 'PERMISSION_DENIED' ? 'Rules blocked (set read/write true)' : `Sync Error: ${code}`);
           });
-
-          // Mobile device wake-up / tab visibility listener
-          document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && firebaseDbRef) {
-              firebase.database().goOnline();
-              firebaseDbRef.once('value', (snap) => {
-                if (snap.exists() && !isPushingToCloud) {
-                  applyIncomingCloudState(snap.val());
-                  updateSyncBadge('LIVE', 'Live Cloud Sync');
-                }
-              });
-            }
-          });
-
           return;
         } catch (e) {
           console.error('Firebase init error:', e);
@@ -1419,7 +1457,9 @@
     }
 
     async function saveDB() {
-      localStorage.setItem(DB_KEY, JSON.stringify(db));
+      try {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+      } catch (e) {}
       if (isApplyingRemoteUpdate) return;
       if (firebaseDbRef) {
         pushLocalDBToCloud();
@@ -1910,7 +1950,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const maxDim = 480;
+          const maxDim = 640;
           let w = img.width;
           let h = img.height;
           if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
@@ -1919,7 +1959,7 @@
           canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
-          callback(canvas.toDataURL('image/jpeg', 0.55));
+          callback(canvas.toDataURL('image/jpeg', 0.72));
         };
         img.src = event.target.result;
       };
@@ -1979,6 +2019,7 @@
         c.assignedTo = currentUser.id;
       }
       c.pickupPhoto = tempPhotoData;
+      c._pickupPhotoSynced = false;
       c.status = 'Out for delivery';
       c.qrGenerated = true;
       c.pickedUpAt = new Date().toISOString();
@@ -2102,6 +2143,7 @@
 
       c.otpVerified = enteredOtp === c.otpCode;
       c.deliveryPhoto = tempPhotoData;
+      c._deliveryPhotoSynced = false;
       c.status = 'Delivered';
       c.deliveredAt = new Date().toISOString();
       saveDB();
@@ -2255,6 +2297,21 @@
     function showConsignmentDetails(consignmentId) {
       const c = db.consignments.find(x => x.id === consignmentId);
       if (!c) return;
+
+      if (firebasePhotosRef && (!c.pickupPhoto || !c.deliveryPhoto)) {
+        firebasePhotosRef.child(consignmentId).once('value').then(snap => {
+          const val = snap.val();
+          if (val) {
+            let updated = false;
+            if (val.pickupPhoto && !c.pickupPhoto) { c.pickupPhoto = val.pickupPhoto; updated = true; }
+            if (val.deliveryPhoto && !c.deliveryPhoto) { c.deliveryPhoto = val.deliveryPhoto; updated = true; }
+            if (updated && !document.getElementById('inspectModal').classList.contains('hidden')) {
+              showConsignmentDetails(consignmentId);
+            }
+          }
+        }).catch(() => {});
+      }
+
       const isPrepaid = Number(c.productAmount) === 0;
       const vendor = getVendorByCode(c.vendorCode);
 
