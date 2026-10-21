@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200 flex items-center gap-1.5">
+        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200 flex items-center gap-1.5 cursor-pointer">
           <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="syncText">Offline Mode</span>
         </span>
@@ -963,11 +963,14 @@
     let currentUser = null;
     let deferredPrompt = null;
 
-    // Automatically purge stuck v1 Service Worker caches so new code runs immediately
+    // Remove legacy forced long-polling flag so mobile uses fast, native WebSockets
+    localStorage.removeItem('NEXTWAY_FORCE_LONGPOLL');
+
+    // Automatically purge old Service Worker caches so changes take effect immediately
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(k => {
-          if (k === 'nextway-pwa-v1') caches.delete(k);
+          if (k !== 'nextway-pwa-v5') caches.delete(k);
         });
       });
     }
@@ -977,10 +980,12 @@
       return num.toFixed(2);
     }
 
-    const APP_VERSION = 'sync-v4';
+    const APP_VERSION = 'sync-v5';
     let lastRemoteAt = null, lastPushAt = null;
     let firebaseDbRef = null;
     let isApplyingRemoteUpdate = false;
+    let isPushingToCloud = false;
+    let pushSyncTimer = null;
 
     function updateSyncBadge(state, label) {
       const badge = document.getElementById('syncStatusBadge');
@@ -990,16 +995,16 @@
 
       text.textContent = label;
       if (state === 'LIVE') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-900/80 text-emerald-100 border border-emerald-500 flex items-center gap-1.5';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-900/80 text-emerald-100 border border-emerald-500 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
       } else if (state === 'SYNCING') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1.5';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-pulse';
       } else if (state === 'ERROR') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900/90 text-red-100 border border-red-400 flex items-center gap-1.5';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900/90 text-red-100 border border-red-400 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-red-400 animate-pulse';
       } else {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-900/80 text-amber-100 border border-amber-500 flex items-center gap-1.5';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-900/80 text-amber-100 border border-amber-500 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-amber-400';
       }
     }
@@ -1171,20 +1176,27 @@
       }
     }
 
-    let pushSyncTimer = null;
     function pushLocalDBToCloud() {
       if (!firebaseDbRef || !db) return;
       const cleanPayload = JSON.parse(JSON.stringify(db));
-      // Only show "Syncing..." if the write is slow (>1s); fast writes stay green.
+      cleanPayload._lastUpdatedBy = currentUser ? currentUser.username : 'system';
+      cleanPayload._lastUpdatedAt = Date.now();
+
+      isPushingToCloud = true;
       clearTimeout(pushSyncTimer);
-      pushSyncTimer = setTimeout(() => updateSyncBadge('SYNCING', 'Syncing...'), 1000);
-      firebaseDbRef.set(cleanPayload)
+      pushSyncTimer = setTimeout(() => {
+        if (isPushingToCloud) updateSyncBadge('SYNCING', 'Syncing...');
+      }, 400);
+
+      firebaseDbRef.update(cleanPayload)
         .then(() => {
+          isPushingToCloud = false;
           clearTimeout(pushSyncTimer);
           lastPushAt = new Date();
           updateSyncBadge('LIVE', 'Live Cloud Sync');
         })
         .catch((err) => {
+          isPushingToCloud = false;
           clearTimeout(pushSyncTimer);
           console.error('Firebase write error:', err);
           const code = err && err.code ? err.code : 'Write Blocked';
@@ -1204,21 +1216,16 @@
           msg = 'Database not found - check URL';
           detail = 'Firebase answered 404: the URL is wrong or the database was deleted. Copy the URL shown at the top of Realtime Database page.';
         } else if (r.ok) {
-          // Database reachable over HTTPS but live socket is not: retry using long-polling once.
-          if (localStorage.getItem('NEXTWAY_FORCE_LONGPOLL') !== '1') {
-            localStorage.setItem('NEXTWAY_FORCE_LONGPOLL', '1');
-            location.reload();
-            return;
-          }
-          msg = 'Reachable but socket blocked';
-          detail = 'Database answers over HTTPS but live connection is blocked by network/VPN/firewall. Try another network.';
+          msg = 'Connected (Verifying socket...)';
+          detail = null;
+          return;
         } else {
           msg = 'DB error HTTP ' + r.status;
           detail = 'Unexpected response ' + r.status + ' ' + r.statusText;
         }
       } catch (e) {
         msg = 'Cannot reach DB - check URL';
-        detail = 'Network request to ' + url + ' failed. Wrong domain, no internet, or blocked. (' + e.message + ')';
+        detail = 'Network request to ' + url + ' failed. (' + e.message + ')';
       }
       window.syncDetail = detail;
       updateSyncBadge('ERROR', msg);
@@ -1274,9 +1281,7 @@
             window.syncDetail = 'The Firebase script from cdnjs could not load. Check internet / ad-blocker, then reload.';
             return;
           }
-          if (localStorage.getItem('NEXTWAY_FORCE_LONGPOLL') === '1' && firebase.database.INTERNAL && firebase.database.INTERNAL.forceLongPolling) {
-            firebase.database.INTERNAL.forceLongPolling();
-          }
+
           if (!firebase.apps.length) {
             firebase.initializeApp(configToUse);
           }
@@ -1288,12 +1293,10 @@
           let gotFirstSnapshot = false;
           let hadError = false;
 
-          // If nothing happens in 8s, ask the database directly over HTTPS to find out why.
           const connectTimeout = setTimeout(() => {
             if (!gotFirstSnapshot && !hadError) diagnoseCloud(customUrl);
           }, 8000);
 
-          // Real-time connection status (green only while actually connected)
           fbDatabase.ref('.info/connected').on('value', (snap) => {
             if (hadError || !gotFirstSnapshot) return;
             if (snap.val() === true) {
@@ -1307,6 +1310,10 @@
             gotFirstSnapshot = true;
             hadError = false;
             clearTimeout(connectTimeout);
+
+            // Prevent local echo while our own push is in progress
+            if (isPushingToCloud) return;
+
             let applied = false;
             try {
               applied = applyIncomingCloudState(snapshot.val());
@@ -1316,7 +1323,6 @@
             if (applied) {
               updateSyncBadge('LIVE', 'Live Cloud Sync');
             } else {
-              // Cloud is empty (or invalid): seed it from this device
               pushLocalDBToCloud();
             }
           }, (err) => {
@@ -1327,6 +1333,20 @@
             window.syncDetail = (err && err.message) || code;
             updateSyncBadge('ERROR', code === 'PERMISSION_DENIED' ? 'Rules blocked (set read/write true)' : `Sync Error: ${code}`);
           });
+
+          // Mobile device wake-up / tab visibility listener
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && firebaseDbRef) {
+              firebase.database().goOnline();
+              firebaseDbRef.once('value', (snap) => {
+                if (snap.exists() && !isPushingToCloud) {
+                  applyIncomingCloudState(snap.val());
+                  updateSyncBadge('LIVE', 'Live Cloud Sync');
+                }
+              });
+            }
+          });
+
           return;
         } catch (e) {
           console.error('Firebase init error:', e);
@@ -1890,7 +1910,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const maxDim = 640;
+          const maxDim = 480;
           let w = img.width;
           let h = img.height;
           if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
@@ -1899,7 +1919,7 @@
           canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
-          callback(canvas.toDataURL('image/jpeg', 0.72));
+          callback(canvas.toDataURL('image/jpeg', 0.55));
         };
         img.src = event.target.result;
       };
