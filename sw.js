@@ -1,15 +1,22 @@
-const CACHE_NAME = 'nextway-pwa-v5';
-const ASSETS = [
+const CACHE_NAME = 'nextway-pwa-v6';
+const LOCAL_ASSETS = [
+  './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of LOCAL_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn('SW cache skip:', asset, err);
+        }
+      }
+    })
   );
   self.skipWaiting();
 });
@@ -23,18 +30,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Network-first so updated HTML/JS always loads when online
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
-  // Never intercept Firebase realtime traffic or non-GET requests
-  if (event.request.method !== 'GET' || /firebaseio\.com|firebasedatabase\.app|googleapis\.com/.test(url)) {
+
+  if (
+    event.request.method !== 'GET' ||
+    /firebaseio\.com|firebasedatabase\.app|googleapis\.com|gstatic\.com/.test(url)
+  ) {
     return;
   }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))
