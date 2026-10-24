@@ -22,7 +22,6 @@
       --color-grey-bg: #f8fafc;
       --color-grey-border: #e2e8f0;
       --color-yellow: #facc15;
-      --color-yellow-hover: #eab308;
     }
     body {
       background-color: var(--color-grey-bg);
@@ -48,64 +47,45 @@
       }
       .no-print { display: none !important; }
     }
-    /* Smooth card transitions */
-    .app-card {
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .app-card:active {
-      transform: scale(0.99);
-    }
+    .app-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .app-card:active { transform: scale(0.99); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-yellow-300 selection:text-slate-900">
 
-  <!-- TOP HEADER (NAVY & YELLOW ACCENT) -->
+  <!-- TOP HEADER -->
   <header class="bg-[#0a192f] text-white sticky top-0 z-40 border-b border-[#233554] shadow-md no-print">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between">
       <div class="flex items-center space-x-2.5">
-        <div class="bg-yellow-400 text-[#0a192f] font-black px-2.5 py-1 rounded-lg text-sm sm:text-base tracking-tighter shadow-sm flex items-center justify-center">
-          NW
-        </div>
+        <div class="bg-yellow-400 text-[#0a192f] font-black px-2.5 py-1 rounded-lg text-sm sm:text-base tracking-tighter shadow-sm flex items-center justify-center">NW</div>
         <div>
           <h1 class="font-extrabold text-xs sm:text-sm tracking-tight leading-tight text-white flex items-center gap-1.5">
             NEXT WAY <span class="hidden sm:inline font-medium text-slate-300">| Logistics Portal</span>
           </h1>
-          <p id="headerSub" class="text-[10px] text-yellow-400/90 font-medium">Realtime Cloud Dispatch</p>
+          <p class="text-[10px] text-yellow-400/90 font-medium">Realtime Cloud Dispatch</p>
         </div>
       </div>
-
       <div class="flex items-center gap-2">
         <!-- Live Sync Status Badge -->
         <button id="syncStatusBadge" onclick="showSyncDiagnostics()" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#112240] text-slate-200 border border-[#233554] flex items-center gap-1.5 active:scale-95 transition">
-          <span id="syncDot" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-          <span id="syncText">Connecting...</span>
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span id="syncText">Offline</span>
         </button>
-
         <button onclick="openConfigModal()" title="Database Configuration" class="bg-[#112240] hover:bg-[#233554] text-yellow-400 text-xs px-2.5 py-1.5 rounded-lg border border-[#233554] font-semibold transition flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
           <span class="hidden sm:inline">DB Cloud</span>
         </button>
-
-        <button id="accountSettingsBtn" onclick="openAccountModal()" class="hidden bg-[#112240] hover:bg-[#233554] text-white text-xs px-2.5 py-1.5 rounded-lg border border-[#233554]">
-          Profile
-        </button>
-
-        <button id="logoutBtn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg">
-          Exit
-        </button>
+        <button id="accountSettingsBtn" onclick="openAccountModal()" class="hidden bg-[#112240] hover:bg-[#233554] text-white text-xs px-2.5 py-1.5 rounded-lg border border-[#233554]">Profile</button>
+        <button id="logoutBtn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg">Exit</button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN APP CONTAINER -->
   <main class="max-w-7xl mx-auto p-3 sm:p-5 flex-1 w-full mb-16 sm:mb-6">
 
     <!-- ================= AUTHENTICATION VIEW ================= -->
     <section id="authView" class="max-w-md mx-auto mt-6 sm:mt-12 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8">
       <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0a192f] text-yellow-400 font-black text-2xl shadow-md mb-3">
-          NW
-        </div>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0a192f] text-yellow-400 font-black text-2xl shadow-md mb-3">NW</div>
         <h2 class="text-lg sm:text-xl font-extrabold text-[#0a192f]">NEXT WAY DELIVERY</h2>
         <p class="text-xs text-slate-500 font-medium mt-1">Multi-Device Unified Logistics Console</p>
       </div>
@@ -113,7 +93,7 @@
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Username</label>
-          <input id="loginUsername" type="text" required placeholder="NEXTWAY or agent1" autocomplete="username"
+          <input id="loginUsername" type="text" required placeholder="Enter username" autocomplete="username"
             class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-yellow-400 focus:border-[#0a192f] focus:outline-none text-sm bg-slate-50 font-medium" />
         </div>
         <div>
@@ -124,7 +104,7 @@
         <div id="loginError" class="hidden text-xs text-red-700 bg-red-50 p-2.5 rounded-xl border border-red-200 font-medium"></div>
 
         <button type="submit" class="w-full bg-[#0a192f] hover:bg-[#112240] text-yellow-400 font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-          <span>Sign In to Mobile System</span>
+          <span>Sign In</span>
         </button>
       </form>
 
@@ -136,26 +116,16 @@
           Link Cloud DB
         </button>
       </div>
-
-      <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1.5 bg-slate-50 p-3 rounded-xl border">
-        <p class="font-bold text-slate-700">Default Accounts:</p>
-        <p>• Admin: <code class="text-blue-900 font-semibold bg-white px-1.5 py-0.5 rounded border">NEXTWAY</code> / <code class="text-blue-900 font-semibold bg-white px-1.5 py-0.5 rounded border">admin123</code></p>
-        <p>• Agent: <code class="text-blue-900 font-semibold bg-white px-1.5 py-0.5 rounded border">agent1</code> / <code class="text-blue-900 font-semibold bg-white px-1.5 py-0.5 rounded border">agent123</code></p>
-      </div>
     </section>
 
-    <!-- ================= WORKSPACE (LOGGED IN) ================= -->
+    <!-- ================= WORKSPACE ================= -->
     <section id="appView" class="hidden space-y-4">
 
-      <!-- AGENT QUICK STATS WIDGET -->
       <div id="agentDashboardBanner" class="hidden grid grid-cols-2 gap-3 no-print">
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Pending Tasks</p>
             <h3 id="agentPendingCount" class="text-xl sm:text-2xl font-black text-yellow-600 mt-0.5">0</h3>
-          </div>
-          <div class="p-2.5 bg-yellow-50 text-yellow-700 rounded-xl">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
         </div>
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
@@ -163,13 +133,9 @@
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Completed</p>
             <h3 id="agentCompletedCount" class="text-xl sm:text-2xl font-black text-emerald-600 mt-0.5">0</h3>
           </div>
-          <div class="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          </div>
         </div>
       </div>
 
-      <!-- AGENT OTP HANDOVER ALERT -->
       <div id="agentOtpSubmissionCard" class="hidden bg-yellow-50 border border-yellow-300 rounded-2xl p-3.5 space-y-2 no-print">
         <div class="flex items-center justify-between">
           <h4 class="font-bold text-xs sm:text-sm text-[#0a192f]">Vendor Net Cash Handover</h4>
@@ -179,33 +145,18 @@
         <div id="agentPendingOtpsList" class="space-y-2 pt-1"></div>
       </div>
 
-      <!-- DESKTOP TOP NAV TABS (HIDDEN ON PHONES FOR CLEAN APP EXPERIENCE) -->
       <nav class="hidden sm:flex bg-[#0a192f] text-white rounded-2xl p-1.5 shadow-md border border-[#233554] overflow-x-auto gap-1 text-xs no-print">
-        <button onclick="switchTab('consignments')" id="tab-consignments" class="px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white tab-active">
-          Consignments
-        </button>
+        <button onclick="switchTab('consignments')" id="tab-consignments" class="px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white tab-active">Consignments</button>
         <button onclick="switchTab('confirmations')" id="tab-confirmations" class="px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white flex items-center gap-1.5">
-          <span>Amount Approvals</span>
-          <span id="confirmBadge" class="px-1.5 py-0.2 rounded-full bg-yellow-400 text-[#0a192f] text-[10px] font-black">0</span>
+          <span>Amount Approvals</span><span id="confirmBadge" class="px-1.5 py-0.2 rounded-full bg-yellow-400 text-[#0a192f] text-[10px] font-black">0</span>
         </button>
-        <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">
-          Vendors
-        </button>
-        <button onclick="switchTab('agents')" id="tab-agents" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">
-          Delivery Staff
-        </button>
-        <button onclick="switchTab('agent-reports')" id="tab-agent-reports" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">
-          Daily Reports
-        </button>
-        <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">
-          Invoices & Settlements
-        </button>
-        <button onclick="switchTab('system')" id="tab-system" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">
-          Cloud & Backup
-        </button>
+        <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">Vendors</button>
+        <button onclick="switchTab('agents')" id="tab-agents" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">Delivery Staff</button>
+        <button onclick="switchTab('agent-reports')" id="tab-agent-reports" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">Daily Reports</button>
+        <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">Invoices & Settlements</button>
+        <button onclick="switchTab('system')" id="tab-system" class="admin-only px-4 py-2 rounded-xl whitespace-nowrap font-bold text-slate-300 hover:text-white">Cloud & Backup</button>
       </nav>
 
-      <!-- ACTIVE ROLE STATUS & SEARCH BAR -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 no-print">
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <span id="roleBadge" class="px-3 py-1 rounded-xl text-xs font-bold bg-[#0a192f] text-yellow-400"></span>
@@ -217,15 +168,12 @@
         </div>
 
         <div class="flex items-center gap-2 w-full md:w-auto">
-          <input id="globalConsignmentSearch" type="text" placeholder="Search Parcel ID (QR / Details)..."
-            class="w-full md:w-64 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-400" />
-          <button onclick="inspectConsignmentById()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl shrink-0">
-            Inspect
-          </button>
+          <input id="globalConsignmentSearch" type="text" placeholder="Search Parcel ID..." class="w-full md:w-64 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+          <button onclick="inspectConsignmentById()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl shrink-0">Inspect</button>
         </div>
       </div>
 
-      <!-- TAB 1: CONSIGNMENTS & DISPATCH -->
+      <!-- TAB 1: CONSIGNMENTS -->
       <div id="panel-consignments" class="space-y-3">
         <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
           <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -241,15 +189,11 @@
             <div id="adminAgentSlicerWrap" class="hidden">
               <select id="filterAgentSlicer" onchange="renderConsignments()" class="text-xs border border-slate-300 rounded-xl px-2.5 py-2 bg-white font-medium"></select>
             </div>
-            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter customer, ID, phone..."
-              class="text-xs border border-slate-300 rounded-xl px-3 py-2 flex-1 sm:w-48" />
+            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter..." class="text-xs border border-slate-300 rounded-xl px-3 py-2 flex-1 sm:w-48" />
           </div>
-          <button onclick="openNewConsignmentModal()" class="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-[#0a192f] text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition">
-            + New Consignment
-          </button>
+          <button onclick="openNewConsignmentModal()" class="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-[#0a192f] text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition">+ New Consignment</button>
         </div>
 
-        <!-- CONSIGNMENTS CARD GRID -->
         <div id="consignmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
@@ -257,7 +201,6 @@
       <div id="panel-confirmations" class="hidden space-y-3">
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
           <h3 class="font-bold text-sm sm:text-base text-[#0a192f]">Price Modification Approvals</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Admin changes to product prices or fees require delivery agent confirmation.</p>
           <div id="confirmationsList" class="mt-4 space-y-2.5"></div>
         </div>
       </div>
@@ -265,270 +208,88 @@
       <!-- TAB 3: PRODUCT VENDORS -->
       <div id="panel-vendors" class="hidden space-y-3">
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
-          <input id="vendorCodeSearch" oninput="renderVendors()" type="text" placeholder="Search Vendor Name or Code..."
-            class="text-xs border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-64" />
-          <div class="flex gap-2">
-            <button onclick="exportVendorsExcel(true)" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-xl">
-              Export Excel
-            </button>
-            <button onclick="openVendorModal()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl">
-              + Add Vendor
-            </button>
-          </div>
+          <input id="vendorCodeSearch" oninput="renderVendors()" type="text" placeholder="Search Vendor Name or Code..." class="text-xs border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-64" />
+          <button onclick="openVendorModal()" class="bg-[#0a192f] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl">+ Add Vendor</button>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
-              <tr>
-                <th class="p-3">Code</th>
-                <th class="p-3">Vendor Name</th>
-                <th class="p-3">Phone</th>
-                <th class="p-3">Pickup Address</th>
-                <th class="p-3">Orders</th>
-              </tr>
-            </thead>
-            <tbody id="vendorTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-          </table>
+          <table class="w-full text-left text-xs"><tbody id="vendorTableBody" class="divide-y divide-slate-100 font-medium"></tbody></table>
         </div>
       </div>
 
       <!-- TAB 4: DELIVERY PERSONNEL -->
       <div id="panel-agents" class="hidden space-y-3">
-        <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
-          <div>
-            <h3 class="font-bold text-sm text-[#0a192f]">Delivery Personnel Accounts</h3>
-            <p class="text-xs text-slate-500">Add phone numbers and credentials for team members.</p>
-          </div>
-          <button onclick="openAgentModal()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl">
-            + Add Staff Account
-          </button>
+        <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex justify-between gap-2.5">
+          <button onclick="openAgentModal()" class="bg-[#0a192f] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl">+ Add Staff Account</button>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
-              <tr>
-                <th class="p-3">ID</th>
-                <th class="p-3">Full Name</th>
-                <th class="p-3">Username</th>
-                <th class="p-3">Mobile Phone</th>
-                <th class="p-3">Status</th>
-                <th class="p-3">Orders</th>
-                <th class="p-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="agentTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-          </table>
+          <table class="w-full text-left text-xs"><tbody id="agentTableBody" class="divide-y divide-slate-100 font-medium"></tbody></table>
         </div>
       </div>
 
       <!-- TAB 5: AGENT DAILY REPORTS -->
       <div id="panel-agent-reports" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 no-print">
-          <h3 class="font-bold text-sm text-[#0a192f]">Agent Daily Delivery & Settlement Report</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">Select Delivery Agent</label>
-              <select id="agentReportSelect" onchange="generateAgentDailyReport()" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white"></select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">Date</label>
-              <input id="agentReportDate" type="date" onchange="generateAgentDailyReport()" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">Status Scope</label>
-              <select id="agentReportStatus" onchange="generateAgentDailyReport()" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white">
-                <option value="Delivered">Delivered Only (Settlement)</option>
-                <option value="ALL">All Statuses</option>
-              </select>
-            </div>
-          </div>
           <div class="flex gap-2">
-            <button onclick="printAgentDailyReport()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-4 py-2 rounded-xl">
-              Print / PDF
-            </button>
-            <button onclick="exportAgentDailyExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-xl">
-              Excel (.xlsx)
-            </button>
-          </div>
-        </div>
-
-        <div id="printableAgentReport" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between border-b pb-3">
-            <div>
-              <h2 class="text-base sm:text-lg font-black text-[#0a192f]">NEXT WAY DELIVERY SERVICES LLC</h2>
-              <p class="text-xs text-slate-500">Official Daily Agent Settlement Sheet</p>
-            </div>
-            <div class="text-right">
-              <p id="arAgentNameDisplay" class="text-xs sm:text-sm font-bold text-slate-900"></p>
-              <p id="arDateDisplay" class="text-xs text-slate-600 font-semibold"></p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div class="p-3 rounded-xl bg-slate-50 border">
-              <p class="text-[11px] text-slate-500 font-medium">Deliveries</p>
-              <p id="arTotalCount" class="text-base font-bold text-slate-900">0</p>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50 border">
-              <p class="text-[11px] text-slate-500 font-medium">Product COD</p>
-              <p id="arTotalProduct" class="text-base font-bold text-emerald-700">0.00</p>
-            </div>
-            <div class="p-3 rounded-xl bg-yellow-50 border border-yellow-300">
-              <p class="text-[11px] font-bold text-[#0a192f]">Amount to NEXT WAY</p>
-              <p id="arTotalNextWayFee" class="text-base font-black text-[#0a192f]">0.00</p>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-100 border">
-              <p class="text-[11px] text-slate-600 font-medium">Total Cash Collected</p>
-              <p id="arTotalCollected" class="text-base font-bold text-slate-900">0.00</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-100 text-slate-700 border-b">
-                <tr>
-                  <th class="p-2">Consignment</th>
-                  <th class="p-2">Customer</th>
-                  <th class="p-2">Status</th>
-                  <th class="p-2 text-right">Product Amount</th>
-                  <th class="p-2 text-right">Delivery Fee</th>
-                  <th class="p-2 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody id="arTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
+            <button onclick="printAgentDailyReport()" class="bg-[#0a192f] text-yellow-400 text-xs font-bold px-4 py-2 rounded-xl">Print / PDF</button>
           </div>
         </div>
       </div>
 
       <!-- TAB 6: VENDOR INVOICES & SETTLEMENTS -->
-      <div id="panel-invoices" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 no-print">
-          <h3 class="font-bold text-sm text-[#0a192f]">Vendor Settlement Statements</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">Select Vendor</label>
-              <select id="invVendorSelect" onchange="generateInvoicePreview()" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white"></select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">Period Filter</label>
-              <select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white">
-                <option value="ALL">All Records</option>
-                <option value="DATE">Specific Date</option>
-                <option value="MONTH">Specific Month</option>
-              </select>
-            </div>
-            <div id="invSingleDateWrap" class="hidden">
-              <label id="invSingleLabel" class="block text-[11px] font-bold text-slate-600 mb-1">Select Value</label>
-              <input id="invSingleInput" onchange="generateInvoicePreview()" type="date" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2" />
-            </div>
-          </div>
-          <div class="flex flex-wrap gap-2 pt-1">
-            <button onclick="printVendorInvoice()" class="bg-[#0a192f] text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-xl">Print PDF</button>
-            <button onclick="exportInvoiceExcel()" class="bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl">Download Excel</button>
-            <button onclick="shareInvoiceWhatsApp()" class="bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl">WhatsApp Summary</button>
-            <button onclick="openVendorPaymentModal()" class="bg-yellow-400 text-[#0a192f] text-xs font-extrabold px-3.5 py-2 rounded-xl">+ Record Payment</button>
-            <button onclick="openGenerateVendorOtpModal()" class="bg-slate-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl">+ Vendor OTP</button>
-          </div>
-        </div>
+      <div id="panel-invoices" class="hidden space-y-4"></div>
 
-        <div id="printableInvoice" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between border-b pb-3">
-            <div>
-              <h2 class="text-base sm:text-lg font-black text-[#0a192f]">NEXT WAY DELIVERY SERVICES LLC</h2>
-              <p id="invContactPhoneDisplay" class="text-xs text-slate-500 font-medium"></p>
-            </div>
-            <div class="text-right">
-              <p id="invVendorHeader" class="text-xs sm:text-sm font-bold text-slate-900"></p>
-              <p id="invPeriodHeader" class="text-xs text-slate-600"></p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div class="p-3 rounded-xl bg-slate-50 border">
-              <p class="text-[11px] text-slate-500">Orders</p>
-              <p id="invCount" class="text-base font-bold text-slate-900">0</p>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50 border">
-              <p class="text-[11px] text-slate-500">Collected</p>
-              <p id="invTotalProduct" class="text-base font-bold text-emerald-700">0.00</p>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50 border">
-              <p class="text-[11px] text-slate-500">Settled</p>
-              <p id="invSettledAmount" class="text-base font-bold text-blue-700">0.00</p>
-            </div>
-            <div class="p-3 rounded-xl bg-yellow-50 border border-yellow-300">
-              <p id="invNetLabel" class="text-[11px] font-bold text-[#0a192f]">Net Balance</p>
-              <p id="invNetAmount" class="text-base font-black text-[#0a192f]">0.00</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-100 text-slate-700 border-b">
-                <tr>
-                  <th class="p-2">Date</th>
-                  <th class="p-2">ID</th>
-                  <th class="p-2">Customer</th>
-                  <th class="p-2">Status</th>
-                  <th class="p-2 text-right">Product Amount</th>
-                </tr>
-              </thead>
-              <tbody id="invTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 7: BACKUP & SYSTEM (ADMIN) -->
+      <!-- TAB 7: BACKUP & SYSTEM -->
       <div id="panel-system" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
             <h3 class="font-bold text-sm text-[#0a192f]">Export System Backup</h3>
-            <p class="text-xs text-slate-600">Download complete snapshot of consignments, vendors, and ledger data to JSON file.</p>
-            <button onclick="downloadBackup()" class="bg-[#0a192f] hover:bg-[#112240] text-yellow-400 text-xs font-bold px-4 py-2 rounded-xl">
-              Download Backup (.json)
-            </button>
-          </div>
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
-            <h3 class="font-bold text-sm text-[#0a192f]">Restore Database</h3>
-            <p class="text-xs text-slate-600">Upload a saved snapshot to recover records.</p>
-            <input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)"
-              class="block w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-[#0a192f] file:text-yellow-400" />
+            <button onclick="downloadBackup()" class="bg-[#0a192f] text-yellow-400 text-xs font-bold px-4 py-2 rounded-xl">Download Backup (.json)</button>
           </div>
         </div>
       </div>
-
     </section>
   </main>
 
-  <!-- ================= MOBILE BOTTOM NAVIGATION (NATIVE APP FEEL) ================= -->
+  <!-- ================= MOBILE BOTTOM NAVIGATION ================= -->
   <nav id="mobileBottomNav" class="hidden fixed bottom-0 inset-x-0 bg-[#0a192f] text-slate-400 border-t border-[#233554] z-50 sm:hidden flex items-center justify-around py-2 px-1 text-[10px] font-bold shadow-2xl no-print">
-    <button onclick="switchTab('consignments')" class="flex flex-col items-center gap-0.5 active:scale-95 text-yellow-400">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      <span>Parcels</span>
-    </button>
-    <button onclick="switchTab('confirmations')" class="flex flex-col items-center gap-0.5 active:scale-95 text-slate-300">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      <span>Approvals</span>
-    </button>
-    <button onclick="switchTab('vendors')" class="admin-only flex flex-col items-center gap-0.5 active:scale-95 text-slate-300">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-      <span>Vendors</span>
-    </button>
-    <button onclick="switchTab('invoices')" class="admin-only flex flex-col items-center gap-0.5 active:scale-95 text-slate-300">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      <span>Finance</span>
-    </button>
-    <button onclick="openConfigModal()" class="flex flex-col items-center gap-0.5 active:scale-95 text-slate-300">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-      <span>Sync Cloud</span>
-    </button>
+    <button onclick="switchTab('consignments')" class="flex flex-col items-center gap-0.5 active:scale-95 text-yellow-400"><span>Parcels</span></button>
+    <button onclick="switchTab('confirmations')" class="flex flex-col items-center gap-0.5 active:scale-95 text-slate-300"><span>Approvals</span></button>
+    <button onclick="switchTab('vendors')" class="admin-only flex flex-col items-center gap-0.5 active:scale-95 text-slate-300"><span>Vendors</span></button>
+    <button onclick="switchTab('invoices')" class="admin-only flex flex-col items-center gap-0.5 active:scale-95 text-slate-300"><span>Finance</span></button>
+    <button onclick="openConfigModal()" class="flex flex-col items-center gap-0.5 active:scale-95 text-slate-300"><span>Sync Cloud</span></button>
   </nav>
 
   <!-- ================= MODALS ================= -->
+
+  <!-- MODAL: FORGOT PASSWORD -->
+  <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-extrabold text-sm sm:text-base text-[#0a192f]">Reset Password</h3>
+        <button onclick="closeModal('forgotPasswordModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+      </div>
+      <form onsubmit="handleForgotPassword(event)" class="space-y-3">
+        <p class="text-slate-600">Enter your username and registered mobile phone number to reset your password.</p>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Username</label>
+          <input id="fpUsername" type="text" required class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Registered Phone</label>
+          <input id="fpPhone" type="text" required placeholder="+971..." class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">New Password</label>
+          <input id="fpNewPass" type="password" required class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+        <div id="fpError" class="hidden text-xs text-red-700 bg-red-50 p-2.5 rounded-xl border border-red-200 font-medium"></div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-xl border font-semibold">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-[#0a192f] text-yellow-400 font-bold">Reset Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL: CLOUD PAIRING / CONFIG -->
   <div id="configModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3">
@@ -538,14 +299,9 @@
         <button onclick="closeModal('configModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
       </div>
       <div class="space-y-3">
-        <p class="text-slate-600">Enter your Firebase Realtime Database URL to link multiple mobile devices in real time with zero cost:</p>
         <div>
           <label class="font-bold text-slate-700 block mb-1">Firebase Database URL</label>
           <input id="customDbUrlInput" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" class="w-full border rounded-xl px-3 py-2 text-xs" />
-        </div>
-        <div>
-          <label class="font-bold text-slate-700 block mb-1">Firebase API Key <span class="font-normal text-slate-400">(Optional)</span></label>
-          <input id="customApiKeyInput" type="text" placeholder="AIzaSy..." class="w-full border rounded-xl px-3 py-2 text-xs" />
         </div>
         <div class="flex justify-end gap-2 pt-2 border-t">
           <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-xl border font-semibold">Cancel</button>
@@ -573,15 +329,13 @@
           </div>
           <div>
             <label class="font-bold block mb-1">Product Vendor</label>
-            <select id="cVendorSelect" required onchange="syncVendorPickupAddress()" class="w-full border rounded-xl px-2.5 py-1.5 bg-white"></select>
+            <select id="cVendorSelect" required class="w-full border rounded-xl px-2.5 py-1.5 bg-white"></select>
           </div>
         </div>
-
         <div>
           <label class="font-bold block mb-1">Pickup Address</label>
           <input id="cPickupFrom" type="text" required class="w-full border rounded-xl px-2.5 py-1.5 bg-slate-50" />
         </div>
-
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold block mb-1">Customer Name</label>
@@ -592,12 +346,10 @@
             <input id="cCustomerPhone" type="text" required placeholder="+9715..." class="w-full border rounded-xl px-2.5 py-1.5" />
           </div>
         </div>
-
         <div>
           <label class="font-bold block mb-1">Delivery Destination</label>
           <input id="cDeliveryAddress" type="text" required class="w-full border rounded-xl px-2.5 py-1.5" />
         </div>
-
         <div class="grid grid-cols-3 gap-2">
           <div>
             <label class="font-bold block mb-1">Product (COD)</label>
@@ -612,7 +364,6 @@
             <select id="cAgentSelect" class="w-full border rounded-xl px-2 py-1.5 bg-white"></select>
           </div>
         </div>
-
         <div class="flex justify-end gap-2 pt-2 border-t">
           <button type="button" onclick="closeModal('consignmentModal')" class="px-4 py-2 rounded-xl border">Cancel</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-yellow-400 text-[#0a192f] font-extrabold">Save Parcel</button>
@@ -621,7 +372,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ACTIONS (DELIVERY / RETURN / PICKUP) -->
   <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 my-auto text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -632,7 +382,6 @@
     </div>
   </div>
 
-  <!-- MODAL: INSPECT / QR CODE -->
   <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 my-auto text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -646,71 +395,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD VENDOR -->
-  <div id="vendorModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 text-xs">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-sm text-[#0a192f]">Register Vendor</h3>
-        <button onclick="closeModal('vendorModal')" class="text-slate-400 text-lg font-bold">✕</button>
-      </div>
-      <form onsubmit="saveVendor(event)" class="space-y-2.5">
-        <div>
-          <label class="font-bold block mb-1">Vendor Code</label>
-          <input id="vCode" type="text" required placeholder="VND-105" class="w-full border rounded-xl px-3 py-2 uppercase" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">Company / Store Name</label>
-          <input id="vName" type="text" required class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">WhatsApp / Contact</label>
-          <input id="vPhone" type="text" required placeholder="+971..." class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">Default Pickup Address</label>
-          <input id="vAddress" type="text" required class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="closeModal('vendorModal')" class="px-4 py-2 rounded-xl border">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-yellow-400 text-[#0a192f] font-extrabold">Add Vendor</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD AGENT -->
-  <div id="agentModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 text-xs">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-sm text-[#0a192f]">Add Delivery Agent</h3>
-        <button onclick="closeModal('agentModal')" class="text-slate-400 text-lg font-bold">✕</button>
-      </div>
-      <form onsubmit="saveAgent(event)" class="space-y-2.5">
-        <div>
-          <label class="font-bold block mb-1">Full Name</label>
-          <input id="aName" type="text" required class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">Login Username</label>
-          <input id="aUser" type="text" required class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">Mobile Number</label>
-          <input id="aPhone" type="text" required placeholder="+971..." class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div>
-          <label class="font-bold block mb-1">Password</label>
-          <input id="aPass" type="password" required class="w-full border rounded-xl px-3 py-2" />
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="closeModal('agentModal')" class="px-4 py-2 rounded-xl border">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-yellow-400 text-[#0a192f] font-extrabold">Create Agent</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- APPLICATION JAVASCRIPT ENGINE (WEBSOCKETS REALTIME) -->
   <script>
     const DB_KEY = 'NEXTWAY_DELIVERY_DB_V2';
     const CUSTOM_DB_URL_KEY = 'NEXTWAY_CUSTOM_RTDB_URL';
@@ -720,27 +404,28 @@
     let firebaseDbRef = null;
     let isPushingToCloud = false;
 
-    function formatAmt(v) {
-      return (Number(v) || 0).toFixed(2);
-    }
+    function formatAmt(v) { return (Number(v) || 0).toFixed(2); }
 
-    function updateSyncBadge(state, label) {
+    function updateSyncBadge(state) {
       const badge = document.getElementById('syncStatusBadge');
       const dot = document.getElementById('syncDot');
       const text = document.getElementById('syncText');
       if (!badge || !dot || !text) return;
 
-      text.textContent = label;
       if (state === 'LIVE') {
+        text.textContent = 'Online';
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
       } else if (state === 'SYNCING') {
+        text.textContent = 'Syncing...';
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#112240] text-yellow-300 border border-yellow-500 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
       } else if (state === 'ERROR') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-950 text-red-300 border border-red-500 flex items-center gap-1.5';
-        dot.className = 'w-2 h-2 rounded-full bg-red-400 animate-pulse';
+        text.textContent = 'Offline'; // Silently fail to offline mode
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-600 flex items-center gap-1.5';
+        dot.className = 'w-2 h-2 rounded-full bg-slate-400';
       } else {
+        text.textContent = 'Offline';
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-600 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-slate-400';
       }
@@ -765,34 +450,8 @@
           { id: 'USR-ADMIN', username: 'NEXTWAY', name: 'Operations Admin', role: 'ADMIN', phone: '+971500000001', passwordHash: adminHash, status: 'ACTIVE' },
           { id: 'AG-101', username: 'agent1', name: 'Ramesh Kumar', role: 'AGENT', phone: '+971500000002', passwordHash: agentHash, status: 'ACTIVE' }
         ],
-        vendors: [
-          { code: 'VND-001', name: 'Gulf Horizon Trading', phone: '+971501112233', address: 'Al Quoz Warehouse 14, Dubai' },
-          { code: 'VND-002', name: 'Oasis Retail Logistics', phone: '+971502223344', address: 'Electra Street, Abu Dhabi' }
-        ],
-        consignments: [
-          {
-            id: 'NW-901',
-            vendorCode: 'VND-001',
-            pickupFrom: 'Al Quoz Warehouse 14, Dubai',
-            customerName: 'Tariq Mansour',
-            customerPhone: '+971520000000',
-            deliveryAddress: 'Villa 14, Jumeirah 2, Dubai',
-            productAmount: 250,
-            deliveryCharge: 20,
-            pendingModification: null,
-            assignedTo: 'AG-101',
-            status: 'Delivered',
-            qrGenerated: true,
-            otpCode: '3482',
-            otpVerified: true,
-            pickupPhoto: null,
-            deliveryPhoto: null,
-            returnReason: '',
-            createdAt: new Date().toISOString().split('T')[0],
-            pickedUpAt: new Date().toISOString(),
-            deliveredAt: new Date().toISOString()
-          }
-        ],
+        vendors: [{ code: 'VND-001', name: 'Gulf Horizon Trading', phone: '+971501112233', address: 'Dubai' }],
+        consignments: [],
         vendorPayments: [],
         vendorSettlementOtps: []
       };
@@ -802,89 +461,65 @@
       if (!url) return '';
       let clean = url.trim().replace(/^["']|["']$/g, '');
       if (!/^https?:\/\//i.test(clean)) clean = 'https://' + clean;
-      try {
-        const parsed = new URL(clean);
-        return parsed.origin;
-      } catch (e) {
-        return clean.replace(/\/+$/, '');
-      }
+      try { return new URL(clean).origin; } catch (e) { return clean.replace(/\/+$/, ''); }
     }
 
     function pushLocalDBToCloud() {
       if (!firebaseDbRef || !db) return;
       isPushingToCloud = true;
-      updateSyncBadge('SYNCING', 'Syncing...');
+      updateSyncBadge('SYNCING');
       const payload = JSON.parse(JSON.stringify(db));
       payload._updatedBy = currentUser ? currentUser.username : 'system';
       payload._updatedAt = Date.now();
 
-      firebaseDbRef.update(payload)
-        .then(() => {
-          isPushingToCloud = false;
-          updateSyncBadge('LIVE', 'Live Sync');
-        })
-        .catch(err => {
-          isPushingToCloud = false;
-          console.error(err);
-          updateSyncBadge('ERROR', 'Write Denied');
-        });
+      firebaseDbRef.update(payload).then(() => {
+        isPushingToCloud = false;
+        updateSyncBadge('LIVE');
+      }).catch(err => {
+        isPushingToCloud = false;
+        updateSyncBadge('ERROR');
+      });
     }
 
     async function initDB() {
       const seedDB = await getDefaultSeedDB();
-      try {
-        db = JSON.parse(localStorage.getItem(DB_KEY)) || seedDB;
-      } catch (e) {
-        db = seedDB;
-      }
+      try { db = JSON.parse(localStorage.getItem(DB_KEY)) || seedDB; } catch (e) { db = seedDB; }
       db.vendorPayments = db.vendorPayments || [];
       db.vendorSettlementOtps = db.vendorSettlementOtps || [];
       localStorage.setItem(DB_KEY, JSON.stringify(db));
 
       const customUrl = sanitizeDatabaseUrl(localStorage.getItem(CUSTOM_DB_URL_KEY));
-      const customApiKey = localStorage.getItem(CUSTOM_API_KEY);
-
       if (customUrl && typeof firebase !== 'undefined') {
         try {
-          const config = { databaseURL: customUrl };
-          if (customApiKey) config.apiKey = customApiKey;
-          if (!firebase.apps.length) firebase.initializeApp(config);
+          if (!firebase.apps.length) firebase.initializeApp({ databaseURL: customUrl });
+          firebaseDbRef = firebase.app().database(customUrl).ref('nextway_db');
 
-          const fbDb = firebase.app().database(customUrl);
-          firebaseDbRef = fbDb.ref('nextway_db');
-
-          fbDb.ref('.info/connected').on('value', snap => {
-            if (snap.val() === true) {
-              updateSyncBadge('LIVE', 'Live Sync');
-            } else {
-              updateSyncBadge('SYNCING', 'Reconnecting...');
-            }
+          firebase.app().database().ref('.info/connected').on('value', snap => {
+            if (snap.val() === true) updateSyncBadge('LIVE');
+            else updateSyncBadge('SYNCING');
           });
 
           firebaseDbRef.on('value', snapshot => {
             if (isPushingToCloud) return;
             const val = snapshot.val();
-            if (val && Array.isArray(val.users || Object.values(val.users || {}))) {
+            
+            // Critical Fix: Do not let an empty cloud database wipe out local default login accounts!
+            if (val && val.users && (Array.isArray(val.users) ? val.users.length > 0 : Object.keys(val.users).length > 0)) {
               db.users = Array.isArray(val.users) ? val.users : Object.values(val.users);
               db.vendors = Array.isArray(val.vendors) ? val.vendors : Object.values(val.vendors || {});
               db.consignments = Array.isArray(val.consignments) ? val.consignments : Object.values(val.consignments || {});
               db.vendorPayments = Array.isArray(val.vendorPayments) ? val.vendorPayments : Object.values(val.vendorPayments || {});
-              db.vendorSettlementOtps = Array.isArray(val.vendorSettlementOtps) ? val.vendorSettlementOtps : Object.values(val.vendorSettlementOtps || {});
               db.settings = val.settings || db.settings;
               localStorage.setItem(DB_KEY, JSON.stringify(db));
               if (currentUser) refreshAllViews();
             } else {
+              // The cloud database is completely empty. Push our local seeded credentials up to it.
               pushLocalDBToCloud();
             }
-          }, err => {
-            console.error(err);
-            updateSyncBadge('ERROR', 'Rules Blocked');
-          });
-        } catch (e) {
-          updateSyncBadge('ERROR', 'Invalid DB URL');
-        }
+          }, err => { updateSyncBadge('ERROR'); });
+        } catch (e) { updateSyncBadge('ERROR'); }
       } else {
-        updateSyncBadge('OFFLINE', 'Offline Cache');
+        updateSyncBadge('OFFLINE');
       }
     }
 
@@ -894,26 +529,49 @@
     }
 
     function showSyncDiagnostics() {
-      const url = localStorage.getItem(CUSTOM_DB_URL_KEY) || 'NOT CONFIGURED';
-      alert(`SYNC STATUS:\nDatabase: ${url}\nActive User: ${currentUser ? currentUser.username : 'None'}\nCached Parcels: ${db.consignments.length}\nFirebase: ${firebaseDbRef ? 'Connected' : 'Standalone'}`);
+      alert(`Database: ${localStorage.getItem(CUSTOM_DB_URL_KEY) || 'Offline Mode'}\nActive User: ${currentUser ? currentUser.username : 'None'}`);
     }
 
     function openConfigModal() {
       document.getElementById('customDbUrlInput').value = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
-      document.getElementById('customApiKeyInput').value = localStorage.getItem(CUSTOM_API_KEY) || '';
       document.getElementById('configModal').classList.remove('hidden');
     }
 
     function saveCustomDatabaseUrl() {
       const url = sanitizeDatabaseUrl(document.getElementById('customDbUrlInput').value);
-      const key = document.getElementById('customApiKeyInput').value.trim();
-      if (!url) {
-        alert('Please provide a valid Firebase Database URL');
+      if (!url) { alert('Please provide a valid Firebase Database URL'); return; }
+      localStorage.setItem(CUSTOM_DB_URL_KEY, url);
+      location.reload();
+    }
+
+    // Forgot Password Flow Fix
+    function openForgotPasswordModal() {
+      document.getElementById('fpUsername').value = '';
+      document.getElementById('fpPhone').value = '';
+      document.getElementById('fpNewPass').value = '';
+      document.getElementById('fpError').classList.add('hidden');
+      document.getElementById('forgotPasswordModal').classList.remove('hidden');
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const uName = document.getElementById('fpUsername').value.trim();
+      const phone = document.getElementById('fpPhone').value.trim().replace(/\s+/g, '');
+      const newPass = document.getElementById('fpNewPass').value;
+      const errBox = document.getElementById('fpError');
+      errBox.classList.add('hidden');
+
+      const user = (db.users || []).find(u => u.username.toLowerCase() === uName.toLowerCase());
+      if (!user || (user.phone || '').replace(/\s+/g, '') !== phone) {
+        errBox.textContent = 'Username and registered mobile number do not match.';
+        errBox.classList.remove('hidden');
         return;
       }
-      localStorage.setItem(CUSTOM_DB_URL_KEY, url);
-      if (key) localStorage.setItem(CUSTOM_API_KEY, key);
-      location.reload();
+
+      user.passwordHash = await hashPassword(newPass);
+      saveDB();
+      closeModal('forgotPasswordModal');
+      alert('Password reset successfully! You can now sign in.');
     }
 
     // AUTHENTICATION
@@ -951,18 +609,12 @@
       document.getElementById('logoutBtn').classList.remove('hidden');
 
       const isAdmin = currentUser.role === 'ADMIN';
-      document.getElementById('roleBadge').textContent = isAdmin
-        ? `ADMIN: ${currentUser.username}`
-        : `AGENT: ${currentUser.name}`;
-
+      document.getElementById('roleBadge').textContent = isAdmin ? `ADMIN: ${currentUser.username}` : `AGENT: ${currentUser.name}`;
       document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin));
       document.getElementById('agentDashboardBanner').classList.toggle('hidden', isAdmin);
       document.getElementById('adminOtpControl').classList.toggle('hidden', !isAdmin);
-      document.getElementById('agentOtpBanner').classList.toggle('hidden', isAdmin);
-      document.getElementById('adminAgentSlicerWrap').classList.toggle('hidden', !isAdmin);
 
       refreshOtpIndicators();
-      populateAgentSlicer();
       switchTab('consignments');
       refreshAllViews();
     }
@@ -983,20 +635,11 @@
         if (el) el.classList.toggle('hidden', p !== t);
         if (tabBtn) tabBtn.classList.toggle('tab-active', p === t);
       });
-      if (t === 'agent-reports') populateAgentReportDropdowns(), generateAgentDailyReport();
-      if (t === 'invoices') populateInvoiceVendors(), generateInvoicePreview();
     }
 
     function refreshAllViews() {
       renderConsignments();
-      renderConfirmations();
-      if (currentUser.role === 'ADMIN') {
-        renderVendors();
-        renderAgents();
-      } else {
-        updateAgentStats();
-        renderAgentPendingOtps();
-      }
+      if (currentUser.role !== 'ADMIN') updateAgentStats();
     }
 
     function updateAgentStats() {
@@ -1008,18 +651,11 @@
     function renderConsignments() {
       const grid = document.getElementById('consignmentsGrid');
       const st = document.getElementById('filterStatus').value;
-      const sl = document.getElementById('filterAgentSlicer')?.value || 'ALL';
-      const q = (document.getElementById('filterSearchText')?.value || '').toLowerCase();
       const isAdmin = currentUser.role === 'ADMIN';
 
       const filtered = db.consignments.filter(c => {
         if (!isAdmin && c.assignedTo && c.assignedTo !== currentUser.id) return false;
         if (st !== 'ALL' && c.status !== st) return false;
-        if (isAdmin && sl !== 'ALL') {
-          if (sl === 'UNASSIGNED' && c.assignedTo) return false;
-          if (sl !== 'UNASSIGNED' && c.assignedTo !== sl) return false;
-        }
-        if (q && !`${c.id} ${c.customerName} ${c.customerPhone} ${c.pickupFrom}`.toLowerCase().includes(q)) return false;
         return true;
       });
 
@@ -1035,39 +671,11 @@
             <div>
               <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span class="font-black text-sm text-[#0a192f]">${c.id}</span>
-                <span class="text-[10px] px-2.5 py-0.5 rounded-full font-extrabold ${
-                  c.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' :
-                  c.status === 'Picked Up' ? 'bg-yellow-100 text-yellow-900 border border-yellow-300' :
-                  c.status === 'Returned' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'
-                }">${c.status}</span>
+                <span class="text-[10px] px-2.5 py-0.5 rounded-full font-extrabold ${c.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-900 border border-yellow-300'}">${c.status}</span>
               </div>
               <div class="text-xs space-y-1 text-slate-600 mt-2">
-                <p><strong>Vendor:</strong> ${v ? v.name : c.vendorCode}</p>
-                <p><strong>Customer:</strong> ${c.customerName} (${c.customerPhone})</p>
-                <p><strong>Deliver To:</strong> ${c.deliveryAddress}</p>
-              </div>
-              <div class="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between text-xs">
-                <div>
-                  <p class="font-bold text-[#0a192f]">Total: AED ${formatAmt(c.productAmount + c.deliveryCharge)}</p>
-                  <p class="text-[10px] text-slate-500">COD: ${formatAmt(c.productAmount)} | Fee: ${formatAmt(c.deliveryCharge)}</p>
-                </div>
-                ${isAdmin && c.status !== 'Delivered' ? `
-                  <button onclick="openAmountEdit('${c.id}')" class="text-blue-900 font-bold hover:underline">Edit</button>
-                ` : ''}
-              </div>
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 space-y-2">
-              <div class="grid grid-cols-2 gap-1.5 text-xs">
-                ${c.status !== 'Picked Up' && c.status !== 'Out for delivery' && c.status !== 'Delivered' ? `
-                  <button onclick="openPickupModal('${c.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-[#0a192f] font-extrabold py-2 rounded-xl">Pick Up</button>
-                ` : ''}
-                ${c.status === 'Picked Up' || c.status === 'Out for delivery' ? `
-                  <button onclick="openDeliveryModal('${c.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 rounded-xl">Delivered</button>
-                  <button onclick="openReturnModal('${c.id}')" class="bg-red-600 text-white font-bold py-2 rounded-xl">Return</button>
-                ` : ''}
-                <button onclick="sendWhatsAppStatus('${c.id}')" class="bg-green-600 text-white font-bold py-2 rounded-xl flex items-center justify-center gap-1">WhatsApp</button>
-                <button onclick="showConsignmentDetails('${c.id}')" class="bg-[#0a192f] text-yellow-400 font-bold py-2 rounded-xl">QR Code</button>
+                <p><strong>Customer:</strong> ${c.customerName}</p>
+                <p><strong>Total:</strong> AED ${formatAmt(c.productAmount + c.deliveryCharge)}</p>
               </div>
             </div>
           </div>
@@ -1075,141 +683,8 @@
       }).join('');
     }
 
-    function openNewConsignmentModal() {
-      document.getElementById('cIdInput').value = 'NW-' + Math.floor(1000 + Math.random() * 9000);
-      const vSel = document.getElementById('cVendorSelect');
-      vSel.innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
-      syncVendorPickupAddress();
-      const aSel = document.getElementById('cAgentSelect');
-      aSel.innerHTML = `<option value="">-- Pool (Unassigned) --</option>` +
-        db.users.filter(u => u.role === 'AGENT').map(a => `<option value="${a.id}">${a.name}</option>`).join('');
-      document.getElementById('consignmentModal').classList.remove('hidden');
-    }
-
-    function syncVendorPickupAddress() {
-      const code = document.getElementById('cVendorSelect').value;
-      const v = db.vendors.find(x => x.code === code);
-      if (v) document.getElementById('cPickupFrom').value = v.address;
-    }
-
-    function generateRandomConsignmentId() {
-      document.getElementById('cIdInput').value = 'NW-' + Math.floor(10000 + Math.random() * 90000);
-    }
-
-    function saveNewConsignment(e) {
-      e.preventDefault();
-      const id = document.getElementById('cIdInput').value.trim().toUpperCase();
-      if (db.consignments.some(c => c.id === id)) {
-        alert('Parcel ID already exists');
-        return;
-      }
-      db.consignments.unshift({
-        id,
-        vendorCode: document.getElementById('cVendorSelect').value,
-        pickupFrom: document.getElementById('cPickupFrom').value.trim(),
-        customerName: document.getElementById('cCustomerName').value.trim(),
-        customerPhone: document.getElementById('cCustomerPhone').value.trim(),
-        deliveryAddress: document.getElementById('cDeliveryAddress').value.trim(),
-        productAmount: parseFloat(document.getElementById('cProductAmt').value) || 0,
-        deliveryCharge: parseFloat(document.getElementById('cDeliveryFee').value) || 0,
-        assignedTo: document.getElementById('cAgentSelect').value || (currentUser.role === 'AGENT' ? currentUser.id : null),
-        status: 'Created',
-        qrGenerated: false,
-        otpCode: String(Math.floor(1000 + Math.random() * 9000)),
-        otpVerified: false,
-        createdAt: new Date().toISOString().split('T')[0]
-      });
-      saveDB();
-      closeModal('consignmentModal');
-      renderConsignments();
-    }
-
-    function openPickupModal(id) {
-      const c = db.consignments.find(x => x.id === id);
-      c.status = 'Out for delivery';
-      c.qrGenerated = true;
-      if (!c.assignedTo && currentUser.role === 'AGENT') c.assignedTo = currentUser.id;
-      saveDB();
-      renderConsignments();
-      showConsignmentDetails(id);
-    }
-
-    function openDeliveryModal(id) {
-      const c = db.consignments.find(x => x.id === id);
-      const otpMandatory = db.settings.otpMandatory;
-      document.getElementById('actionModalTitle').textContent = `Complete Delivery: ${id}`;
-      document.getElementById('actionModalBody').innerHTML = `
-        <div class="space-y-3">
-          <p class="font-bold text-slate-800">Collect Total: AED ${formatAmt(c.productAmount + c.deliveryCharge)}</p>
-          <div>
-            <label class="font-bold block mb-1">Customer Delivery OTP (${otpMandatory ? 'Mandatory' : 'Optional'})</label>
-            <input id="delivOtpInput" type="text" placeholder="4-digit OTP" class="w-full border rounded-xl px-3 py-2 text-xs font-mono font-bold" />
-          </div>
-          <button onclick="confirmDelivery('${id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl">Confirm Delivery</button>
-        </div>
-      `;
-      document.getElementById('actionModal').classList.remove('hidden');
-    }
-
-    function confirmDelivery(id) {
-      const c = db.consignments.find(x => x.id === id);
-      const otp = document.getElementById('delivOtpInput').value.trim();
-      if (db.settings.otpMandatory && otp !== c.otpCode) {
-        alert('Invalid OTP. Please verify with the customer.');
-        return;
-      }
-      c.status = 'Delivered';
-      c.deliveredAt = new Date().toISOString();
-      saveDB();
-      closeModal('actionModal');
-      renderConsignments();
-    }
-
-    function openReturnModal(id) {
-      const reason = prompt('Please enter the reason for return:');
-      if (!reason) return;
-      const c = db.consignments.find(x => x.id === id);
-      c.status = 'Returned';
-      c.returnReason = reason;
-      saveDB();
-      renderConsignments();
-    }
-
-    function sendWhatsAppStatus(id) {
-      const c = db.consignments.find(x => x.id === id);
-      const phone = c.customerPhone.replace(/[^0-9]/g, '');
-      const msg = `Hello ${c.customerName}, your consignment ${c.id} from NEXT WAY is ${c.status}. Total: AED ${formatAmt(c.productAmount + c.deliveryCharge)}. Verification OTP: ${c.otpCode}`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function showConsignmentDetails(id) {
-      const c = db.consignments.find(x => x.id === id);
-      document.getElementById('inspectTitle').textContent = `Consignment: ${c.id}`;
-      document.getElementById('inspectContent').innerHTML = `
-        <div class="space-y-2">
-          <p><strong>Customer:</strong> ${c.customerName} (${c.customerPhone})</p>
-          <p><strong>Address:</strong> ${c.deliveryAddress}</p>
-          <p><strong>Total:</strong> AED ${formatAmt(c.productAmount + c.deliveryCharge)}</p>
-          <div class="flex justify-center p-3 bg-slate-50 border rounded-2xl">
-            <div id="inspectQrCanvas"></div>
-          </div>
-        </div>
-      `;
-      document.getElementById('inspectModal').classList.remove('hidden');
-      new QRCode(document.getElementById('inspectQrCanvas'), {
-        text: JSON.stringify({ id: c.id, customer: c.customerName, total: c.productAmount + c.deliveryCharge }),
-        width: 120,
-        height: 120
-      });
-    }
-
-    function populateAgentSlicer() {
-      const sl = document.getElementById('filterAgentSlicer');
-      if (!sl) return;
-      sl.innerHTML = `<option value="ALL">All Agents</option><option value="UNASSIGNED">Unassigned Pool</option>` +
-        db.users.filter(u => u.role === 'AGENT').map(a => `<option value="${a.id}">${a.name}</option>`).join('');
-    }
-
+    function openNewConsignmentModal() { document.getElementById('consignmentModal').classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function refreshOtpIndicators() {
       const b = document.getElementById('otpToggleBtn');
       if (b) {
@@ -1217,7 +692,6 @@
         b.className = db.settings.otpMandatory ? 'px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600 text-white' : 'px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-600 text-white';
       }
     }
-
     function toggleGlobalOtp() {
       if (currentUser.role !== 'ADMIN') return;
       db.settings.otpMandatory = !db.settings.otpMandatory;
@@ -1225,13 +699,23 @@
       refreshOtpIndicators();
     }
 
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    // Register Service Worker for native PWA caching
+    // Register Service Worker with Periodic Background Sync
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('./sw.js');
+          if ('periodicSync' in reg) {
+            try {
+              await reg.periodicSync.register('sync-nextway-data', { minInterval: 15 * 60 * 1000 }); // Every 15 mins
+            } catch (err) { console.log('Periodic sync could not be registered!', err); }
+          }
+        } catch (e) {}
+      });
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'BACKGROUND_SYNC' && firebaseDbRef) {
+           if (firebase && firebase.database) firebase.database().goOnline();
+        }
+      });
     }
 
     initDB();
