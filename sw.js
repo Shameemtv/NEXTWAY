@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nextway-native-v3';
+const CACHE_NAME = 'nextway-native-v9';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
