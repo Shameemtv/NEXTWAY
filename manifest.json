@@ -1,18 +1,45 @@
 {
+  "id": "com.nextway.delivery.app",
   "name": "NEXT WAY DELIVERY SERVICES LLC",
   "short_name": "NEXT WAY",
-  "description": "Vendor-to-Customer Consignment & Delivery Management PWA",
+  "description": "Premium logistics dispatch and consignment app",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0284c7",
+  "background_color": "#0a192f",
+  "theme_color": "#0a192f",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230284c7'/%3E%3Cpath d='M120 160h180v120H120z' fill='%23ffffff'/%3E%3Cpath d='M300 200h70l42 55v25H300z' fill='%23bae6fd'/%3E%3Ccircle cx='175' cy='310' r='35' fill='%230f172a' stroke='%23ffffff' stroke-width='12'/%3E%3Ccircle cx='355' cy='310' r='35' fill='%230f172a' stroke='%23ffffff' stroke-width='12'/%3E%3Ctext x='256' y='430' font-family='sans-serif' font-size='54' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3ENEXT WAY%3C/text%3E%3C/svg%3E",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230a192f'/%3E%3Cpath d='M50 65h90v40H50z' fill='%23ffffff'/%3E%3Cpath d='M110 75h25l15 20v10h-40z' fill='%23facc15'/%3E%3Ccircle cx='70' cy='115' r='12' fill='%23facc15'/%3E%3Ccircle cx='130' cy='115' r='12' fill='%23facc15'/%3E%3Ctext x='96' y='155' font-family='sans-serif' font-size='20' font-weight='900' fill='%23facc15' text-anchor='middle' letter-spacing='1'%3ENEXT WAY%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1080' height='1920'%3E%3Crect width='1080' height='1920' fill='%230a192f'/%3E%3Ctext x='540' y='960' font-family='sans-serif' font-size='80' font-weight='bold' fill='%23facc15' text-anchor='middle'%3EPremium Logistics Console%3C/text%3E%3C/svg%3E",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%230a192f'/%3E%3Ctext x='960' y='540' font-family='sans-serif' font-size='80' font-weight='bold' fill='%23facc15' text-anchor='middle'%3EReal-time Sync Dashboard%3C/text%3E%3C/svg%3E",
+      "sizes": "1920x1080",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
     }
   ]
 }
