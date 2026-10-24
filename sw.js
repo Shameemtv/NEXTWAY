@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nextway-pwa-v5';
+const CACHE_NAME = 'nextway-pwa-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
