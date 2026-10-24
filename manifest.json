@@ -1,0 +1,18 @@
+{
+  "name": "NEXT WAY DELIVERY SERVICES LLC",
+  "short_name": "NEXT WAY",
+  "description": "Vendor-to-Customer Consignment & Delivery Management PWA",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230284c7'/%3E%3Cpath d='M120 160h180v120H120z' fill='%23ffffff'/%3E%3Cpath d='M300 200h70l42 55v25H300z' fill='%23bae6fd'/%3E%3Ccircle cx='175' cy='310' r='35' fill='%230f172a' stroke='%23ffffff' stroke-width='12'/%3E%3Ccircle cx='355' cy='310' r='35' fill='%230f172a' stroke='%23ffffff' stroke-width='12'/%3E%3Ctext x='256' y='430' font-family='sans-serif' font-size='54' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3ENEXT WAY%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
