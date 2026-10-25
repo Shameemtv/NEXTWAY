@@ -1,15 +1,14 @@
 {
-  "id": "nextway-premium-app",
+  "id": "nextway-premium",
   "name": "NEXT WAY DELIVERY SERVICES LLC",
   "short_name": "NEXT WAY",
   "description": "Premium Vendor-to-Customer Consignment Management",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait-primary",
-  "categories": ["business", "logistics", "productivity"],
   "icons": [
     {
       "src": "icon-192.png",
