@@ -311,23 +311,54 @@
     }
 
     function applyIncomingCloudState(remoteData) {
-      if (!remoteData || !Array.isArray(remoteData.users) || remoteData.users.length === 0) return false;
+      if (!remoteData) return false;
+      
+      const toArray = (obj) => Array.isArray(obj) ? obj : (obj ? Object.values(obj) : []);
+      
+      const users = toArray(remoteData.users);
+      if (users.length === 0) return false;
+
       isApplyingRemoteUpdate = true;
       try {
-        db = remoteData; db.vendorPayments = db.vendorPayments || []; db.vendorSettlementOtps = db.vendorSettlementOtps || [];
+        db = remoteData;
+        db.users = users;
+        db.vendors = toArray(db.vendors);
+        db.consignments = toArray(db.consignments);
+        db.vendorPayments = toArray(db.vendorPayments);
+        db.vendorSettlementOtps = toArray(db.vendorSettlementOtps);
+
         db.consignments.forEach(c => { if(!c.feeType) c.feeType = 'COD'; });
         localStorage.setItem(DB_KEY, JSON.stringify(db));
+        
         if (currentUser) {
           const u = db.users.find(x => x.id === currentUser.id || x.username.toLowerCase() === currentUser.username.toLowerCase());
           if (u) { if (u.status !== 'ACTIVE') { logout(); alert(`Account Deactivated`); return true; } currentUser = u; }
           refreshAllViews();
         }
-      } finally { isApplyingRemoteUpdate = false; } return true;
+      } finally { isApplyingRemoteUpdate = false; }
+      return true;
     }
 
     function pushLocalDBToCloud() {
-      if (!firebaseDbRef || !db) return; const cleanPayload = JSON.parse(JSON.stringify(db)); isPushingToCloud = true; clearTimeout(pushSyncTimer); pushSyncTimer = setTimeout(() => { if(isPushingToCloud) updateSyncBadge('SYNCING', 'Syncing...'); }, 200);
-      firebaseDbRef.update(cleanPayload).then(() => { isPushingToCloud = false; clearTimeout(pushSyncTimer); updateSyncBadge('LIVE', 'Live Sync'); }).catch(() => { isPushingToCloud = false; clearTimeout(pushSyncTimer); updateSyncBadge('ERROR', `Sync Error`); });
+      if (!firebaseDbRef || !db) return; 
+      const cleanPayload = JSON.parse(JSON.stringify(db)); 
+      isPushingToCloud = true; 
+      clearTimeout(pushSyncTimer); 
+      
+      pushSyncTimer = setTimeout(() => { 
+        if(isPushingToCloud) updateSyncBadge('SYNCING', 'Syncing...'); 
+      }, 200);
+      
+      firebaseDbRef.set(cleanPayload).then(() => { 
+        isPushingToCloud = false; 
+        clearTimeout(pushSyncTimer); 
+        updateSyncBadge('LIVE', 'Live Sync'); 
+      }).catch((err) => { 
+        isPushingToCloud = false; 
+        clearTimeout(pushSyncTimer); 
+        updateSyncBadge('ERROR', `Sync Error`);
+        console.error('Firebase Sync Error:', err);
+      });
     }
 
     async function initDB() {
@@ -342,7 +373,7 @@
           if (!firebase.apps.length) firebase.initializeApp({ databaseURL: customUrl });
           updateSyncBadge('SYNCING', 'Connecting...'); const fbDatabase = firebase.app().database(customUrl); firebaseDbRef = fbDatabase.ref('nextway_db');
           fbDatabase.ref('.info/connected').on('value', (snap) => { if (snap.val() === true) updateSyncBadge('LIVE', 'Live Sync'); else updateSyncBadge('OFFLINE', 'Reconnecting...'); });
-          firebaseDbRef.on('value', (snapshot) => { if (isPushingToCloud) return; let applied = false; try { applied = applyIncomingCloudState(snapshot.val()); } catch(e){} if (applied) updateSyncBadge('LIVE', 'Live Sync'); else pushLocalDBToCloud(); });
+          firebaseDbRef.on('value', (snapshot) => { if (isPushingToCloud) return; let applied = false; try { applied = applyIncomingCloudState(snapshot.val()); } catch(e){ console.error('Cloud State Applier Error:', e); } if (applied) updateSyncBadge('LIVE', 'Live Sync'); else pushLocalDBToCloud(); });
         } catch (e) { updateSyncBadge('ERROR', 'DB Error'); }
       } else { updateSyncBadge('OFFLINE', 'Offline Mode'); }
     }
