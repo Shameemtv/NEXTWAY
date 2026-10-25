@@ -1,25 +1,15 @@
-const CACHE_NAME = 'nextway-premium-v2';
+const CACHE_NAME = 'nextway-premium-v3';
 const LOCAL_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  './screenshot-mobile1.png',
-  './screenshot-desktop1.png'
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      for (const asset of LOCAL_ASSETS) {
-        try {
-          await cache.add(asset);
-        } catch (err) {
-          console.warn('SW cache skip:', asset, err);
-        }
-      }
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(LOCAL_ASSETS))
   );
   self.skipWaiting();
 });
@@ -34,31 +24,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-
-  // Bypass cache for live database connections (Firebase)
-  if (
-    event.request.method !== 'GET' ||
-    /firebaseio\.com|firebasedatabase\.app|googleapis\.com|gstatic\.com/.test(url)
-  ) {
+  // STRICT RULE: Only cache GET requests from our EXACT SAME origin.
+  // This completely frees Firebase to sync instantly without Service Worker interference.
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
