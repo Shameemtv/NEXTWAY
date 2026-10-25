@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nextway-premium-v1';
+const CACHE_NAME = 'nextway-premium-v2';
 const LOCAL_ASSETS = [
   './',
   './index.html',
