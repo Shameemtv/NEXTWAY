@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#1e3a8a" />
   <title>NEXT WAY DELIVERY SERVICES LLC</title>
   <link rel="manifest" href="./manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,33 +28,30 @@
       }
       .no-print { display: none !important; }
     }
-    .tab-active { border-bottom: 3px solid #facc15; color: #0f172a; font-weight: 800; }
+    .tab-active { border-bottom: 3px solid #facc15; color: #1e3a8a; font-weight: 800; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen font-sans antialiased">
 
   <!-- TOP NAVIGATION BAR -->
-  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40 no-print">
+  <header class="bg-blue-900 text-white shadow-lg sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="bg-yellow-400 text-slate-900 font-black px-2.5 py-1 rounded text-sm tracking-tighter shadow-sm">NW</div>
+        <div class="bg-yellow-400 text-blue-900 font-black px-2.5 py-1 rounded text-sm tracking-tighter shadow-sm">NW</div>
         <div>
           <h1 class="font-bold text-sm sm:text-base tracking-wide leading-tight text-gray-50">NEXT WAY DELIVERY SERVICES LLC</h1>
-          <p id="headerSub" class="text-xs text-gray-400">Logistics & Consignment Portal</p>
+          <p id="headerSub" class="text-xs text-blue-200">Logistics & Consignment Portal</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-800 text-gray-200 flex items-center gap-1.5 cursor-pointer">
+        <span id="syncStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-950 text-blue-100 flex items-center gap-1.5 cursor-pointer">
           <span id="syncDot" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-          <span id="syncText">Offline Mode</span>
+          <span id="syncText">Connecting...</span>
         </span>
-        <button onclick="openConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded border border-slate-600 text-gray-200">
-          Database URL
-        </button>
-        <button id="installPwaBtn" class="hidden bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xs font-bold px-3 py-1.5 rounded shadow">
+        <button id="installPwaBtn" class="hidden bg-yellow-400 hover:bg-yellow-500 text-blue-900 text-xs font-bold px-3 py-1.5 rounded shadow">
           Install App
         </button>
-        <button id="accountSettingsBtn" onclick="openAccountModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded border border-slate-600 text-gray-200">
+        <button id="accountSettingsBtn" onclick="openAccountModal()" class="hidden bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded border border-blue-600 text-gray-100">
           Profile & Security
         </button>
         <button id="logoutBtn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-500 text-xs font-semibold px-3 py-1.5 rounded text-white shadow">
@@ -70,28 +67,28 @@
     <!-- ================= MODULE: AUTHENTICATION VIEW ================= -->
     <section id="authView" class="max-w-md mx-auto mt-10 bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
       <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-slate-900 font-black text-2xl mb-2 shadow-inner border border-gray-200">NW</div>
-        <h2 class="text-xl font-black text-slate-900">NEXT WAY DELIVERY</h2>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-900 font-black text-2xl mb-2 shadow-inner border border-blue-100">NW</div>
+        <h2 class="text-xl font-black text-blue-900">NEXT WAY DELIVERY</h2>
         <p class="text-xs text-gray-500 mt-1 font-semibold uppercase tracking-widest">Sign in to Portal</p>
       </div>
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Username</label>
           <input id="loginUsername" type="text" required placeholder="e.g. NEXTWAY or agent1"
-            class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm" />
+            class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-blue-900 focus:outline-none text-sm" />
         </div>
         <div>
           <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Password</label>
           <input id="loginPassword" type="password" required placeholder="Enter password"
-            class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm" />
+            class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-blue-900 focus:outline-none text-sm" />
         </div>
         <div id="loginError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded border border-red-200 font-semibold"></div>
-        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-yellow-400 font-bold py-3 rounded-lg shadow-lg transition uppercase">
+        <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-yellow-400 font-bold py-3 rounded-lg shadow-lg transition uppercase">
           Sign In Securely
         </button>
       </form>
       <div class="mt-3 text-right">
-        <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-slate-700 hover:underline font-bold">
+        <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-blue-700 hover:underline font-bold">
           Forgot Password?
         </button>
       </div>
@@ -141,7 +138,7 @@
       <!-- GLOBAL STATUS BAR & QUICK SEARCH -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-900 border border-gray-300"></span>
+          <span id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200"></span>
           <div id="adminOtpControl" class="hidden flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
             <span class="text-xs font-semibold text-gray-700">Delivery OTP:</span>
             <button id="otpToggleBtn" onclick="toggleGlobalOtp()" class="px-2.5 py-0.5 rounded text-xs font-bold transition"></button>
@@ -151,8 +148,8 @@
 
         <div class="flex items-center gap-2 w-full md:w-auto">
           <input id="globalConsignmentSearch" type="text" placeholder="Search Consignment ID..."
-            class="w-full md:w-72 px-4 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900" />
-          <button onclick="inspectConsignmentById()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shrink-0 shadow">
+            class="w-full md:w-72 px-4 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900" />
+          <button onclick="inspectConsignmentById()" class="bg-blue-900 hover:bg-blue-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shrink-0 shadow">
             Inspect ID
           </button>
         </div>
@@ -163,26 +160,23 @@
         <button onclick="switchTab('consignments')" id="tab-consignments" class="py-3.5 whitespace-nowrap tab-active">
           Consignments & Dispatch
         </button>
-        <button onclick="switchTab('confirmations')" id="tab-confirmations" class="py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
+        <button onclick="switchTab('confirmations')" id="tab-confirmations" class="py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
           Confirmations <span id="confirmBadge" class="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-100 text-yellow-800 font-black">0</span>
         </button>
-        <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
+        <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
           Product Vendors
         </button>
-        <button onclick="switchTab('agents')" id="tab-agents" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
+        <button onclick="switchTab('agents')" id="tab-agents" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
           Delivery Personnel
         </button>
-        <button onclick="switchTab('agent-reports')" id="tab-agent-reports" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
+        <button onclick="switchTab('agent-reports')" id="tab-agent-reports" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
           Agent Reports
         </button>
-        <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
+        <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
           Ledger & Settlements
         </button>
-        <button onclick="switchTab('system')" id="tab-system" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
-          System & Backup
-        </button>
-        <button onclick="switchTab('agent-settings')" id="tab-agent-settings" class="agent-only py-3.5 whitespace-nowrap text-gray-500 hover:text-slate-900 font-semibold">
-          Cloud Sync
+        <button onclick="switchTab('system')" id="tab-system" class="admin-only py-3.5 whitespace-nowrap text-gray-500 hover:text-blue-900 font-semibold">
+          System Backup
         </button>
       </div>
 
@@ -208,7 +202,7 @@
             <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter by ID, Customer..."
               class="text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 w-60" />
           </div>
-          <button onclick="openNewConsignmentModal()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow uppercase">
+          <button onclick="openNewConsignmentModal()" class="bg-blue-900 hover:bg-blue-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow uppercase">
             + New Consignment
           </button>
         </div>
@@ -218,7 +212,7 @@
       <!-- TAB 2: AMOUNT CONFIRMATIONS -->
       <div id="panel-confirmations" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <h3 class="font-bold text-base text-slate-900">Amount Modification Requests</h3>
+          <h3 class="font-bold text-base text-blue-900">Amount Modification Requests</h3>
           <p class="text-xs text-gray-500 mt-0.5">When an Admin modifies an amount, the Delivery Person must confirm it here.</p>
           <div id="confirmationsList" class="mt-4 space-y-3"></div>
         </div>
@@ -230,10 +224,10 @@
           <div class="flex flex-wrap items-center gap-2">
             <input id="vendorCodeSearch" oninput="renderVendors()" type="text" placeholder="Search Vendor..."
               class="text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 w-64" />
-            <button onclick="exportVendorsExcel(true)" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">Export Filtered</button>
-            <button onclick="exportVendorsExcel(false)" class="bg-gray-200 hover:bg-gray-300 text-slate-900 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-300">Export All</button>
+            <button onclick="exportVendorsExcel(true)" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">Export Filtered</button>
+            <button onclick="exportVendorsExcel(false)" class="bg-gray-200 hover:bg-gray-300 text-blue-900 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-300">Export All</button>
           </div>
-          <button onclick="openVendorModal()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow">
+          <button onclick="openVendorModal()" class="bg-blue-900 hover:bg-blue-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow">
             + Add Vendor
           </button>
         </div>
@@ -257,9 +251,9 @@
       <div id="panel-agents" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 class="font-bold text-sm text-slate-900">Delivery Personnel Directory</h3>
+            <h3 class="font-bold text-sm text-blue-900">Delivery Personnel Directory</h3>
           </div>
-          <button onclick="openAgentModal()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow">
+          <button onclick="openAgentModal()" class="bg-blue-900 hover:bg-blue-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow">
             + Add Personnel
           </button>
         </div>
@@ -284,7 +278,7 @@
       <!-- TAB: AGENT DAILY REPORTS -->
       <div id="panel-agent-reports" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
-          <div><h3 class="font-bold text-sm text-slate-900">Agent Daily Delivery Report</h3></div>
+          <div><h3 class="font-bold text-sm text-blue-900">Agent Daily Delivery Report</h3></div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Agent</label><select id="agentReportSelect" onchange="generateAgentDailyReport()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"></select></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Date</label><input id="agentReportDate" type="date" onchange="generateAgentDailyReport()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
@@ -297,26 +291,26 @@
             </div>
           </div>
           <div class="flex flex-wrap gap-2 pt-1">
-            <button onclick="printAgentDailyReport()" class="bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button>
-            <button onclick="exportAgentDailyExcel()" class="bg-slate-700 text-white hover:bg-slate-600 text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
+            <button onclick="printAgentDailyReport()" class="bg-blue-900 text-white hover:bg-blue-800 text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button>
+            <button onclick="exportAgentDailyExcel()" class="bg-blue-700 text-white hover:bg-blue-600 text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
           </div>
         </div>
 
         <div id="printableAgentReport" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-gray-200 pb-4">
             <div>
-              <h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY</h2>
+              <h2 class="text-lg font-black text-blue-900">NEXT WAY DELIVERY SERVICES LLC</h2>
               <p class="text-xs text-gray-500">Agent Performance Sheet</p>
             </div>
             <div class="text-left sm:text-right mt-3 sm:mt-0">
-              <p id="arAgentNameDisplay" class="text-sm font-bold text-slate-900"></p>
+              <p id="arAgentNameDisplay" class="text-sm font-bold text-blue-900"></p>
               <p id="arDateDisplay" class="text-xs text-gray-600 font-semibold"></p>
             </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Deliveries</p><p id="arTotalCount" class="text-lg font-bold text-slate-900">0</p></div>
+            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Deliveries</p><p id="arTotalCount" class="text-lg font-bold text-blue-900">0</p></div>
             <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Product (COD)</p><p id="arTotalProduct" class="text-lg font-bold text-emerald-700">0.00</p></div>
-            <div class="p-3 rounded-lg bg-slate-900 text-white"><p class="text-xs font-bold text-yellow-400">Due to Next Way</p><p id="arTotalNextWayFee" class="text-xl font-black">0.00</p></div>
+            <div class="p-3 rounded-lg bg-blue-900 text-white"><p class="text-xs font-bold text-yellow-400">Due to Next Way</p><p id="arTotalNextWayFee" class="text-xl font-black">0.00</p></div>
             <div class="p-3 rounded-lg bg-yellow-50 border border-yellow-300"><p class="text-xs font-bold text-yellow-900">Total Collected</p><p id="arTotalCollected" class="text-lg font-black text-yellow-800">0.00</p></div>
           </div>
           <div class="overflow-x-auto">
@@ -335,7 +329,7 @@
       <!-- TAB 5: VENDOR INVOICES & SETTLEMENTS -->
       <div id="panel-invoices" class="hidden space-y-6">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
-          <h3 class="font-bold text-sm text-slate-900">Generate Vendor Statement</h3>
+          <h3 class="font-bold text-sm text-blue-900">Generate Vendor Statement</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Select Vendor</label><select id="invVendorSelect" onchange="generateInvoicePreview()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"></select></div>
             <div>
@@ -353,22 +347,22 @@
             <div id="invRangeEndWrap" class="hidden"><label class="block text-xs font-semibold text-gray-600 mb-1">End Date</label><input id="invEndDate" onchange="generateInvoicePreview()" type="date" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
           </div>
           <div class="flex flex-wrap gap-2 pt-2">
-            <button onclick="printVendorInvoice()" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button>
-            <button onclick="exportInvoiceExcel()" class="bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
+            <button onclick="printVendorInvoice()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button>
+            <button onclick="exportInvoiceExcel()" class="bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
             <button onclick="shareInvoiceWhatsApp()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg">WhatsApp Summary</button>
           </div>
         </div>
 
         <div id="printableInvoice" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-gray-200 pb-4">
-            <div><h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY</h2><p class="text-xs text-gray-500">Vendor Statement</p><p id="invContactPhoneDisplay" class="text-xs text-gray-500 font-semibold mt-0.5"></p></div>
-            <div class="text-left sm:text-right mt-3 sm:mt-0"><p id="invVendorHeader" class="text-sm font-bold text-slate-900"></p><p id="invPeriodHeader" class="text-xs text-gray-600 font-semibold"></p></div>
+            <div><h2 class="text-lg font-black text-blue-900">NEXT WAY DELIVERY</h2><p class="text-xs text-gray-500">Vendor Statement</p><p id="invContactPhoneDisplay" class="text-xs text-gray-500 font-semibold mt-0.5"></p></div>
+            <div class="text-left sm:text-right mt-3 sm:mt-0"><p id="invVendorHeader" class="text-sm font-bold text-blue-900"></p><p id="invPeriodHeader" class="text-xs text-gray-600 font-semibold"></p></div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Consignments</p><p id="invCount" class="text-lg font-bold text-slate-900">0</p></div>
+            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Consignments</p><p id="invCount" class="text-lg font-bold text-blue-900">0</p></div>
             <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Collected</p><p id="invTotalProduct" class="text-lg font-bold text-emerald-700">0.00</p></div>
-            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Settled</p><p id="invSettledAmount" class="text-lg font-bold text-slate-700">0.00</p></div>
-            <div id="invNetBox" class="p-3 rounded-lg bg-slate-900 text-white"><p id="invNetLabel" class="text-xs font-bold text-yellow-400">Net Payable</p><p id="invNetAmount" class="text-lg font-black">0.00</p></div>
+            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Settled</p><p id="invSettledAmount" class="text-lg font-bold text-blue-700">0.00</p></div>
+            <div id="invNetBox" class="p-3 rounded-lg bg-blue-900 text-white"><p id="invNetLabel" class="text-xs font-bold text-yellow-400">Net Payable</p><p id="invNetAmount" class="text-lg font-black">0.00</p></div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
             <div class="md:col-span-3 space-y-4 overflow-x-auto">
@@ -377,7 +371,7 @@
                 <tbody id="invTableBody" class="divide-y divide-gray-200"></tbody>
               </table>
               <div id="invSettledLedgerWrap" class="hidden pt-3 border-t">
-                <p class="text-xs font-bold text-slate-800 mb-1.5">Ledger Deductions</p>
+                <p class="text-xs font-bold text-blue-900 mb-1.5">Ledger Deductions</p>
                 <table class="w-full text-left text-xs border-collapse">
                   <thead><tr class="bg-gray-100 text-gray-700 border-b"><th class="p-1.5">Date</th><th class="p-1.5">Type</th><th class="p-1.5">Ref</th><th class="p-1.5 text-right">Amount</th></tr></thead>
                   <tbody id="invSettledTableBody" class="divide-y divide-gray-200"></tbody>
@@ -393,13 +387,13 @@
         <!-- Ledger & Handover Sections -->
         <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
-            <div><h3 class="font-bold text-sm text-slate-900">Payment Ledger</h3></div>
-            <button onclick="openVendorPaymentModal()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-lg">Record Payment</button>
+            <div><h3 class="font-bold text-sm text-blue-900">Payment Ledger</h3></div>
+            <button onclick="openVendorPaymentModal()" class="bg-blue-900 text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-lg">Record Payment</button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200"><p class="text-xs font-medium text-emerald-800">Total Paid</p><p id="ledgerTotalPaid" class="text-lg font-bold text-emerald-900">0.00</p></div>
             <div class="p-3 rounded-lg bg-blue-50 border border-blue-200"><p class="text-xs font-medium text-blue-800">Total Received</p><p id="ledgerTotalReceived" class="text-lg font-bold text-blue-900">0.00</p></div>
-            <div class="p-3 rounded-lg bg-gray-100 border border-gray-300"><p class="text-xs font-medium text-gray-700">Net Cash</p><p id="ledgerNetCash" class="text-lg font-bold text-slate-900">0.00</p></div>
+            <div class="p-3 rounded-lg bg-gray-100 border border-gray-300"><p class="text-xs font-medium text-gray-700">Net Cash</p><p id="ledgerNetCash" class="text-lg font-bold text-blue-900">0.00</p></div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
@@ -411,8 +405,8 @@
 
         <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
-            <div><h3 class="font-bold text-sm text-slate-900">Net Settlement Handovers</h3></div>
-            <button onclick="openGenerateVendorOtpModal()" class="bg-yellow-500 hover:bg-yellow-600 text-slate-900 text-xs font-bold px-3.5 py-2 rounded-lg">Send Vendor OTP</button>
+            <div><h3 class="font-bold text-sm text-blue-900">Net Settlement Handovers</h3></div>
+            <button onclick="openGenerateVendorOtpModal()" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 text-xs font-bold px-3.5 py-2 rounded-lg">Send Vendor OTP</button>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
@@ -427,32 +421,12 @@
       <div id="panel-system" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3">
-            <h3 class="font-bold text-sm text-slate-900">Database Backup</h3>
-            <button onclick="downloadBackup()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-4 py-2.5 rounded-lg">Download .json Backup</button>
+            <h3 class="font-bold text-sm text-blue-900">Database Backup</h3>
+            <button onclick="downloadBackup()" class="bg-blue-900 text-yellow-400 text-xs font-bold px-4 py-2.5 rounded-lg">Download .json Backup</button>
           </div>
           <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3">
-            <h3 class="font-bold text-sm text-slate-900">Restore Backup</h3>
-            <input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)" class="block w-full text-xs bg-gray-100 p-2 rounded-lg" />
-          </div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3">
-          <h3 class="font-bold text-sm text-slate-900">Live Cloud Sync</h3>
-          <div class="space-y-3 max-w-xl text-xs">
-            <div><label class="font-semibold text-gray-700 block mb-1">Firebase RTDB URL</label><input id="adminCustomDbUrlInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <div><label class="font-semibold text-gray-700 block mb-1">Firebase API Key</label><input id="adminCustomApiKeyInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <button type="button" onclick="saveCustomDatabaseUrlFromTab('admin')" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Connect Cloud</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB: AGENT CLOUD SYNC SETTINGS -->
-      <div id="panel-agent-settings" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3 max-w-xl">
-          <h3 class="font-bold text-sm text-slate-900">Live Cloud Config</h3>
-          <div class="space-y-3 text-xs">
-            <div><label class="font-semibold text-gray-700 block mb-1">Firebase URL</label><input id="agentCustomDbUrlInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <div><label class="font-semibold text-gray-700 block mb-1">API Key</label><input id="agentCustomApiKeyInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <button type="button" onclick="saveCustomDatabaseUrlFromTab('agent')" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Connect Cloud</button>
+            <h3 class="font-bold text-sm text-blue-900">Restore Backup</h3>
+            <input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)" class="block w-full text-xs bg-gray-100 p-2 rounded-lg border border-gray-300" />
           </div>
         </div>
       </div>
@@ -460,31 +434,13 @@
     </section>
   </main>
 
-  <!-- ================= ALL MODALS (HIDDEN BY DEFAULT) ================= -->
-
-  <!-- MODAL: MANUAL DATABASE CONFIG -->
-  <div id="configModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-bold text-base text-slate-900">Configure Cloud Sync</h3>
-        <button onclick="closeModal('configModal')" class="text-gray-400 hover:text-gray-600 text-sm font-bold">✕</button>
-      </div>
-      <div class="space-y-3">
-        <div><label class="font-bold text-gray-700 block mb-1">Firebase URL</label><input id="customDbUrlInput" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div><label class="font-bold text-gray-700 block mb-1">API Key</label><input id="customApiKeyInput" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t">
-          <button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button>
-          <button type="button" onclick="saveCustomDatabaseUrl()" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Save</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- ================= ALL MODALS ================= -->
 
   <!-- MODAL: FORGOT PASSWORD -->
-  <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-bold text-base text-slate-900">Reset Password</h3>
+        <h3 class="font-bold text-base text-blue-900">Reset Password</h3>
         <button onclick="closeModal('forgotPasswordModal')" class="text-gray-400 hover:text-gray-600 text-sm font-bold">✕</button>
       </div>
       <form onsubmit="handleForgotPassword(event)" class="space-y-3">
@@ -493,18 +449,18 @@
         <div><label class="font-bold text-gray-700 block mb-1">New Password</label><input id="fpNewPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div id="fpError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded border border-red-200"></div>
         <div class="flex justify-end gap-2 pt-3 border-t">
-          <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Reset</button>
+          <button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Reset</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: CREATE CONSIGNMENT -->
-  <div id="consignmentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="consignmentModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col">
       <div class="flex justify-between items-center border-b border-gray-200 pb-3 shrink-0">
-        <h3 class="font-black text-base text-slate-900 uppercase">Create Consignment</h3>
+        <h3 class="font-black text-base text-blue-900 uppercase">Create Consignment</h3>
         <button onclick="closeModal('consignmentModal')" class="text-gray-400 hover:text-gray-800 text-lg font-bold">✕</button>
       </div>
       <form onsubmit="saveNewConsignment(event)" class="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
@@ -528,17 +484,17 @@
         </div>
         <div class="flex justify-end gap-2 pt-4 border-t border-gray-200 mt-2 shrink-0">
           <button type="button" onclick="closeModal('consignmentModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Save</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Save</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: DYNAMIC ACTION (Pickup, Deliver, Edit) -->
-  <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="actionModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col text-xs">
       <div class="flex justify-between items-center border-b pb-3 shrink-0">
-        <h3 id="actionModalTitle" class="font-bold text-base text-slate-900">Action</h3>
+        <h3 id="actionModalTitle" class="font-bold text-base text-blue-900">Action</h3>
         <button onclick="closeModal('actionModal')" class="text-gray-400 hover:text-gray-600 text-sm font-bold">✕</button>
       </div>
       <div id="actionModalBody" class="space-y-3 overflow-y-auto pr-1 flex-1"></div>
@@ -546,98 +502,101 @@
   </div>
 
   <!-- MODAL: INSPECT ID -->
-  <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="inspectModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-3 my-auto max-h-[90vh] flex flex-col text-xs">
       <div class="flex justify-between items-center border-b pb-2.5 shrink-0">
-        <h3 id="inspectTitle" class="font-bold text-sm sm:text-base text-slate-900">Details</h3>
+        <h3 id="inspectTitle" class="font-bold text-sm sm:text-base text-blue-900">Details</h3>
         <button onclick="closeModal('inspectModal')" class="text-gray-500 font-bold w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">✕</button>
       </div>
       <div id="inspectContent" class="space-y-3 overflow-y-auto pr-1 flex-1"></div>
-      <div class="pt-2 border-t flex justify-end"><button onclick="closeModal('inspectModal')" class="bg-slate-900 text-yellow-400 font-bold px-4 py-1.5 rounded-lg">Close</button></div>
+      <div class="pt-2 border-t flex justify-end"><button onclick="closeModal('inspectModal')" class="bg-blue-900 text-yellow-400 font-bold px-4 py-1.5 rounded-lg">Close</button></div>
     </div>
   </div>
 
   <!-- MODAL: ADD VENDOR -->
-  <div id="vendorModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="vendorModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Add Vendor</h3><button onclick="closeModal('vendorModal')" class="text-gray-400 font-bold">✕</button></div>
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-blue-900">Add Vendor</h3><button onclick="closeModal('vendorModal')" class="text-gray-400 font-bold">✕</button></div>
       <form onsubmit="saveVendor(event)" class="space-y-3">
         <div><label class="font-bold text-gray-700 block mb-1">Code</label><input id="vCode" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50 uppercase" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Name</label><input id="vName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Phone</label><input id="vPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Address</label><input id="vAddress" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Save</button></div>
+        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Save</button></div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: VENDOR PAYMENT -->
-  <div id="vendorPaymentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="vendorPaymentModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Payment Ledger Entry</h3><button onclick="closeModal('vendorPaymentModal')" class="text-gray-400 font-bold">✕</button></div>
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-blue-900">Payment Ledger Entry</h3><button onclick="closeModal('vendorPaymentModal')" class="text-gray-400 font-bold">✕</button></div>
       <form onsubmit="saveVendorLedgerEntry(event)" class="space-y-3">
         <div><label class="font-bold text-gray-700 block mb-1">Vendor</label><select id="vpVendorSelect" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div>
         <div><label class="font-bold text-gray-700 block mb-1">Type</label><select id="vpType" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"><option value="PAID">Paid To</option><option value="RECEIVED">Received From</option></select></div>
         <div><label class="font-bold text-gray-700 block mb-1">Amount</label><input id="vpAmount" type="number" step="0.01" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Date</label><input id="vpDate" type="date" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Ref/Notes</label><input id="vpNotes" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorPaymentModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Record</button></div>
+        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorPaymentModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Record</button></div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: SEND VENDOR OTP -->
-  <div id="generateVendorOtpModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="generateVendorOtpModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Send OTP</h3><button onclick="closeModal('generateVendorOtpModal')" class="text-gray-400 font-bold">✕</button></div>
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-blue-900">Send OTP</h3><button onclick="closeModal('generateVendorOtpModal')" class="text-gray-400 font-bold">✕</button></div>
       <form onsubmit="handleGenerateVendorOtp(event)" class="space-y-3">
         <div><label class="font-bold text-gray-700 block mb-1">Vendor</label><select id="vOtpVendorSelect" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div>
         <div><label class="font-bold text-gray-700 block mb-1">Agent (Carrying Cash)</label><select id="vOtpAgentSelect" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div>
         <div><label class="font-bold text-gray-700 block mb-1">Amount</label><input id="vOtpAmount" type="number" step="0.01" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('generateVendorOtpModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-yellow-500 text-slate-900 font-bold">Send</button></div>
+        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('generateVendorOtpModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-yellow-500 text-blue-900 font-bold">Send</button></div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: ADD PERSONNEL -->
-  <div id="agentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="agentModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Add Agent</h3><button onclick="closeModal('agentModal')" class="text-gray-400 font-bold">✕</button></div>
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-blue-900">Add Agent</h3><button onclick="closeModal('agentModal')" class="text-gray-400 font-bold">✕</button></div>
       <form onsubmit="saveAgent(event)" class="space-y-3">
         <div><label class="font-bold text-gray-700 block mb-1">Name</label><input id="aName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Username</label><input id="aUser" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Phone</label><input id="aPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Password</label><input id="aPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('agentModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Create</button></div>
+        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('agentModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Create</button></div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: PROFILE -->
-  <div id="accountModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+  <div id="accountModal" class="hidden fixed inset-0 bg-blue-950/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs">
-      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Security</h3><button onclick="closeModal('accountModal')" class="text-gray-400 font-bold">✕</button></div>
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-blue-900">Security</h3><button onclick="closeModal('accountModal')" class="text-gray-400 font-bold">✕</button></div>
       <form onsubmit="updateOwnAccount(event)" class="space-y-3">
         <div id="adminPhoneEditWrap" class="hidden"><label class="font-bold text-gray-700 block mb-1">Phone</label><input id="selfAdminPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">Current Pass</label><input id="selfOldPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
         <div><label class="font-bold text-gray-700 block mb-1">New Pass</label><input id="selfNewPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Update</button></div>
+        <div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-900 text-yellow-400 font-bold">Update</button></div>
       </form>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT ENGINE (ORIGINAL) ================= -->
+  <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
     const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';
-    const CUSTOM_DB_URL_KEY = 'NEXTWAY_CUSTOM_RTDB_URL';
-    const CUSTOM_API_KEY = 'NEXTWAY_CUSTOM_API_KEY';
+    
+    // Hardcoded Database URL and API Key - No local storage needed
+    const FIREBASE_DB_URL = 'https://test-2dff8-default-rtdb.firebaseio.com';
+    const FIREBASE_API_KEY = 'AIzaSyAEcftYI1xdtIqstYItjuJkPW4-S9BkPFo';
+
     let db = null;
     let currentUser = null;
     let deferredPrompt = null;
 
     localStorage.removeItem('NEXTWAY_FORCE_LONGPOLL');
     if ('caches' in window) {
-      caches.keys().then(keys => { keys.forEach(k => { if (k !== 'nextway-pwa-v5') caches.delete(k); }); });
+      caches.keys().then(keys => { keys.forEach(k => { if (k !== 'nextway-premium-v1') caches.delete(k); }); });
     }
 
     function formatAmt(value) { return (Number(value) || 0).toFixed(2); }
@@ -653,7 +612,7 @@
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-900 text-emerald-100 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
       } else if (state === 'SYNCING') {
-        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-100 flex items-center gap-1.5 cursor-pointer';
+        badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-800 text-blue-100 flex items-center gap-1.5 cursor-pointer';
         dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
       } else if (state === 'ERROR') {
         badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-900 text-red-100 flex items-center gap-1.5 cursor-pointer';
@@ -735,12 +694,6 @@
       return true;
     }
 
-    function sanitizeDatabaseUrl(url) {
-      if (!url) return ''; let clean = url.trim().replace(/^["']|["']$/g, '');
-      if (!/^https?:\/\//i.test(clean)) clean = 'https://' + clean;
-      try { return new URL(clean).origin; } catch (e) { return clean.replace(/\/+$/, '').replace(/\/nextway_db(\.json)?$/i, '').replace(/\.json$/i, ''); }
-    }
-
     function pushLocalDBToCloud() {
       if (!firebaseDbRef || !db) return;
       const cleanPayload = JSON.parse(JSON.stringify(db));
@@ -749,7 +702,7 @@
       clearTimeout(pushSyncTimer);
       pushSyncTimer = setTimeout(() => { if (isPushingToCloud) updateSyncBadge('SYNCING', 'Syncing...'); }, 400);
       firebaseDbRef.update(cleanPayload).then(() => {
-        isPushingToCloud = false; clearTimeout(pushSyncTimer); lastPushAt = new Date(); updateSyncBadge('LIVE', 'Live Cloud Sync');
+        isPushingToCloud = false; clearTimeout(pushSyncTimer); lastPushAt = new Date(); updateSyncBadge('LIVE', 'Live Sync');
       }).catch((err) => {
         isPushingToCloud = false; clearTimeout(pushSyncTimer);
         const code = err && err.code ? err.code : 'Write Blocked'; window.syncDetail = (err && err.message) || code; updateSyncBadge('ERROR', `Sync Error`);
@@ -772,7 +725,7 @@
       if (!(ev.target.closest && ev.target.closest('#syncStatusBadge'))) return;
       if (window.syncDetail) { alert(window.syncDetail); return; }
       const t = d => d ? d.toLocaleTimeString() : 'never';
-      alert(['SYNC INFO', 'Version: ' + APP_VERSION, 'Database: ' + (localStorage.getItem(CUSTOM_DB_URL_KEY) || 'NOT SET'),
+      alert(['SYNC INFO', 'Version: ' + APP_VERSION, 'Database: ' + FIREBASE_DB_URL,
         'Logged in: ' + (currentUser ? currentUser.username : '-'), 'Last received: ' + t(lastRemoteAt), 'Last sent: ' + t(lastPushAt)].join('\n'));
     });
 
@@ -782,68 +735,35 @@
       if (!saved || !Array.isArray(saved.users) || saved.users.length === 0) { db = seedDB; } else { db = saved; }
       db.vendorPayments = db.vendorPayments || []; db.vendorSettlementOtps = db.vendorSettlementOtps || [];
       localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const rawCustomUrl = localStorage.getItem(CUSTOM_DB_URL_KEY), customUrl = sanitizeDatabaseUrl(rawCustomUrl), customApiKey = localStorage.getItem(CUSTOM_API_KEY);
-      if (customUrl) {
-        if (customUrl !== rawCustomUrl) localStorage.setItem(CUSTOM_DB_URL_KEY, customUrl);
-        try {
-          const configToUse = { databaseURL: customUrl }; if (customApiKey) configToUse.apiKey = customApiKey;
-          if (typeof firebase === 'undefined' || !firebase.database) { updateSyncBadge('ERROR', 'Firebase missing'); return; }
-          if (!firebase.apps.length) firebase.initializeApp(configToUse);
-          updateSyncBadge('SYNCING', 'Connecting...');
-          const fbDatabase = firebase.app().database(customUrl); firebaseDbRef = fbDatabase.ref('nextway_db');
-          let gotFirstSnapshot = false, hadError = false;
-          const connectTimeout = setTimeout(() => { if (!gotFirstSnapshot && !hadError) diagnoseCloud(customUrl); }, 8000);
-          fbDatabase.ref('.info/connected').on('value', (snap) => {
-            if (hadError || !gotFirstSnapshot) return;
-            if (snap.val() === true) updateSyncBadge('LIVE', 'Live Sync'); else updateSyncBadge('OFFLINE', 'Reconnecting...');
-          });
-          firebaseDbRef.on('value', (snapshot) => {
-            gotFirstSnapshot = true; hadError = false; clearTimeout(connectTimeout);
-            if (isPushingToCloud) return;
-            let applied = false; try { applied = applyIncomingCloudState(snapshot.val()); } catch (applyErr) {}
-            if (applied) updateSyncBadge('LIVE', 'Live Sync'); else pushLocalDBToCloud();
-          }, (err) => {
-            hadError = true; clearTimeout(connectTimeout); window.syncDetail = err.message;
-            updateSyncBadge('ERROR', err.code === 'PERMISSION_DENIED' ? 'Rules blocked' : `Sync Error`);
-          });
-          document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && firebaseDbRef) {
-              firebase.database().goOnline();
-              firebaseDbRef.once('value', (snap) => { if (snap.exists() && !isPushingToCloud) { applyIncomingCloudState(snap.val()); updateSyncBadge('LIVE', 'Live Sync'); } });
-            }
-          });
-        } catch (e) { updateSyncBadge('ERROR', 'Invalid DB URL'); }
-      } else { updateSyncBadge('OFFLINE', 'Offline Mode'); }
-    }
-
-    function openConfigModal() {
-      document.getElementById('customDbUrlInput').value = localStorage.getItem(CUSTOM_DB_URL_KEY) || '';
-      document.getElementById('customApiKeyInput').value = localStorage.getItem(CUSTOM_API_KEY) || '';
-      document.getElementById('configModal').classList.remove('hidden');
-    }
-
-    function saveCustomDatabaseUrl() {
-      const url = sanitizeDatabaseUrl(document.getElementById('customDbUrlInput').value);
-      const apiKey = document.getElementById('customApiKeyInput').value.trim();
-      if (!url || url.includes('console.firebase.google.com')) { alert('Enter Realtime Database URL, not Console web link.'); return; }
-      localStorage.setItem(CUSTOM_DB_URL_KEY, url);
-      if (apiKey) localStorage.setItem(CUSTOM_API_KEY, apiKey); else localStorage.removeItem(CUSTOM_API_KEY);
-      closeModal('configModal'); location.reload();
-    }
-
-    function openConfigModalInTabs() {
-      const url = localStorage.getItem(CUSTOM_DB_URL_KEY) || '', key = localStorage.getItem(CUSTOM_API_KEY) || '';
-      if (currentUser && currentUser.role === 'ADMIN') { document.getElementById('adminCustomDbUrlInput').value = url; document.getElementById('adminCustomApiKeyInput').value = key; }
-      else if (currentUser && currentUser.role === 'AGENT') { document.getElementById('agentCustomDbUrlInput').value = url; document.getElementById('agentCustomApiKeyInput').value = key; }
-    }
-
-    function saveCustomDatabaseUrlFromTab(role) {
-      let url = '', apiKey = '';
-      if (role === 'admin') { url = sanitizeDatabaseUrl(document.getElementById('adminCustomDbUrlInput').value); apiKey = document.getElementById('adminCustomApiKeyInput').value.trim(); }
-      else { url = sanitizeDatabaseUrl(document.getElementById('agentCustomDbUrlInput').value); apiKey = document.getElementById('agentCustomApiKeyInput').value.trim(); }
-      if (!url || url.includes('console.firebase.google.com')) return;
-      localStorage.setItem(CUSTOM_DB_URL_KEY, url); if (apiKey) localStorage.setItem(CUSTOM_API_KEY, apiKey); else localStorage.removeItem(CUSTOM_API_KEY);
-      location.reload();
+      
+      try {
+        const configToUse = { databaseURL: FIREBASE_DB_URL, apiKey: FIREBASE_API_KEY };
+        if (typeof firebase === 'undefined' || !firebase.database) { updateSyncBadge('ERROR', 'Firebase missing'); return; }
+        if (!firebase.apps.length) firebase.initializeApp(configToUse);
+        updateSyncBadge('SYNCING', 'Connecting...');
+        const fbDatabase = firebase.app().database(FIREBASE_DB_URL); firebaseDbRef = fbDatabase.ref('nextway_db');
+        let gotFirstSnapshot = false, hadError = false;
+        const connectTimeout = setTimeout(() => { if (!gotFirstSnapshot && !hadError) diagnoseCloud(FIREBASE_DB_URL); }, 8000);
+        fbDatabase.ref('.info/connected').on('value', (snap) => {
+          if (hadError || !gotFirstSnapshot) return;
+          if (snap.val() === true) updateSyncBadge('LIVE', 'Live Sync'); else updateSyncBadge('OFFLINE', 'Reconnecting...');
+        });
+        firebaseDbRef.on('value', (snapshot) => {
+          gotFirstSnapshot = true; hadError = false; clearTimeout(connectTimeout);
+          if (isPushingToCloud) return;
+          let applied = false; try { applied = applyIncomingCloudState(snapshot.val()); } catch (applyErr) {}
+          if (applied) updateSyncBadge('LIVE', 'Live Sync'); else pushLocalDBToCloud();
+        }, (err) => {
+          hadError = true; clearTimeout(connectTimeout); window.syncDetail = err.message;
+          updateSyncBadge('ERROR', err.code === 'PERMISSION_DENIED' ? 'Rules blocked' : `Sync Error`);
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && firebaseDbRef) {
+            firebase.database().goOnline();
+            firebaseDbRef.once('value', (snap) => { if (snap.exists() && !isPushingToCloud) { applyIncomingCloudState(snap.val()); updateSyncBadge('LIVE', 'Live Sync'); } });
+          }
+        });
+      } catch (e) { updateSyncBadge('ERROR', 'Connection Error'); }
     }
 
     async function saveDB() {
@@ -917,13 +837,12 @@
       if (ban) { ban.textContent = man?'OTP is MANDATORY':'OTP is OPTIONAL'; ban.className = man?'text-xs px-3 py-1 rounded bg-red-100 text-red-800':'text-xs px-3 py-1 rounded bg-emerald-100 text-emerald-800'; }
     }
     function switchTab(tName) {
-      ['consignments','confirmations','vendors','agents','agent-reports','invoices','system','agent-settings'].forEach(t => {
+      ['consignments','confirmations','vendors','agents','agent-reports','invoices','system'].forEach(t => {
         const p = document.getElementById(`panel-${t}`), b = document.getElementById(`tab-${t}`);
         if(p) p.classList.toggle('hidden', t!==tName); if(b) b.classList.toggle('tab-active', t===tName);
       });
       if (tName==='invoices') { populateInvoiceVendors(); updateInvoiceFilterInputs(); renderVendorLedger(); renderVendorOtpsTable(); }
       else if (tName==='agent-reports') { populateAgentReportDropdowns(); generateAgentDailyReport(); }
-      else if (tName==='system' || tName==='agent-settings') openConfigModalInTabs();
     }
     function refreshAllViews() {
       renderConsignments(); renderConfirmations();
@@ -970,25 +889,25 @@
         if (isA && slc!=='ALL') { if(slc==='UNASSIGNED'&&c.assignedTo) return false; if(slc!=='UNASSIGNED'&&c.assignedTo!==slc) return false; }
         if (q && !`${c.id} ${c.customerName} ${c.customerPhone} ${c.vendorCode}`.toLowerCase().includes(q)) return false; return true;
       });
-      if (ls.length===0) { g.innerHTML=`<div class="col-span-full p-6 bg-white border rounded-lg text-center">No results.</div>`; return; }
+      if (ls.length===0) { g.innerHTML=`<div class="col-span-full p-6 bg-white border rounded-lg text-center font-semibold text-gray-500">No results found.</div>`; return; }
       const ags = db.users.filter(u=>u.role==='AGENT'&&u.status==='ACTIVE');
       g.innerHTML = ls.map(c => {
         const v = getVendorByCode(c.vendorCode), isDel = c.status==='Delivered', canPick = !isA && !c.assignedTo;
         return `
           <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-col justify-between">
-            <div class="border-b pb-2 mb-2"><span class="font-black text-slate-900">${c.id}</span> <span class="px-2 py-0.5 rounded bg-gray-100 text-xs font-bold">${c.status}</span></div>
+            <div class="border-b pb-2 mb-2"><span class="font-black text-blue-900">${c.id}</span> <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-900 text-xs font-bold border border-blue-100">${c.status}</span></div>
             <div class="text-xs text-gray-600 space-y-1"><p><b>Vendor:</b> ${v?v.name:c.vendorCode}</p><p><b>Customer:</b> ${c.customerName} (${c.customerPhone})</p><p><b>Address:</b> ${c.deliveryAddress}</p><p><b>Assigned:</b> ${getAgentName(c.assignedTo)}</p></div>
             <div class="mt-2 p-2 bg-gray-50 border rounded text-xs flex justify-between">
               <div><p>Prod: <b>${formatAmt(c.productAmount)}</b></p><p>Fee: <b>${formatAmt(c.deliveryCharge)}</b></p></div>
-              <div>${(!isDel||isA)?`<button onclick="openAmountEditModal('${c.id}')" class="text-blue-700 font-bold">Edit</button>`:''}</div>
+              <div>${(!isDel||isA)?`<button onclick="openAmountEditModal('${c.id}')" class="text-blue-700 font-bold hover:underline">Edit</button>`:''}</div>
             </div>
             <div class="mt-3 space-y-2">
-              ${isA ? (isDel?`<p class="text-xs font-bold text-emerald-700">Delivered</p>`:`<select onchange="adminAssignAgent('${c.id}',this.value)" class="w-full border rounded px-2 py-1 text-xs"><option value="">-Pool-</option>${ags.map(a=>`<option value="${a.id}" ${c.assignedTo===a.id?'selected':''}>${a.name}</option>`).join('')}</select>`) : (canPick&&!isDel?`<button onclick="agentSelfAssign('${c.id}')" class="w-full bg-slate-900 text-yellow-400 font-bold py-1 rounded text-xs">Self-Assign</button>`:'')}
+              ${isA ? (isDel?`<p class="text-xs font-bold text-emerald-700 text-center bg-emerald-50 py-1 rounded">Delivered</p>`:`<select onchange="adminAssignAgent('${c.id}',this.value)" class="w-full border rounded px-2 py-1.5 text-xs bg-gray-50 font-semibold"><option value="">-Pool-</option>${ags.map(a=>`<option value="${a.id}" ${c.assignedTo===a.id?'selected':''}>${a.name}</option>`).join('')}</select>`) : (canPick&&!isDel?`<button onclick="agentSelfAssign('${c.id}')" class="w-full bg-blue-900 text-yellow-400 font-bold py-1.5 rounded text-xs shadow">Self-Assign</button>`:'')}
               <div class="flex gap-1">
-                ${!['Picked Up','Out for delivery','Delivered','Returned'].includes(c.status) ? `<button onclick="openPickupModal('${c.id}')" class="flex-1 bg-yellow-400 font-bold text-slate-900 py-1.5 rounded text-xs">Pickup</button>` : ''}
-                ${['Picked Up','Out for delivery'].includes(c.status) ? `<button onclick="openDeliveryModal('${c.id}')" class="flex-1 bg-emerald-600 text-white font-bold py-1.5 rounded text-xs">Deliver</button><button onclick="openReturnModal('${c.id}')" class="bg-red-600 text-white font-bold px-2 py-1.5 rounded text-xs">Ret</button>` : ''}
-                <button onclick="sendWhatsAppStatus('${c.id}')" class="bg-green-500 text-white px-2 py-1.5 rounded text-xs font-bold">WA</button>
-                <button onclick="showConsignmentDetails('${c.id}')" class="bg-gray-800 text-white px-2 py-1.5 rounded text-xs font-bold">QR</button>
+                ${!['Picked Up','Out for delivery','Delivered','Returned'].includes(c.status) ? `<button onclick="openPickupModal('${c.id}')" class="flex-1 bg-yellow-400 font-bold text-blue-900 py-1.5 rounded text-xs shadow-sm">Pickup</button>` : ''}
+                ${['Picked Up','Out for delivery'].includes(c.status) ? `<button onclick="openDeliveryModal('${c.id}')" class="flex-1 bg-emerald-600 text-white font-bold py-1.5 rounded text-xs shadow-sm">Deliver</button><button onclick="openReturnModal('${c.id}')" class="bg-red-600 text-white font-bold px-3 py-1.5 rounded text-xs shadow-sm">Ret</button>` : ''}
+                <button onclick="sendWhatsAppStatus('${c.id}')" class="bg-green-500 text-white px-3 py-1.5 rounded text-xs font-bold shadow-sm">WA</button>
+                <button onclick="showConsignmentDetails('${c.id}')" class="bg-blue-800 text-white px-3 py-1.5 rounded text-xs font-bold shadow-sm">QR</button>
               </div>
             </div>
           </div>`;
@@ -1002,10 +921,10 @@
       const c = db.consignments.find(x=>x.id===cid); if(!c) return; tempPhotoData = c.pickupPhoto; const v = getVendorByCode(c.vendorCode);
       document.getElementById('actionModalTitle').textContent = `Pickup: ${c.id}`;
       document.getElementById('actionModalBody').innerHTML = `
-        <label class="font-bold">Address</label><input id="modalPickupAddress" type="text" value="${v?v.address:c.pickupFrom}" class="w-full border rounded px-3 py-2 mb-2" />
+        <label class="font-bold">Address</label><input id="modalPickupAddress" type="text" value="${v?v.address:c.pickupFrom}" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" />
         <label class="font-bold">Photo</label><input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)" class="w-full mb-2" />
-        <img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover" />
-        <button onclick="confirmPickup('${c.id}')" class="w-full bg-yellow-400 text-slate-900 font-bold py-2 rounded">Confirm</button>`;
+        <img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover border" />
+        <button onclick="confirmPickup('${c.id}')" class="w-full bg-yellow-400 text-blue-900 font-bold py-2 rounded">Confirm</button>`;
       document.getElementById('actionModal').classList.remove('hidden');
     }
     function handleModalPhoto(e) { if(e.target.files[0]) compressImageFile(e.target.files[0], b64 => { tempPhotoData = b64; document.getElementById('modalPhotoPreview').src=b64; document.getElementById('modalPhotoPreview').classList.remove('hidden'); }); }
@@ -1017,11 +936,11 @@
         <div class="mb-2 p-2 bg-gray-50 border rounded"><p>Collect: <b>${formatAmt(c.productAmount+c.deliveryCharge)}</b></p></div>
         <label class="font-bold">OTP ${req?'(MANDATORY)':'(Optional)'}</label><div class="flex gap-1 mb-2"><input id="deliveryOtpInput" type="text" class="w-full border rounded px-2" /><button onclick="sendWhatsAppOtp('${c.id}')" class="bg-green-500 text-white font-bold px-2 py-1 rounded">WA</button></div>
         <label class="font-bold">Photo</label><input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)" class="w-full mb-2" />
-        <img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover" />
+        <img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover border" />
         <button onclick="confirmDelivery('${c.id}')" class="w-full bg-emerald-600 text-white font-bold py-2 rounded">Confirm Delivery</button>`;
       document.getElementById('actionModal').classList.remove('hidden');
     }
-    function openReturnModal(cid) { document.getElementById('actionModalTitle').textContent=`Return: ${cid}`; document.getElementById('actionModalBody').innerHTML=`<label class="font-bold">Reason</label><textarea id="returnReasonInput" class="w-full border rounded px-3 py-2 mb-2"></textarea><button onclick="confirmReturn('${cid}')" class="w-full bg-red-600 text-white font-bold py-2 rounded">Return</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
+    function openReturnModal(cid) { document.getElementById('actionModalTitle').textContent=`Return: ${cid}`; document.getElementById('actionModalBody').innerHTML=`<label class="font-bold">Reason</label><textarea id="returnReasonInput" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50"></textarea><button onclick="confirmReturn('${cid}')" class="w-full bg-red-600 text-white font-bold py-2 rounded">Return</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
     function confirmReturn(cid) { const c = db.consignments.find(x=>x.id===cid); if(!c) return; const r = document.getElementById('returnReasonInput').value.trim(); if(!r){alert('Reason required');return;} c.status='Returned'; c.returnReason=r; saveDB(); closeModal('actionModal'); renderConsignments(); }
     function sendWhatsAppOtp(cid) { const c=db.consignments.find(x=>x.id===cid); if(!c.otpCode){c.otpCode=String(Math.floor(1000+Math.random()*9000));saveDB();} window.open(`https://wa.me/${c.customerPhone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`OTP: ${c.otpCode} for order ${c.id}`)}`,'_blank'); }
     function confirmDelivery(cid) { const c=db.consignments.find(x=>x.id===cid), otp=document.getElementById('deliveryOtpInput').value.trim(); if(db.settings.otpMandatory && otp!==c.otpCode){alert('Invalid OTP!');return;} c.otpVerified=(otp===c.otpCode); c.deliveryPhoto=tempPhotoData; c.status='Delivered'; c.deliveredAt=new Date().toISOString(); saveDB(); closeModal('actionModal'); renderConsignments(); }
@@ -1031,25 +950,25 @@
       if(isAg&&c.status==='Delivered') return;
       document.getElementById('actionModalTitle').textContent = `Edit Financials: ${c.id}`;
       document.getElementById('actionModalBody').innerHTML = `
-        <label class="font-bold">Product Amt</label><input id="editProdAmt" type="number" step="0.01" value="${c.productAmount}" class="w-full border rounded px-3 py-2 mb-2" />
-        <label class="font-bold">Delivery Fee</label><input id="editDelivFee" type="number" step="0.01" value="${c.deliveryCharge}" ${isAg?'disabled':''} class="w-full border rounded px-3 py-2 mb-2" />
-        <button onclick="saveAmountModification('${c.id}')" class="w-full bg-slate-900 text-yellow-400 font-bold py-2 rounded">Save</button>`;
+        <label class="font-bold">Product Amt</label><input id="editProdAmt" type="number" step="0.01" value="${c.productAmount}" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" />
+        <label class="font-bold">Delivery Fee</label><input id="editDelivFee" type="number" step="0.01" value="${c.deliveryCharge}" ${isAg?'disabled':''} class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" />
+        <button onclick="saveAmountModification('${c.id}')" class="w-full bg-blue-900 text-yellow-400 font-bold py-2 rounded">Save</button>`;
       document.getElementById('actionModal').classList.remove('hidden');
     }
     function saveAmountModification(cid) { const c=db.consignments.find(x=>x.id===cid), np=parseFloat(document.getElementById('editProdAmt').value)||0; if(currentUser.role==='AGENT'){if(c.status!=='Delivered') c.productAmount=np;} else{ const nf=parseFloat(document.getElementById('editDelivFee').value)||0; if(c.assignedTo) c.pendingModification={newProductAmount:np, newDeliveryCharge:nf, requestedBy:currentUser.username}; else{c.productAmount=np; c.deliveryCharge=nf;} } saveDB(); closeModal('actionModal'); refreshAllViews(); }
     function renderConfirmations() {
       const p = db.consignments.filter(c=>c.pendingModification && (currentUser.role==='ADMIN' || c.assignedTo===currentUser.id));
       document.getElementById('confirmBadge').textContent = p.length;
-      document.getElementById('confirmationsList').innerHTML = p.length ? p.map(c=>`<div class="p-3 border rounded bg-yellow-50 mb-2 text-xs"><b>${c.id}</b>: Prod ${c.productAmount} -> ${c.pendingModification.newProductAmount} | Fee ${c.deliveryCharge} -> ${c.pendingModification.newDeliveryCharge} ${currentUser.role==='AGENT'&&c.assignedTo===currentUser.id?`<button onclick="agentConfirmModification('${c.id}')" class="block mt-2 bg-emerald-600 text-white px-2 py-1 rounded">Confirm</button>`:''}</div>`).join('') : '<p class="text-xs text-gray-500">No pending.</p>';
+      document.getElementById('confirmationsList').innerHTML = p.length ? p.map(c=>`<div class="p-3 border rounded bg-yellow-50 mb-2 text-xs"><b>${c.id}</b>: Prod ${c.productAmount} -> ${c.pendingModification.newProductAmount} | Fee ${c.deliveryCharge} -> ${c.pendingModification.newDeliveryCharge} ${currentUser.role==='AGENT'&&c.assignedTo===currentUser.id?`<button onclick="agentConfirmModification('${c.id}')" class="block mt-2 bg-emerald-600 text-white px-2 py-1 rounded font-bold">Confirm</button>`:''}</div>`).join('') : '<p class="text-xs text-gray-500 font-semibold">No pending modifications.</p>';
     }
     function agentConfirmModification(cid) { const c=db.consignments.find(x=>x.id===cid); if(!c||!c.pendingModification) return; c.productAmount=c.pendingModification.newProductAmount; c.deliveryCharge=c.pendingModification.newDeliveryCharge; c.pendingModification=null; saveDB(); refreshAllViews(); }
-    function inspectConsignmentById() { const id=document.getElementById('globalConsignmentSearch').value.trim().toUpperCase(), c=db.consignments.find(x=>x.id.toUpperCase()===id); if(c) showConsignmentDetails(c.id); else alert('Not found'); }
+    function inspectConsignmentById() { const id=document.getElementById('globalConsignmentSearch').value.trim().toUpperCase(), c=db.consignments.find(x=>x.id.toUpperCase()===id); if(c) showConsignmentDetails(c.id); else alert('ID Not found'); }
     function showConsignmentDetails(cid) {
       const c = db.consignments.find(x=>x.id===cid); if(!c) return;
       document.getElementById('inspectTitle').textContent = `Details: ${c.id}`;
       document.getElementById('inspectContent').innerHTML = `
-        <div class="grid grid-cols-2 gap-2 text-xs mb-3"><div class="space-y-1"><p><b>Status:</b> ${c.status}</p><p><b>Vendor:</b> ${c.vendorCode}</p><p><b>Total:</b> ${formatAmt(c.productAmount+c.deliveryCharge)}</p></div><div id="qrCodeCanvas" class="flex justify-center border p-1 rounded"></div></div>
-        <div class="grid grid-cols-2 gap-2 text-xs"><div class="border p-2 rounded"><b>Pickup:</b><br/>${c.pickupPhoto?`<img src="${c.pickupPhoto}" class="h-24 object-cover mt-1" />`:'None'}</div><div class="border p-2 rounded"><b>Delivery:</b><br/>${c.deliveryPhoto?`<img src="${c.deliveryPhoto}" class="h-24 object-cover mt-1" />`:'None'}</div></div>`;
+        <div class="grid grid-cols-2 gap-2 text-xs mb-3"><div class="space-y-1"><p><b>Status:</b> ${c.status}</p><p><b>Vendor:</b> ${c.vendorCode}</p><p><b>Total:</b> ${formatAmt(c.productAmount+c.deliveryCharge)}</p></div><div id="qrCodeCanvas" class="flex justify-center border p-1 rounded bg-white"></div></div>
+        <div class="grid grid-cols-2 gap-2 text-xs"><div class="border p-2 rounded bg-gray-50"><b>Pickup:</b><br/>${c.pickupPhoto?`<img src="${c.pickupPhoto}" class="h-24 object-cover mt-1 rounded border" />`:'None'}</div><div class="border p-2 rounded bg-gray-50"><b>Delivery:</b><br/>${c.deliveryPhoto?`<img src="${c.deliveryPhoto}" class="h-24 object-cover mt-1 rounded border" />`:'None'}</div></div>`;
       document.getElementById('inspectModal').classList.remove('hidden');
       if(c.qrGenerated){ document.getElementById('qrCodeCanvas').innerHTML=''; new QRCode(document.getElementById('qrCodeCanvas'),{text:JSON.stringify({id:c.id}),width:80,height:80}); }
     }
@@ -1057,32 +976,32 @@
     // VENDORS, AGENTS, INVOICES
     function openVendorModal() { document.getElementById('vCode').value = 'VND-00'+(db.vendors.length+1); document.getElementById('vendorModal').classList.remove('hidden'); }
     function saveVendor(e) { e.preventDefault(); db.vendors.push({code:document.getElementById('vCode').value.toUpperCase(), name:document.getElementById('vName').value, phone:document.getElementById('vPhone').value, address:document.getElementById('vAddress').value}); saveDB(); closeModal('vendorModal'); renderVendors(); }
-    function renderVendors() { document.getElementById('vendorTableBody').innerHTML = (document.getElementById('vendorCodeSearch').value ? db.vendors.filter(v=>v.code.includes(document.getElementById('vendorCodeSearch').value.toUpperCase())) : db.vendors).map(v=>`<tr><td class="p-2">${v.code}</td><td class="p-2">${v.name}</td><td class="p-2">${v.phone}</td><td class="p-2">${v.address}</td><td class="p-2">${db.consignments.filter(c=>c.vendorCode===v.code).length}</td></tr>`).join(''); }
+    function renderVendors() { document.getElementById('vendorTableBody').innerHTML = (document.getElementById('vendorCodeSearch').value ? db.vendors.filter(v=>v.code.includes(document.getElementById('vendorCodeSearch').value.toUpperCase())) : db.vendors).map(v=>`<tr class="hover:bg-gray-50"><td class="p-2 font-bold">${v.code}</td><td class="p-2">${v.name}</td><td class="p-2">${v.phone}</td><td class="p-2">${v.address}</td><td class="p-2 font-bold">${db.consignments.filter(c=>c.vendorCode===v.code).length}</td></tr>`).join(''); }
     function exportVendorsExcel(filt) { const wb=XLSX.utils.book_new(), ws=XLSX.utils.json_to_sheet(filt?[]:db.vendors); XLSX.utils.book_append_sheet(wb, ws, 'Vendors'); XLSX.writeFile(wb, 'Vendors.xlsx'); }
     function openAgentModal() { document.getElementById('agentModal').classList.remove('hidden'); }
     async function saveAgent(e) { e.preventDefault(); db.users.push({id:'AG-'+Math.floor(100+Math.random()*900), username:document.getElementById('aUser').value, name:document.getElementById('aName').value, phone:document.getElementById('aPhone').value, role:'AGENT', passwordHash:await hashPassword(document.getElementById('aPass').value), status:'ACTIVE'}); saveDB(); closeModal('agentModal'); renderAgents(); }
-    function renderAgents() { document.getElementById('agentTableBody').innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<tr><td class="p-2">${a.id}</td><td class="p-2">${a.name}</td><td class="p-2">${a.username}</td><td class="p-2">${a.phone}</td><td class="p-2">${a.status}</td><td class="p-2">${db.consignments.filter(c=>c.assignedTo===a.id).length}</td><td class="p-2"><button onclick="setAgentStatus('${a.id}','${a.status==='ACTIVE'?'DEACTIVATED':'ACTIVE'}')" class="text-blue-600 font-bold text-xs">${a.status==='ACTIVE'?'Deactivate':'Activate'}</button></td></tr>`).join(''); }
+    function renderAgents() { document.getElementById('agentTableBody').innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<tr class="hover:bg-gray-50"><td class="p-2 font-bold">${a.id}</td><td class="p-2">${a.name}</td><td class="p-2">${a.username}</td><td class="p-2">${a.phone}</td><td class="p-2 font-bold">${a.status}</td><td class="p-2">${db.consignments.filter(c=>c.assignedTo===a.id).length}</td><td class="p-2"><button onclick="setAgentStatus('${a.id}','${a.status==='ACTIVE'?'DEACTIVATED':'ACTIVE'}')" class="text-blue-600 font-bold text-xs">${a.status==='ACTIVE'?'Deactivate':'Activate'}</button></td></tr>`).join(''); }
     function setAgentStatus(id, st) { const a=db.users.find(u=>u.id===id); if(a) a.status=st; saveDB(); renderAgents(); }
     
     function populateAgentReportDropdowns() { const s=document.getElementById('agentReportSelect'); if(s){s.innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); if(!document.getElementById('agentReportDate').value) document.getElementById('agentReportDate').value=new Date().toISOString().split('T')[0];} }
-    function generateAgentDailyReport() { const id=document.getElementById('agentReportSelect')?.value, d=document.getElementById('agentReportDate')?.value, r=db.consignments.filter(c=>c.assignedTo===id && (c.deliveredAt?c.deliveredAt.split('T')[0]:c.createdAt)===d); let tp=0, tf=0; document.getElementById('arTableBody').innerHTML = r.map(c=>{const p=c.status==='Delivered'?c.productAmount:0; tp+=p; tf+=c.deliveryCharge; return `<tr><td class="p-2">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2">${c.deliveryAddress}</td><td class="p-2">${c.status}</td><td class="p-2 text-right">${p}</td><td class="p-2 text-right">${c.deliveryCharge}</td><td class="p-2 text-right">${p+c.deliveryCharge}</td></tr>`;}).join(''); document.getElementById('arTotalCount').textContent=r.length; document.getElementById('arTotalProduct').textContent=tp; document.getElementById('arTotalNextWayFee').textContent=tf; document.getElementById('arTotalCollected').textContent=tp+tf; }
+    function generateAgentDailyReport() { const id=document.getElementById('agentReportSelect')?.value, d=document.getElementById('agentReportDate')?.value, r=db.consignments.filter(c=>c.assignedTo===id && (c.deliveredAt?c.deliveredAt.split('T')[0]:c.createdAt)===d); let tp=0, tf=0; document.getElementById('arTableBody').innerHTML = r.map(c=>{const p=c.status==='Delivered'?c.productAmount:0; tp+=p; tf+=c.deliveryCharge; return `<tr class="hover:bg-gray-50"><td class="p-2 font-bold">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2">${c.deliveryAddress}</td><td class="p-2">${c.status}</td><td class="p-2 text-right">${p}</td><td class="p-2 text-right font-bold">${c.deliveryCharge}</td><td class="p-2 text-right">${p+c.deliveryCharge}</td></tr>`;}).join(''); document.getElementById('arTotalCount').textContent=r.length; document.getElementById('arTotalProduct').textContent=tp; document.getElementById('arTotalNextWayFee').textContent=tf; document.getElementById('arTotalCollected').textContent=tp+tf; }
     function printAgentDailyReport() { document.querySelectorAll('.print-area').forEach(e=>e.classList.remove('print-area')); document.getElementById('printableAgentReport').classList.add('print-area'); window.print(); }
     function exportAgentDailyExcel() { alert('Export function linked.'); }
 
     function populateInvoiceVendors() { document.getElementById('invVendorSelect').innerHTML = `<option value="ALL">All</option>`+db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); }
     function updateInvoiceFilterInputs() { const t=document.getElementById('invFilterType').value; document.getElementById('invSingleDateWrap').classList.toggle('hidden',!['DATE','MONTH','YEAR'].includes(t)); document.getElementById('invRangeStartWrap').classList.toggle('hidden',t!=='RANGE'); document.getElementById('invRangeEndWrap').classList.toggle('hidden',t!=='RANGE'); generateInvoicePreview(); }
-    function generateInvoicePreview() { const v=document.getElementById('invVendorSelect').value, ls=db.consignments.filter(c=>(v==='ALL'||c.vendorCode===v)); let tp=0; document.getElementById('invTableBody').innerHTML = ls.map(c=>{tp+=c.productAmount; return `<tr><td class="p-2">${c.createdAt}</td><td class="p-2">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2">${c.status}</td><td class="p-2 text-right">${c.productAmount}</td></tr>`;}).join(''); document.getElementById('invCount').textContent=ls.length; document.getElementById('invTotalProduct').textContent=tp; document.getElementById('invNetAmount').textContent=tp; }
+    function generateInvoicePreview() { const v=document.getElementById('invVendorSelect').value, ls=db.consignments.filter(c=>(v==='ALL'||c.vendorCode===v)); let tp=0; document.getElementById('invTableBody').innerHTML = ls.map(c=>{tp+=c.productAmount; return `<tr class="hover:bg-gray-50"><td class="p-2">${c.createdAt}</td><td class="p-2 font-bold">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2">${c.status}</td><td class="p-2 text-right">${c.productAmount}</td></tr>`;}).join(''); document.getElementById('invCount').textContent=ls.length; document.getElementById('invTotalProduct').textContent=tp; document.getElementById('invNetAmount').textContent=tp; }
     function printVendorInvoice() { document.querySelectorAll('.print-area').forEach(e=>e.classList.remove('print-area')); document.getElementById('printableInvoice').classList.add('print-area'); window.print(); }
     function exportInvoiceExcel() {} function shareInvoiceWhatsApp() {}
     
     function openVendorPaymentModal() { document.getElementById('vpVendorSelect').innerHTML=db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); document.getElementById('vendorPaymentModal').classList.remove('hidden'); }
     function saveVendorLedgerEntry(e) { e.preventDefault(); db.vendorPayments.unshift({id:'LED-'+Date.now(), vendorCode:document.getElementById('vpVendorSelect').value, type:document.getElementById('vpType').value, amount:parseFloat(document.getElementById('vpAmount').value), date:document.getElementById('vpDate').value, notes:document.getElementById('vpNotes').value}); saveDB(); closeModal('vendorPaymentModal'); renderVendorLedger(); }
-    function renderVendorLedger() { document.getElementById('vendorLedgerTableBody').innerHTML=(db.vendorPayments||[]).map(p=>`<tr><td class="p-2">${p.date}</td><td class="p-2">${p.vendorCode}</td><td class="p-2">${p.type}</td><td class="p-2">${p.amount}</td><td class="p-2">${p.notes}</td><td class="p-2">-</td><td class="p-2">-</td></tr>`).join(''); }
+    function renderVendorLedger() { document.getElementById('vendorLedgerTableBody').innerHTML=(db.vendorPayments||[]).map(p=>`<tr class="hover:bg-gray-50"><td class="p-2">${p.date}</td><td class="p-2 font-bold">${p.vendorCode}</td><td class="p-2">${p.type}</td><td class="p-2 font-bold">${p.amount}</td><td class="p-2">${p.notes}</td><td class="p-2">-</td><td class="p-2">-</td></tr>`).join(''); }
     
     function openGenerateVendorOtpModal() { document.getElementById('vOtpVendorSelect').innerHTML=db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); document.getElementById('vOtpAgentSelect').innerHTML=db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); document.getElementById('generateVendorOtpModal').classList.remove('hidden'); }
     function handleGenerateVendorOtp(e) { e.preventDefault(); db.vendorSettlementOtps.unshift({id:'VOTP-'+Date.now(), vendorCode:document.getElementById('vOtpVendorSelect').value, agentId:document.getElementById('vOtpAgentSelect').value, amount:parseFloat(document.getElementById('vOtpAmount').value), otp:String(Math.floor(100000+Math.random()*900000)), status:'PENDING'}); saveDB(); closeModal('generateVendorOtpModal'); renderVendorOtpsTable(); }
-    function renderVendorOtpsTable() { document.getElementById('vendorOtpsTableBody').innerHTML=(db.vendorSettlementOtps||[]).map(o=>`<tr><td class="p-2">${o.id}</td><td class="p-2">${o.vendorCode}</td><td class="p-2">${o.agentId}</td><td class="p-2">${o.amount}</td><td class="p-2">${o.otp}</td><td class="p-2">${o.status}</td><td class="p-2">-</td></tr>`).join(''); }
-    function renderAgentPendingOtps() { const c=document.getElementById('agentPendingOtpsList'); if(c) c.innerHTML=(db.vendorSettlementOtps||[]).filter(o=>o.agentId===currentUser.id&&o.status==='PENDING').map(o=>`<div class="p-2 border rounded">Verify ${o.amount} <button onclick="alert('verify')" class="bg-blue-500 text-white px-2 py-1 rounded">V</button></div>`).join(''); }
+    function renderVendorOtpsTable() { document.getElementById('vendorOtpsTableBody').innerHTML=(db.vendorSettlementOtps||[]).map(o=>`<tr class="hover:bg-gray-50"><td class="p-2 font-bold">${o.id}</td><td class="p-2">${o.vendorCode}</td><td class="p-2">${o.agentId}</td><td class="p-2 font-bold">${o.amount}</td><td class="p-2">${o.otp}</td><td class="p-2">${o.status}</td><td class="p-2">-</td></tr>`).join(''); }
+    function renderAgentPendingOtps() { const c=document.getElementById('agentPendingOtpsList'); if(c) c.innerHTML=(db.vendorSettlementOtps||[]).filter(o=>o.agentId===currentUser.id&&o.status==='PENDING').map(o=>`<div class="p-2 border rounded bg-white">Verify ${o.amount} <button onclick="alert('verify')" class="bg-blue-600 text-white px-2 py-1 rounded">V</button></div>`).join(''); }
 
     function downloadBackup() { const a=document.createElement('a'); a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(db)); a.download='Backup.json'; document.body.appendChild(a); a.click(); }
     function restoreBackup(e) { const r=new FileReader(); r.onload=ev=>{db=JSON.parse(ev.target.result);saveDB();location.reload();}; r.readAsText(e.target.files[0]); }
