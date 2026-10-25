@@ -1,54 +1,27 @@
 {
-  "id": "/",
+  "id": "nextway-premium-app",
   "name": "NEXT WAY DELIVERY SERVICES LLC",
   "short_name": "NEXT WAY",
-  "description": "Premium Vendor-to-Customer Consignment & Delivery Management App",
-  "start_url": "/",
-  "scope": "/",
-  "scope_extensions": [
-    { "origin": "*.firebaseapp.com" },
-    { "origin": "*.firebaseio.com" }
-  ],
+  "description": "Premium Vendor-to-Customer Consignment Management",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait-primary",
-  "categories": ["business", "logistics", "productivity", "utilities"],
-  "iarc_rating_id": "e84b06f8-63cb-4c25-8c01-70954b4231b6",
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.nextway.app",
-      "id": "com.nextway.app"
-    }
-  ],
+  "categories": ["business", "logistics", "productivity"],
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "./screenshot-mobile1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "./screenshot-desktop1.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
     }
   ]
 }
