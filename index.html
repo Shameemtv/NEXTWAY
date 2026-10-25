@@ -18,10 +18,12 @@
       .print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0.5rem !important; }
       .no-print { display: none !important; }
     }
-    body { padding-bottom: 70px; } /* Padding to prevent content hiding behind bottom nav */
+    body { padding-bottom: 76px; } 
     /* Premium Bottom Tab Navigation Styling */
     .tab-active { color: #facc15 !important; font-weight: 800; border-top: 3px solid #facc15; background: rgba(255,255,255,0.05); }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen font-sans antialiased">
@@ -41,18 +43,14 @@
           <span id="syncDot" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
           <span id="syncText">Offline</span>
         </span>
-        <button id="installPwaBtn" class="hidden bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xs font-bold px-3 py-1.5 rounded shadow animate-pulse">
-          Install App
-        </button>
-        <button id="logoutBtn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-500 text-xs font-semibold px-3 py-1.5 rounded text-white shadow">
-          Logout
-        </button>
+        <button id="installPwaBtn" class="hidden bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded shadow animate-pulse">Install</button>
+        <button id="logoutBtn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-500 text-[10px] font-semibold px-2.5 py-1 rounded text-white shadow">Logout</button>
       </div>
     </div>
   </header>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto p-4 pb-24">
+  <main class="max-w-7xl mx-auto p-3 sm:p-4">
 
     <!-- ================= MODULE: AUTHENTICATION ================= -->
     <section id="authView" class="max-w-md mx-auto mt-10 bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
@@ -72,44 +70,35 @@
     <!-- ================= MODULE: WORKSPACE ================= -->
     <section id="appView" class="hidden space-y-4">
       
-      <!-- CLICKABLE DASHBOARD BANNER -->
-      <div id="agentDashboardBanner" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
+      <div id="agentDashboardBanner" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 no-print">
         <div onclick="filterByDashboard('PENDING_ALL')" class="cursor-pointer bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:shadow-md transition">
-          <div><p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Pending Deliveries</p><h3 id="agentPendingCount" class="text-2xl font-black text-yellow-600 mt-1">0</h3></div>
-          <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+          <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Pending Deliveries</p><h3 id="agentPendingCount" class="text-2xl font-black text-yellow-600 mt-1">0</h3></div>
+          <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
         </div>
         <div onclick="filterByDashboard('Delivered')" class="cursor-pointer bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:shadow-md transition">
-          <div><p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Completed Deliveries</p><h3 id="agentCompletedCount" class="text-2xl font-black text-emerald-600 mt-1">0</h3></div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>
+          <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Completed Deliveries</p><h3 id="agentCompletedCount" class="text-2xl font-black text-emerald-600 mt-1">0</h3></div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>
         </div>
       </div>
 
-      <div id="agentOtpSubmissionCard" class="hidden bg-yellow-50 border border-yellow-400 rounded-xl p-4 space-y-3 no-print">
-        <div class="flex items-center justify-between"><div><h4 class="font-bold text-sm text-yellow-900">Vendor Net Payable Handover</h4></div></div>
-        <div id="agentPendingOtpsList" class="space-y-2"></div>
-      </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
-        <div class="flex flex-wrap items-center gap-3">
-          <span id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-900 border border-gray-300"></span>
-          <div id="adminOtpControl" class="hidden flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-            <span class="text-xs font-semibold text-gray-700">Delivery OTP:</span><button id="otpToggleBtn" onclick="toggleGlobalOtp()" class="px-2.5 py-0.5 rounded text-xs font-bold transition"></button>
-          </div>
-          <div id="agentOtpBanner" class="hidden text-xs font-semibold px-3 py-1 rounded-lg"></div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="roleBadge" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-900 border border-gray-300"></span>
+          <div id="adminOtpControl" class="hidden flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"><span class="text-[10px] font-semibold text-gray-700">Delivery OTP:</span><button id="otpToggleBtn" onclick="toggleGlobalOtp()" class="px-2 py-0.5 rounded text-[10px] font-bold"></button></div>
         </div>
-        <div class="flex items-center gap-2 w-full md:w-auto">
-          <input id="globalConsignmentSearch" type="text" placeholder="Search Consignment ID..." class="w-full md:w-72 px-4 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900" />
-          <button onclick="inspectConsignmentById()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shrink-0 shadow">Inspect ID</button>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input id="globalConsignmentSearch" type="text" placeholder="Search ID..." class="w-full sm:w-60 px-3 py-1.5 text-xs bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900" />
+          <button onclick="inspectConsignmentById()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 shadow">Find</button>
         </div>
       </div>
 
       <!-- TAB 1: CONSIGNMENTS & DISPATCH -->
       <div id="panel-consignments" class="space-y-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="filterStatus" onchange="renderConsignments()" class="text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 font-medium">
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <select id="filterStatus" onchange="renderConsignments()" class="text-xs border border-gray-300 rounded-lg px-2 py-1.5 bg-gray-50 font-medium">
               <option value="ALL">All Statuses</option>
-              <option value="PENDING_ALL">All Pending (Not Delivered)</option>
+              <option value="PENDING_ALL">Pending (Not Delivered)</option>
               <option value="Created">Created</option>
               <option value="Assigned">Assigned</option>
               <option value="Picked Up">Picked Up</option>
@@ -117,42 +106,67 @@
               <option value="Delivered">Delivered</option>
               <option value="Returned">Returned</option>
             </select>
-            <div id="adminAgentSlicerWrap" class="hidden"><select id="filterAgentSlicer" onchange="renderConsignments()" class="text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 font-medium"><option value="ALL">All Agents</option></select></div>
-            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter by ID, Customer..." class="text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 w-60" />
+            <div id="adminAgentSlicerWrap" class="hidden"><select id="filterAgentSlicer" onchange="renderConsignments()" class="text-xs border border-gray-300 rounded-lg px-2 py-1.5 bg-gray-50 font-medium"><option value="ALL">All Agents</option></select></div>
+            <input id="filterSearchText" oninput="renderConsignments()" type="text" placeholder="Filter List..." class="flex-1 sm:w-48 text-xs border border-gray-300 rounded-lg px-2 py-1.5 bg-gray-50" />
           </div>
-          <button onclick="openNewConsignmentModal()" class="admin-only bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg shadow uppercase">+ New Consignment</button>
+          <button onclick="openNewConsignmentModal()" class="admin-only w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-yellow-400 text-xs font-bold px-3 py-2 rounded-lg shadow uppercase">+ New Consignment</button>
         </div>
 
-        <!-- BULK ASSIGN (ADMIN ONLY) -->
         <div class="admin-only bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-2 items-center">
-           <span class="font-bold text-xs text-slate-800">Bulk Assign to Agent:</span>
-           <input id="bulkIds" type="text" placeholder="e.g. NW-1001, NW-1002" class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs w-60 bg-gray-50">
-           <select id="bulkAgent" class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-gray-50"></select>
-           <button onclick="bulkAssign()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 font-bold px-4 py-1.5 rounded-lg text-xs shadow">Assign All</button>
+           <span class="font-bold text-[10px] text-slate-800 uppercase">Bulk Assign:</span>
+           <input id="bulkIds" type="text" placeholder="e.g. NW-1001, NW-1002" class="flex-1 min-w-[150px] border border-gray-300 rounded-lg px-2 py-1.5 text-xs bg-gray-50">
+           <select id="bulkAgent" class="border border-gray-300 rounded-lg px-2 py-1.5 text-xs bg-gray-50"></select>
+           <button onclick="bulkAssign()" class="bg-slate-900 text-yellow-400 font-bold px-3 py-1.5 rounded-lg text-xs shadow">Assign</button>
         </div>
 
-        <div id="consignmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="consignmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- TAB 2: AGENT FINANCE (AGENT ONLY) -->
+      <!-- TAB 2: ALERTS & CONFIRMATIONS -->
+      <div id="panel-confirmations" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+          <h3 class="font-bold text-base text-slate-900">Pending Approvals & Handover OTPs</h3>
+          <div id="agentOtpSubmissionCard" class="hidden mt-4 pt-4 border-t">
+            <h4 class="font-bold text-xs text-yellow-900 mb-2">Vendor Net Payable Handover (Agent OTP Verify)</h4>
+            <div id="agentPendingOtpsList" class="space-y-2"></div>
+          </div>
+          <div id="confirmationsList" class="mt-4 space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ADMIN DAILY REPORTS (ADMIN ONLY) -->
+      <div id="panel-agent-reports" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
+          <div><h3 class="font-bold text-sm text-slate-900">Admin: Generate Agent Daily Report</h3></div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Agent</label><select id="adminReportSelect" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"></select></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Date</label><input id="adminReportDate" type="date" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Status</label><select id="adminReportStatus" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"><option value="Delivered">Delivered Only</option><option value="ALL">All Statuses</option></select></div>
+          </div>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button onclick="generateAdminAgentReport()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg">Generate View</button>
+            <button onclick="printAgentFinanceReport('admin')" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print Report</button>
+            <button onclick="exportAgentDailyExcel('admin')" class="bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
+          </div>
+        </div>
+        <div id="printableAdminAgentReport" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+           <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- TAB 4: AGENT FINANCE (AGENT ONLY) -->
       <div id="panel-agent-finance" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
           <div><h3 class="font-bold text-sm text-slate-900">My Daily Finance Report</h3></div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Date</label><input id="agentFinanceDate" type="date" onchange="generateAgentFinanceReport()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
-              <select id="agentFinanceStatus" onchange="generateAgentFinanceReport()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50">
-                <option value="Delivered">Delivered Only</option>
-                <option value="ALL">All Statuses</option>
-              </select>
-            </div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Status</label><select id="agentFinanceStatus" onchange="generateAgentFinanceReport()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"><option value="Delivered">Delivered Only</option><option value="ALL">All Statuses</option></select></div>
           </div>
           <div class="flex flex-wrap gap-2 pt-1">
-            <button onclick="printAgentFinanceReport()" class="bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold px-4 py-2 rounded-lg">Print Report</button>
+            <button onclick="printAgentFinanceReport('agent')" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print Report</button>
+            <button onclick="exportAgentDailyExcel('agent')" class="bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button>
           </div>
         </div>
-
         <div id="printableAgentFinance" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
           <div class="flex justify-between border-b border-gray-200 pb-4">
             <div><h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY</h2><p class="text-xs text-gray-500">Agent Finance Sheet</p></div>
@@ -162,77 +176,85 @@
             <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Deliveries</p><p id="afTotalCount" class="text-lg font-bold text-slate-900">0</p></div>
             <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200"><p class="text-xs font-bold text-emerald-800">Total Collected</p><p id="afTotalCollected" class="text-lg font-black text-emerald-900">0.00</p></div>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead><tr class="bg-gray-100 text-gray-700 border-b border-gray-300"><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Status</th><th class="p-2 text-right">Amt Collected</th><th class="p-2 text-right">Fee Type</th></tr></thead>
-              <tbody id="afTableBody" class="divide-y divide-gray-200"></tbody>
-            </table>
-          </div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-gray-100 border-b"><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Status</th><th class="p-2 text-right">Amt Collected</th><th class="p-2 text-right">Fee Type</th></tr></thead><tbody id="afTableBody" class="divide-y divide-gray-200"></tbody></table></div>
         </div>
       </div>
 
-      <!-- TAB 3: PRODUCT VENDORS (ADMIN) -->
+      <!-- TAB 5: PRODUCT VENDORS (ADMIN) -->
       <div id="panel-vendors" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center justify-between gap-3">
-          <div><input id="vendorCodeSearch" oninput="renderVendors()" type="text" placeholder="Search Vendor..." class="text-xs border rounded-lg px-3 py-2 bg-gray-50 w-64" /></div>
+          <div><input id="vendorCodeSearch" oninput="renderVendors()" type="text" placeholder="Search Vendor..." class="text-xs border rounded-lg px-3 py-2 bg-gray-50 w-full sm:w-64" /></div>
           <button onclick="openVendorModal()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg">+ Add Vendor</button>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-gray-100 border-b"><th class="p-3">Code</th><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Address</th><th class="p-3">Orders</th></thead><tbody id="vendorTableBody" class="divide-y"></tbody></table></div>
       </div>
 
-      <!-- TAB 4: INVOICES & SETTLEMENTS (ADMIN) -->
+      <!-- TAB 6: INVOICES & SETTLEMENTS (ADMIN) -->
       <div id="panel-invoices" class="hidden space-y-6">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
           <h3 class="font-bold text-sm text-slate-900">Generate Vendor Statement</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Select Vendor</label><select id="invVendorSelect" onchange="generateInvoicePreview()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"></select></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Filter</label><select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"><option value="ALL">All Dates</option><option value="DATE">Specific Date</option><option value="MONTH">Specific Month</option><option value="RANGE">Date Range</option></select></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Filter</label><select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"><option value="ALL">All Dates</option><option value="DATE">Specific Date</option><option value="MONTH">Specific Month</option><option value="YEAR">Specific Year</option><option value="RANGE">Date Range</option></select></div>
             <div id="invSingleDateWrap" class="hidden"><label id="invSingleLabel" class="block text-xs font-semibold text-gray-600 mb-1">Select</label><input id="invSingleInput" onchange="generateInvoicePreview()" type="date" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
             <div id="invRangeStartWrap" class="hidden"><label class="block text-xs font-semibold text-gray-600 mb-1">Start Date</label><input id="invStartDate" onchange="generateInvoicePreview()" type="date" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
             <div id="invRangeEndWrap" class="hidden"><label class="block text-xs font-semibold text-gray-600 mb-1">End Date</label><input id="invEndDate" onchange="generateInvoicePreview()" type="date" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div>
           </div>
-          <div class="flex flex-wrap gap-2 pt-2"><button onclick="printVendorInvoice()" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button><button onclick="exportInvoiceExcel()" class="bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button></div>
+          <div class="flex flex-wrap gap-2 pt-2"><button onclick="printVendorInvoice()" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Print PDF</button><button onclick="exportInvoiceExcel()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg">Download .xlsx</button></div>
         </div>
 
         <div id="printableInvoice" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
           <div class="flex flex-col sm:flex-row justify-between border-b border-gray-200 pb-4">
-            <div><h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY</h2><p class="text-xs text-gray-500">Vendor Statement</p></div>
-            <div class="text-left sm:text-right mt-3 sm:mt-0"><p id="invVendorHeader" class="text-sm font-bold text-slate-900"></p><p id="invPeriodHeader" class="text-xs text-gray-600 font-semibold"></p></div>
+            <div>
+              <h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY SERVICES LLC</h2>
+              <p class="text-[10px] text-gray-500">Phone: +971 50 123 4567 | Email: info@nextway.ae<br/>Warehouse 14, Al Quoz, Dubai, UAE</p>
+            </div>
+            <div class="text-left sm:text-right mt-3 sm:mt-0">
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Vendor Statement</p>
+              <div id="invVendorHeader" class="text-sm font-bold text-slate-900 mt-1 leading-snug"></div>
+              <p id="invPeriodHeader" class="text-xs text-gray-600 font-semibold mt-1"></p>
+            </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Gross Collected (Product)</p><p id="invTotalProduct" class="text-lg font-bold text-slate-900">0.00</p></div>
-            <div class="p-3 rounded-lg bg-red-50 border border-red-200"><p class="text-xs font-bold text-red-800">Less: Delivery Fees (COD/CAD)</p><p id="invTotalDeductions" class="text-lg font-bold text-red-900">0.00</p></div>
-            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Ledger Paid</p><p id="invSettledAmount" class="text-lg font-bold text-slate-700">0.00</p></div>
-            <div class="p-3 rounded-lg bg-slate-900 text-white"><p id="invNetLabel" class="text-xs font-bold text-yellow-400">Net Payable Balance</p><p id="invNetAmount" class="text-lg font-black">0.00</p></div>
+            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-[10px] uppercase font-bold text-gray-500">Gross Collected (Product)</p><p id="invTotalProduct" class="text-lg font-bold text-slate-900">0.00</p></div>
+            <div class="p-3 rounded-lg bg-red-50 border border-red-200"><p class="text-[10px] uppercase font-bold text-red-800">Less: Delivery Fees (COD/CAD)</p><p id="invTotalDeductions" class="text-lg font-bold text-red-900">0.00</p></div>
+            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-[10px] uppercase font-bold text-gray-500">Ledger Paid (Total)</p><p id="invSettledAmount" class="text-lg font-bold text-slate-700">0.00</p></div>
+            <div class="p-3 rounded-lg bg-slate-900 text-white"><p id="invNetLabel" class="text-[10px] uppercase font-bold text-yellow-400">Net Payable Balance</p><p id="invNetAmount" class="text-lg font-black">0.00</p></div>
           </div>
           <div class="md:col-span-3 space-y-4 overflow-x-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead><tr class="bg-gray-100 text-gray-700 border-b border-gray-300"><th class="p-2">Date</th><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2 text-right">Fee Type</th><th class="p-2 text-right text-red-700">Del. Fee</th><th class="p-2 text-right">Product Amt</th></tr></thead>
               <tbody id="invTableBody" class="divide-y divide-gray-200"></tbody>
             </table>
-            <div id="invSettledLedgerWrap" class="hidden pt-3 border-t"><p class="text-xs font-bold text-slate-800 mb-1.5">Ledger Deductions</p><table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-gray-100 text-gray-700 border-b"><th class="p-1.5">Date</th><th class="p-1.5">Type</th><th class="p-1.5">Ref</th><th class="p-1.5 text-right">Amount</th></tr></thead><tbody id="invSettledTableBody" class="divide-y divide-gray-200"></tbody></table></div>
+            <div id="invSettledLedgerWrap" class="hidden pt-3 border-t"><p class="text-xs font-bold text-slate-800 mb-1.5">Ledger Deductions (Payments to Vendor)</p><table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-gray-100 text-gray-700 border-b"><th class="p-1.5">Date</th><th class="p-1.5">Type</th><th class="p-1.5">Ref</th><th class="p-1.5 text-right">Amount</th></tr></thead><tbody id="invSettledTableBody" class="divide-y divide-gray-200"></tbody></table></div>
+          </div>
+          <div class="flex justify-between items-end mt-4">
+             <div id="pdfQrCodeCanvas" class="p-1 bg-white border rounded"></div>
+             <div class="flex gap-8 text-center text-xs text-gray-600">
+               <div><div class="border-b border-gray-400 w-32 mx-auto mb-1"></div><p class="font-bold">Next Way Signatory</p></div>
+               <div><div class="border-b border-gray-400 w-32 mx-auto mb-1"></div><p class="font-bold">Vendor Signature</p></div>
+             </div>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4 no-print">
           <div class="flex justify-between border-b pb-3"><div><h3 class="font-bold text-sm text-slate-900">Payment Ledger</h3></div><button onclick="openVendorPaymentModal()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-3.5 py-2 rounded-lg">Record Payment</button></div>
-          <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-gray-100 uppercase border-b"><th class="p-2.5">Date</th><th class="p-2.5">Vendor</th><th class="p-2.5">Type</th><th class="p-2.5">Amount</th><th class="p-2.5">Ref</th><th class="p-2.5">By</th><th class="p-2.5">Action</th></thead><tbody id="vendorLedgerTableBody" class="divide-y"></tbody></table></div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-gray-100 uppercase border-b"><th class="p-2.5">Date</th><th class="p-2.5">Vendor</th><th class="p-2.5">Type</th><th class="p-2.5">Amount</th><th class="p-2.5">Ref</th><th class="p-2.5">Action</th></thead><tbody id="vendorLedgerTableBody" class="divide-y"></tbody></table></div>
         </div>
       </div>
 
-      <!-- TAB 5: SYSTEM & SETTINGS -->
+      <!-- TAB 7: SYSTEM & SETTINGS -->
       <div id="panel-system" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
           <h3 class="font-bold text-sm text-slate-900">Live Cloud Sync</h3>
           <div class="space-y-3 max-w-xl text-xs">
             <div><label class="font-semibold text-gray-700 block mb-1">Firebase RTDB URL</label><input id="adminCustomDbUrlInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <div><label class="font-semibold text-gray-700 block mb-1">Firebase API Key</label><input id="adminCustomApiKeyInput" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-            <button type="button" onclick="saveCustomDatabaseUrlFromTab('admin')" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Connect Cloud</button>
+            <button type="button" onclick="saveCustomDatabaseUrlFromTab()" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Connect Cloud</button>
           </div>
         </div>
         <div class="admin-only grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3"><h3 class="font-bold text-sm text-slate-900">Database Backup</h3><button onclick="downloadBackup()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-4 py-2.5 rounded-lg">Download .json Backup</button></div>
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-3"><h3 class="font-bold text-sm text-slate-900">Restore Backup</h3><input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)" class="block w-full text-xs bg-gray-100 p-2 rounded-lg" /></div>
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3"><h3 class="font-bold text-sm text-slate-900">Database Backup</h3><button onclick="downloadBackup()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-4 py-2.5 rounded-lg">Download .json Backup</button></div>
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3"><h3 class="font-bold text-sm text-slate-900">Restore Backup</h3><input id="restoreFileInput" type="file" accept=".json" onchange="restoreBackup(event)" class="block w-full text-xs bg-gray-100 p-2 rounded-lg" /></div>
         </div>
         <div class="admin-only bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between gap-3"><div><h3 class="font-bold text-sm">Personnel Directory</h3></div><button onclick="openAgentModal()" class="bg-slate-900 text-yellow-400 text-xs font-bold px-4 py-2 rounded-lg">+ Add Personnel</button></div>
         <div class="admin-only bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-gray-100 border-b"><th class="p-3">ID</th><th class="p-3">Name</th><th class="p-3">Username</th><th class="p-3">Status</th><th class="p-3">Action</th></thead><tbody id="agentTableBody" class="divide-y"></tbody></table></div>
@@ -240,75 +262,26 @@
     </section>
   </main>
 
-  <!-- PREMIUM BOTTOM NAVIGATION BAR (FIXED) -->
-  <nav id="bottomNav" class="hidden fixed bottom-0 w-full bg-slate-900 border-t border-slate-700 flex justify-around text-[10px] sm:text-xs text-gray-400 pb-safe z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
-    <!-- Dispatch (Both) -->
-    <button onclick="switchTab('consignments')" id="tab-consignments" class="flex-1 py-3 flex flex-col items-center gap-1 tab-active">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-      Dispatch
-    </button>
-    <!-- Finance (Agent Only) -->
-    <button onclick="switchTab('agent-finance')" id="tab-agent-finance" class="agent-only flex-1 py-3 flex flex-col items-center gap-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      Finance
-    </button>
-    <!-- Vendors (Admin Only) -->
-    <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only flex-1 py-3 flex flex-col items-center gap-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-      Vendors
-    </button>
-    <!-- Ledger (Admin Only) -->
-    <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only flex-1 py-3 flex flex-col items-center gap-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-      Ledger
-    </button>
-    <!-- System (Both) -->
-    <button onclick="switchTab('system')" id="tab-system" class="flex-1 py-3 flex flex-col items-center gap-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-      Settings
-    </button>
+  <!-- PREMIUM BOTTOM NAVIGATION BAR (GLASSMORPHISM) -->
+  <nav id="bottomNav" class="hidden fixed bottom-0 w-full bg-slate-900/95 backdrop-blur-xl border-t border-slate-700 flex justify-start sm:justify-center text-[10px] sm:text-xs text-gray-400 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-x-auto hide-scrollbar">
+    <button onclick="switchTab('consignments')" id="tab-consignments" class="flex-none w-20 py-3 flex flex-col items-center gap-1 tab-active transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>Dispatch</button>
+    <button onclick="switchTab('confirmations')" id="tab-confirmations" class="flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all relative"><span id="navConfirmBadge" class="absolute top-1 right-2 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>Alerts</button>
+    <button onclick="switchTab('agent-reports')" id="tab-agent-reports" class="admin-only flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>Reports</button>
+    <button onclick="switchTab('agent-finance')" id="tab-agent-finance" class="agent-only flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Finance</button>
+    <button onclick="switchTab('vendors')" id="tab-vendors" class="admin-only flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>Vendors</button>
+    <button onclick="switchTab('invoices')" id="tab-invoices" class="admin-only flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Ledger</button>
+    <button onclick="switchTab('system')" id="tab-system" class="flex-none w-20 py-3 flex flex-col items-center gap-1 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Settings</button>
   </nav>
 
   <!-- ================= MODALS ================= -->
-  <div id="configModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Configure Cloud Sync</h3><button onclick="closeModal('configModal')" class="text-gray-400 font-bold">✕</button></div><div class="space-y-3"><div><label class="font-bold text-gray-700 block mb-1">Firebase URL</label><input id="customDbUrlInput" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold text-gray-700 block mb-1">API Key</label><input id="customApiKeyInput" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('configModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="button" onclick="saveCustomDatabaseUrl()" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Save</button></div></div></div></div>
-  <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Reset Password</h3><button onclick="closeModal('forgotPasswordModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="handleForgotPassword(event)" class="space-y-3"><div><label class="font-bold block">Username</label><input id="fpUsername" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Registered Mobile</label><input id="fpPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">New Password</label><input id="fpNewPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div id="fpError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded"></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('forgotPasswordModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Reset</button></div></form></div></div>
-  <div id="accountModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Security</h3><button onclick="closeModal('accountModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="updateOwnAccount(event)" class="space-y-3"><div id="adminPhoneEditWrap" class="hidden"><label class="font-bold block">Phone</label><input id="selfAdminPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Current Pass</label><input id="selfOldPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">New Pass</label><input id="selfNewPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Update</button></div></form></div></div>
-
-  <!-- CREATE CONSIGNMENT MODAL -->
-  <div id="consignmentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-gray-200 pb-3 shrink-0"><h3 class="font-black text-base text-slate-900 uppercase">Create Consignment</h3><button onclick="closeModal('consignmentModal')" class="text-gray-400 font-bold text-lg">✕</button></div>
-      <form onsubmit="saveNewConsignment(event)" class="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="font-bold block">ID</label><div class="flex gap-1"><input id="cIdInput" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /><button type="button" onclick="generateRandomConsignmentId()" class="bg-gray-200 px-2.5 rounded-lg font-bold">Auto</button></div></div><div><label class="font-bold block">Vendor</label><select id="cVendorSelect" required onchange="syncVendorPickupAddress()" class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div></div>
-        <div><label class="font-bold block">Pick Up Address</label><input id="cPickupFrom" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="font-bold block">Customer Name</label><input id="cCustomerName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Phone</label><input id="cCustomerPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div></div>
-        <div><label class="font-bold block">Delivery Address</label><input id="cDeliveryAddress" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div><label class="font-bold block">Product Amt (Customer Pays)</label><input id="cProductAmt" type="number" step="0.01" required value="0" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-          <div><label class="font-bold block">Delivery Fee</label><input id="cDeliveryFee" type="number" step="0.01" required value="20" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="font-bold block text-blue-900">Fee Type</label>
-            <select id="cFeeType" class="w-full border rounded-lg px-3 py-2 bg-blue-50 font-bold text-blue-900">
-              <option value="COD">COD (Cut from Vendor Net)</option>
-              <option value="CAD">CAD (Added to Invoice Later)</option>
-              <option value="COC">COC (Paid upfront at Pickup)</option>
-            </select>
-          </div>
-          <div><label class="font-bold block">Assign To</label><select id="cAgentSelect" class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div>
-        </div>
-        <div class="flex justify-end gap-2 pt-4 border-t mt-2 shrink-0"><button type="button" onclick="closeModal('consignmentModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold shadow">Save</button></div>
-      </form>
-    </div>
-  </div>
-
-  <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 flex flex-col text-xs"><div class="flex justify-between items-center border-b pb-3 shrink-0"><h3 id="actionModalTitle" class="font-bold text-base text-slate-900">Action</h3><button onclick="closeModal('actionModal')" class="text-gray-400 text-lg font-bold">✕</button></div><div id="actionModalBody" class="space-y-3"></div></div></div>
-  <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 sm:p-4"><div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-3 flex flex-col text-xs"><div class="flex justify-between items-center border-b pb-2.5 shrink-0"><h3 id="inspectTitle" class="font-bold text-sm sm:text-base text-slate-900">Details</h3><button onclick="closeModal('inspectModal')" class="text-gray-500 font-bold w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">✕</button></div><div id="inspectContent" class="space-y-3"></div><div class="pt-2 border-t flex justify-end"><button onclick="closeModal('inspectModal')" class="bg-slate-900 text-yellow-400 font-bold px-4 py-1.5 rounded-lg">Close</button></div></div></div>
+  <div id="consignmentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 overflow-y-auto"><div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col"><div class="flex justify-between items-center border-b pb-3 shrink-0"><h3 class="font-black text-base text-slate-900">CREATE CONSIGNMENT</h3><button onclick="closeModal('consignmentModal')" class="text-gray-400 font-bold text-lg">✕</button></div><form onsubmit="saveNewConsignment(event)" class="space-y-3 text-xs overflow-y-auto pr-1 flex-1"><div class="grid grid-cols-2 gap-3"><div><label class="font-bold block">ID</label><div class="flex gap-1"><input id="cIdInput" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /><button type="button" onclick="generateRandomConsignmentId()" class="bg-gray-200 px-2.5 rounded-lg font-bold">Auto</button></div></div><div><label class="font-bold block">Vendor</label><select id="cVendorSelect" required onchange="syncVendorPickupAddress()" class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div></div><div><label class="font-bold block">Pick Up Address</label><input id="cPickupFrom" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold block">Customer Name</label><input id="cCustomerName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Phone</label><input id="cCustomerPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div></div><div><label class="font-bold block">Delivery Address</label><input id="cDeliveryAddress" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold block text-emerald-800">Product Amt (Customer Pays)</label><input id="cProductAmt" type="number" step="0.01" required value="0" class="w-full border rounded-lg px-3 py-2 bg-emerald-50" /></div><div><label class="font-bold block">Delivery Fee</label><input id="cDeliveryFee" type="number" step="0.01" required value="20" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold block text-blue-900">Fee Type</label><select id="cFeeType" class="w-full border rounded-lg px-3 py-2 bg-blue-50 font-bold text-blue-900"><option value="COD">COD (Cut from Vendor Net)</option><option value="CAD">CAD (Added to Invoice Later)</option><option value="COC">COC (Paid upfront at Pickup)</option></select></div><div><label class="font-bold block">Assign To</label><select id="cAgentSelect" class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div></div><div class="flex justify-end gap-2 pt-4 border-t mt-2 shrink-0"><button type="button" onclick="closeModal('consignmentModal')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold shadow">Save</button></div></form></div></div>
+  <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 flex flex-col text-xs"><div class="flex justify-between items-center border-b pb-3 shrink-0"><h3 id="actionModalTitle" class="font-bold text-base text-slate-900">Action</h3><button onclick="closeModal('actionModal')" class="text-gray-400 text-lg font-bold">✕</button></div><div id="actionModalBody" class="space-y-3"></div></div></div>
+  <div id="inspectModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3"><div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3 flex flex-col text-xs"><div class="flex justify-between items-center border-b pb-2.5 shrink-0"><h3 id="inspectTitle" class="font-bold text-base text-slate-900">Details</h3><button onclick="closeModal('inspectModal')" class="text-gray-500 font-bold w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">✕</button></div><div id="inspectContent" class="space-y-3"></div><div class="pt-2 border-t flex justify-end"><button onclick="closeModal('inspectModal')" class="bg-slate-900 text-yellow-400 font-bold px-4 py-1.5 rounded-lg">Close</button></div></div></div>
   
   <div id="vendorModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Add Vendor</h3><button onclick="closeModal('vendorModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="saveVendor(event)" class="space-y-3"><div><label class="font-bold block">Code</label><input id="vCode" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50 uppercase" /></div><div><label class="font-bold block">Name</label><input id="vName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Phone</label><input id="vPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Address</label><input id="vAddress" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Save</button></div></form></div></div>
   <div id="agentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Add Agent</h3><button onclick="closeModal('agentModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="saveAgent(event)" class="space-y-3"><div><label class="font-bold block">Name</label><input id="aName" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Username</label><input id="aUser" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Phone</label><input id="aPhone" type="text" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Password</label><input id="aPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('agentModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Create</button></div></form></div></div>
   <div id="vendorPaymentModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Ledger Entry</h3><button onclick="closeModal('vendorPaymentModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="saveVendorLedgerEntry(event)" class="space-y-3"><div><label class="font-bold block">Vendor</label><select id="vpVendorSelect" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"></select></div><div><label class="font-bold block">Type</label><select id="vpType" required class="w-full border rounded-lg px-3 py-2 bg-gray-50"><option value="PAID">Paid To</option><option value="RECEIVED">Received From</option></select></div><div><label class="font-bold block">Amount</label><input id="vpAmount" type="number" step="0.01" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Date</label><input id="vpDate" type="date" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">Ref</label><input id="vpNotes" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('vendorPaymentModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Record</button></div></form></div></div>
+  <div id="accountModal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 text-xs"><div class="flex justify-between items-center border-b pb-3"><h3 class="font-bold text-base text-slate-900">Security</h3><button onclick="closeModal('accountModal')" class="text-gray-400 font-bold">✕</button></div><form onsubmit="updateOwnAccount(event)" class="space-y-3"><div><label class="font-bold block">Current Pass</label><input id="selfOldPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div><label class="font-bold block">New Pass</label><input id="selfNewPass" type="password" required class="w-full border rounded-lg px-3 py-2 bg-gray-50" /></div><div class="flex justify-end gap-2 pt-3 border-t"><button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button><button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-yellow-400 font-bold">Update</button></div></form></div></div>
 
   <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
@@ -321,9 +294,9 @@
     function updateSyncBadge(state, label) {
       const badge = document.getElementById('syncStatusBadge'), dot = document.getElementById('syncDot'), text = document.getElementById('syncText');
       if (!badge || !dot || !text) return; text.textContent = label;
-      if (state === 'LIVE') { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900 text-emerald-100 flex items-center gap-1.5 cursor-pointer'; dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping'; }
-      else if (state === 'SYNCING') { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-100 flex items-center gap-1.5 cursor-pointer'; dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
-      else { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-800 text-gray-200 flex items-center gap-1.5 cursor-pointer'; dot.className = 'w-2 h-2 rounded-full bg-yellow-400'; }
+      if (state === 'LIVE') { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900 text-emerald-100 flex items-center gap-1.5'; dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping'; }
+      else if (state === 'SYNCING') { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-100 flex items-center gap-1.5'; dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
+      else { badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-800 text-gray-200 flex items-center gap-1.5'; dot.className = 'w-2 h-2 rounded-full bg-yellow-400'; }
     }
 
     async function hashPassword(plain) {
@@ -367,21 +340,19 @@
       db = saved && saved.users && saved.users.length ? saved : seedDB;
       db.vendorPayments = db.vendorPayments || []; db.vendorSettlementOtps = db.vendorSettlementOtps || []; db.consignments.forEach(c => { if(!c.feeType) c.feeType = 'COD'; });
       localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const customUrl = localStorage.getItem('NEXTWAY_CUSTOM_RTDB_URL'), customApiKey = localStorage.getItem('NEXTWAY_CUSTOM_API_KEY');
+      const customUrl = localStorage.getItem('NEXTWAY_CUSTOM_RTDB_URL');
       if (customUrl) {
         try {
           if (typeof firebase !== 'undefined' && firebase.database && firebase.database.INTERNAL) firebase.database.INTERNAL.forceWebSockets();
-          if (!firebase.apps.length) firebase.initializeApp({ databaseURL: customUrl, apiKey: customApiKey || '' });
+          if (!firebase.apps.length) firebase.initializeApp({ databaseURL: customUrl });
           updateSyncBadge('SYNCING', 'Connecting...'); const fbDatabase = firebase.app().database(customUrl); firebaseDbRef = fbDatabase.ref('nextway_db');
           fbDatabase.ref('.info/connected').on('value', (snap) => { if (snap.val() === true) updateSyncBadge('LIVE', 'Live Sync'); else updateSyncBadge('OFFLINE', 'Reconnecting...'); });
           firebaseDbRef.on('value', (snapshot) => { if (isPushingToCloud) return; let applied = false; try { applied = applyIncomingCloudState(snapshot.val()); } catch(e){} if (applied) updateSyncBadge('LIVE', 'Live Sync'); else pushLocalDBToCloud(); });
-        } catch (e) { updateSyncBadge('ERROR', 'Invalid DB URL'); }
+        } catch (e) { updateSyncBadge('ERROR', 'DB Error'); }
       } else { updateSyncBadge('OFFLINE', 'Offline Mode'); }
     }
 
-    function openConfigModal() { document.getElementById('customDbUrlInput').value = localStorage.getItem('NEXTWAY_CUSTOM_RTDB_URL') || ''; document.getElementById('customApiKeyInput').value = localStorage.getItem('NEXTWAY_CUSTOM_API_KEY') || ''; document.getElementById('configModal').classList.remove('hidden'); }
-    function saveCustomDatabaseUrl() { const url = document.getElementById('customDbUrlInput').value.trim(); localStorage.setItem('NEXTWAY_CUSTOM_RTDB_URL', url); localStorage.setItem('NEXTWAY_CUSTOM_API_KEY', document.getElementById('customApiKeyInput').value.trim()); location.reload(); }
-    function saveCustomDatabaseUrlFromTab(role) { const url = role==='admin' ? document.getElementById('adminCustomDbUrlInput').value : document.getElementById('agentCustomDbUrlInput').value; const key = role==='admin' ? document.getElementById('adminCustomApiKeyInput').value : document.getElementById('agentCustomApiKeyInput').value; localStorage.setItem('NEXTWAY_CUSTOM_RTDB_URL', url.trim()); localStorage.setItem('NEXTWAY_CUSTOM_API_KEY', key.trim()); location.reload(); }
+    function saveCustomDatabaseUrlFromTab() { const url = document.getElementById('adminCustomDbUrlInput').value; localStorage.setItem('NEXTWAY_CUSTOM_RTDB_URL', url.trim()); location.reload(); }
     async function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); if (!isApplyingRemoteUpdate && firebaseDbRef) pushLocalDBToCloud(); }
     function getAgentName(id) { if (!id) return 'Unassigned'; const u = db.users.find(x => x.id === id); return u ? `${u.name} (${u.status})` : `Archived`; }
     function getVendorByCode(code) { return db.vendors.find(v => v.code.toUpperCase() === (code || '').toUpperCase()); }
@@ -399,16 +370,16 @@
     }
     function logout() { currentUser = null; document.getElementById('appView').classList.add('hidden'); document.getElementById('authView').classList.remove('hidden'); document.getElementById('bottomNav').classList.add('hidden'); document.getElementById('logoutBtn').classList.add('hidden'); }
     function enterWorkspace() {
-      document.getElementById('authView').classList.add('hidden'); document.getElementById('appView').classList.remove('hidden'); document.getElementById('bottomNav').classList.remove('hidden', 'flex'); document.getElementById('bottomNav').classList.add('flex'); document.getElementById('logoutBtn').classList.remove('hidden');
-      const isAdmin = currentUser.role === 'ADMIN'; document.getElementById('roleBadge').textContent = isAdmin ? `ADMIN: ${currentUser.username}` : `AGENT: ${currentUser.name}`;
-      document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin)); document.querySelectorAll('.agent-only').forEach(el => el.classList.toggle('hidden', isAdmin));
-      document.getElementById('agentDashboardBanner').classList.toggle('hidden', isAdmin);
-      if (isAdmin) { document.getElementById('bulkAgent').innerHTML = `<option value="">Agent...</option>` + db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); document.getElementById('filterAgentSlicer').innerHTML = `<option value="ALL">All Agents</option><option value="UNASSIGNED">Unassigned</option>` + db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); } 
+      document.getElementById('authView').classList.add('hidden'); document.getElementById('appView').classList.remove('hidden'); document.getElementById('bottomNav').classList.remove('hidden'); document.getElementById('bottomNav').classList.add('flex'); document.getElementById('logoutBtn').classList.remove('hidden');
+      const isA = currentUser.role === 'ADMIN'; document.getElementById('roleBadge').textContent = isA ? `ADMIN: ${currentUser.username}` : `AGENT: ${currentUser.name}`;
+      document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isA)); document.querySelectorAll('.agent-only').forEach(el => el.classList.toggle('hidden', isA));
+      document.getElementById('agentDashboardBanner').classList.toggle('hidden', isA);
+      if (isA) { document.getElementById('bulkAgent').innerHTML = `<option value="">Agent...</option>` + db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); document.getElementById('filterAgentSlicer').innerHTML = `<option value="ALL">All Agents</option><option value="UNASSIGNED">Unassigned</option>` + db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); document.getElementById('adminReportSelect').innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<option value="${a.id}">${a.name}</option>`).join(''); document.getElementById('adminReportDate').value = new Date().toISOString().split('T')[0]; } 
       switchTab('consignments'); refreshAllViews();
     }
 
     function switchTab(tName) {
-      ['consignments','confirmations','vendors','invoices','system','agent-finance'].forEach(t => {
+      ['consignments','confirmations','agent-reports','agent-finance','vendors','invoices','system'].forEach(t => {
         const p = document.getElementById(`panel-${t}`), b = document.getElementById(`tab-${t}`);
         if(p) p.classList.toggle('hidden', t!==tName);
         if(b) { b.classList.toggle('tab-active', t===tName); b.classList.toggle('text-gray-400', t!==tName); }
@@ -420,7 +391,7 @@
     function filterByDashboard(type) { document.getElementById('filterStatus').value = type; renderConsignments(); document.getElementById('panel-consignments').scrollIntoView({behavior: 'smooth'}); }
 
     function refreshAllViews() {
-      renderConsignments();
+      renderConsignments(); renderConfirmations();
       if(currentUser.role==='ADMIN'){ renderVendors(); renderAgents(); }
       else {
         const ac = db.consignments.filter(c => c.assignedTo===currentUser.id);
@@ -446,9 +417,7 @@
       let updated = 0;
       ids.forEach(id => {
         const c = db.consignments.find(x=>x.id.toUpperCase()===id);
-        if(c && c.status !== 'Delivered' && c.status !== 'Returned') {
-          c.assignedTo = agent; if(c.status === 'Created') c.status = 'Assigned'; updated++;
-        }
+        if(c && c.status !== 'Delivered' && c.status !== 'Returned') { c.assignedTo = agent; if(c.status === 'Created') c.status = 'Assigned'; updated++; }
       });
       if(updated > 0) { saveDB(); renderConsignments(); document.getElementById('bulkIds').value=''; alert(updated + ' consignments assigned.'); }
     }
@@ -464,25 +433,25 @@
       const g = document.getElementById('consignmentsGrid'), stat = document.getElementById('filterStatus').value, slc = document.getElementById('filterAgentSlicer')?.value||'ALL', q = document.getElementById('filterSearchText').value.toLowerCase(), isA = currentUser.role==='ADMIN';
       const ls = db.consignments.filter(c => {
         if (!isA && c.assignedTo!==currentUser.id) return false;
-        if (stat === 'PENDING_ALL') { if(c.status === 'Delivered' || c.status === 'Returned') return false; }
-        else if (stat!=='ALL' && c.status!==stat) return false;
+        if (stat === 'PENDING_ALL') { if(c.status === 'Delivered' || c.status === 'Returned') return false; } else if (stat!=='ALL' && c.status!==stat) return false;
         if (isA && slc!=='ALL') { if(slc==='UNASSIGNED'&&c.assignedTo) return false; if(slc!=='UNASSIGNED'&&c.assignedTo!==slc) return false; }
-        if (q && !`${c.id} ${c.customerName} ${c.customerPhone} ${c.vendorCode}`.toLowerCase().includes(q)) return false; return true;
+        if (q && !`${c.id} ${c.customerName} ${c.vendorCode}`.toLowerCase().includes(q)) return false; return true;
       });
       if (ls.length===0) { g.innerHTML=`<div class="col-span-full p-6 bg-white border rounded-lg text-center font-bold">No orders found.</div>`; return; }
       const ags = db.users.filter(u=>u.role==='AGENT'&&u.status==='ACTIVE');
       g.innerHTML = ls.map(c => {
-        const v = getVendorByCode(c.vendorCode), isDel = c.status==='Delivered', canPick = !isA && !c.assignedTo;
+        const v = getVendorByCode(c.vendorCode), isDel = c.status==='Delivered';
         return `
-          <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-col justify-between relative">
+          <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 flex flex-col justify-between">
             <div class="border-b border-gray-100 pb-2 mb-2 flex justify-between items-center"><span class="font-black text-slate-900">${c.id}</span> <span class="px-2 py-0.5 rounded bg-gray-100 text-[10px] font-bold">${c.status}</span></div>
             <div class="text-xs text-gray-600 space-y-1"><p><b>Vendor:</b> ${v?v.name:c.vendorCode}</p><p><b>Customer:</b> ${c.customerName}</p><p><b>Address:</b> ${c.deliveryAddress}</p><p><b>Agent:</b> ${getAgentName(c.assignedTo)}</p></div>
             <div class="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs">
               <div class="flex justify-between items-center"><p class="text-gray-500">Collect from Customer:</p><p class="font-black text-emerald-700 text-sm">${formatAmt(c.productAmount)}</p></div>
               <div class="flex justify-between items-center mt-1 border-t border-gray-200 pt-1"><p class="text-gray-500">Delivery Fee (${c.feeType}):</p><p class="font-bold text-slate-700">${formatAmt(c.deliveryCharge)}</p></div>
             </div>
+            ${isA && c.pendingModification ? `<p class="mt-2 text-[10px] font-bold text-red-600 text-center uppercase tracking-widest bg-red-50 py-1 rounded">Agent Confirmation Pending</p>` : ''}
             <div class="mt-3 space-y-2">
-              ${isA ? (isDel?`<p class="text-[10px] font-bold text-emerald-700 text-center uppercase tracking-widest">Delivered</p>`:`<select onchange="adminAssignAgent('${c.id}',this.value)" class="w-full border rounded px-2 py-1 text-xs font-bold bg-gray-50"><option value="">-Pool-</option>${ags.map(a=>`<option value="${a.id}" ${c.assignedTo===a.id?'selected':''}>${a.name}</option>`).join('')}</select>`) : ''}
+              ${isA ? (isDel?`<div class="flex gap-2"><p class="flex-1 text-[10px] font-bold text-emerald-700 text-center uppercase py-1 border border-emerald-200 rounded bg-emerald-50">Delivered</p><button onclick="openAmountEditModal('${c.id}')" class="bg-slate-900 text-yellow-400 text-xs font-bold px-3 rounded shadow">Edit</button></div>`:`<select onchange="adminAssignAgent('${c.id}',this.value)" class="w-full border rounded px-2 py-1.5 text-xs font-bold bg-gray-50"><option value="">-Pool-</option>${ags.map(a=>`<option value="${a.id}" ${c.assignedTo===a.id?'selected':''}>${a.name}</option>`).join('')}</select>`) : ''}
               <div class="flex gap-1.5 mt-1">
                 ${!['Picked Up','Out for delivery','Delivered','Returned'].includes(c.status) && c.assignedTo===currentUser.id ? `<button onclick="openPickupModal('${c.id}')" class="flex-1 bg-yellow-400 font-bold text-slate-900 py-1.5 rounded text-xs shadow-sm">Pickup</button>` : ''}
                 ${['Picked Up','Out for delivery'].includes(c.status) && c.assignedTo===currentUser.id ? `<button onclick="openDeliveryModal('${c.id}')" class="flex-1 bg-emerald-600 text-white font-bold py-1.5 rounded text-xs shadow-sm">Deliver</button>` : ''}
@@ -495,16 +464,47 @@
     }
 
     function adminAssignAgent(cid, aid) { if(currentUser.role!=='ADMIN') return; const c = db.consignments.find(x=>x.id===cid); if(!c||c.status==='Delivered') return; c.assignedTo = aid||null; if(c.status==='Created'&&aid) c.status='Assigned'; if(!aid&&c.status==='Assigned') c.status='Created'; saveDB(); renderConsignments(); }
-    let tempPhotoData = null;
-    function openPickupModal(cid) { const c = db.consignments.find(x=>x.id===cid); tempPhotoData = c.pickupPhoto; document.getElementById('actionModalTitle').textContent = `Pickup: ${c.id}`; document.getElementById('actionModalBody').innerHTML = `<p class="text-[10px] text-gray-500 mb-2">If fee is COC, collect ${formatAmt(c.deliveryCharge)} from Vendor.</p><button onclick="confirmPickup('${c.id}')" class="w-full bg-yellow-400 text-slate-900 font-bold py-2.5 rounded shadow">Confirm Pickup</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
-    function confirmPickup(cid) { const c = db.consignments.find(x=>x.id===cid); c.status = 'Out for delivery'; c.qrGenerated = true; c.pickedUpAt = new Date().toISOString(); saveDB(); closeModal('actionModal'); renderConsignments(); }
-    function openDeliveryModal(cid) { const c = db.consignments.find(x=>x.id===cid); document.getElementById('actionModalTitle').textContent = `Deliver: ${c.id}`; document.getElementById('actionModalBody').innerHTML = `<div class="mb-2 p-3 bg-gray-50 border border-emerald-200 rounded text-center"><p class="text-xs font-bold text-gray-500 uppercase">Collect from Customer</p><p class="text-2xl text-emerald-700 font-black">${formatAmt(c.productAmount)}</p></div><button onclick="confirmDelivery('${c.id}')" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded shadow">Confirm Delivery</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
-    function confirmDelivery(cid) { const c=db.consignments.find(x=>x.id===cid); c.status='Delivered'; c.deliveredAt=new Date().toISOString(); saveDB(); closeModal('actionModal'); refreshAllViews(); }
-    function sendWhatsAppStatus(cid) { const c=db.consignments.find(x=>x.id===cid); window.open(`https://wa.me/${c.customerPhone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`Order ${c.id} is ${c.status}. Total to pay: ${formatAmt(c.productAmount)}`)}`,'_blank'); }
-    function inspectConsignmentById() { const id=document.getElementById('globalConsignmentSearch').value.trim().toUpperCase(), c=db.consignments.find(x=>x.id.toUpperCase()===id); if(c) showConsignmentDetails(c.id); else alert('Not found'); }
-    function showConsignmentDetails(cid) { const c = db.consignments.find(x=>x.id===cid); if(!c) return; document.getElementById('inspectTitle').textContent = `Details: ${c.id}`; document.getElementById('inspectContent').innerHTML = `<div class="text-xs space-y-1"><p><b>Status:</b> ${c.status}</p><p><b>Customer:</b> ${c.customerName} (${c.customerPhone})</p><p><b>Fee Type:</b> ${c.feeType}</p></div>`; document.getElementById('inspectModal').classList.remove('hidden'); }
 
-    // AGENT FINANCE REPORT
+    function compressImageFile(file, cb) { const r = new FileReader(); r.onload=e=>{ const img=new Image(); img.onload=()=>{ const cvs=document.createElement('canvas'); let w=img.width, h=img.height, m=480; if(w>h&&w>m){h*=m/w;w=m;}else if(h>m){w*=m/h;h=m;} cvs.width=w; cvs.height=h; cvs.getContext('2d').drawImage(img,0,0,w,h); cb(cvs.toDataURL('image/jpeg',0.55)); }; img.src=e.target.result; }; r.readAsDataURL(file); }
+    let tempPhotoData = null;
+    
+    function openPickupModal(cid) { const c = db.consignments.find(x=>x.id===cid); tempPhotoData = c.pickupPhoto; document.getElementById('actionModalTitle').textContent = `Pickup: ${c.id}`; document.getElementById('actionModalBody').innerHTML = `<p class="text-[10px] text-gray-500 mb-2">If fee is COC, collect ${formatAmt(c.deliveryCharge)} from Vendor.</p><label class="font-bold">Capture Photo</label><input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)" class="w-full mb-2 bg-gray-50 p-2 rounded border text-xs" /><img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover rounded border mx-auto" /><button onclick="confirmPickup('${c.id}')" class="w-full bg-yellow-400 text-slate-900 font-bold py-2.5 rounded shadow">Confirm Pickup</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
+    function handleModalPhoto(e) { if(e.target.files[0]) compressImageFile(e.target.files[0], b64 => { tempPhotoData = b64; document.getElementById('modalPhotoPreview').src=b64; document.getElementById('modalPhotoPreview').classList.remove('hidden'); }); }
+    function confirmPickup(cid) { const c = db.consignments.find(x=>x.id===cid); c.status = 'Out for delivery'; c.pickupPhoto = tempPhotoData; c.qrGenerated = true; c.pickedUpAt = new Date().toISOString(); saveDB(); closeModal('actionModal'); renderConsignments(); }
+    
+    function openDeliveryModal(cid) { const c = db.consignments.find(x=>x.id===cid); document.getElementById('actionModalTitle').textContent = `Deliver: ${c.id}`; document.getElementById('actionModalBody').innerHTML = `<div class="mb-2 p-3 bg-gray-50 border border-emerald-200 rounded text-center"><p class="text-xs font-bold text-gray-500 uppercase">Collect from Customer</p><p class="text-2xl text-emerald-700 font-black">${formatAmt(c.productAmount)}</p></div><label class="font-bold">Capture Delivery Photo</label><input type="file" accept="image/*" capture="environment" onchange="handleModalPhoto(event)" class="w-full mb-2 bg-gray-50 p-2 rounded border text-xs" /><img id="modalPhotoPreview" src="${tempPhotoData||''}" class="${tempPhotoData?'':'hidden'} h-24 mb-2 object-cover rounded border mx-auto" /><button onclick="confirmDelivery('${c.id}')" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded shadow">Confirm Delivery</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
+    function confirmDelivery(cid) { const c=db.consignments.find(x=>x.id===cid); c.status='Delivered'; c.deliveryPhoto=tempPhotoData; c.deliveredAt=new Date().toISOString(); saveDB(); closeModal('actionModal'); refreshAllViews(); }
+    function sendWhatsAppStatus(cid) { const c=db.consignments.find(x=>x.id===cid); window.open(`https://wa.me/${c.customerPhone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`Order ${c.id} is ${c.status}. Total to pay: ${formatAmt(c.productAmount)}`)}`,'_blank'); }
+    
+    // CONFIRMATIONS & EDITS
+    function renderConfirmations() {
+      const p = db.consignments.filter(c=>c.pendingModification && (currentUser.role==='ADMIN' || c.assignedTo===currentUser.id));
+      const badge = document.getElementById('navConfirmBadge');
+      if (p.length > 0) { badge.textContent = p.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+      document.getElementById('confirmationsList').innerHTML = p.length ? p.map(c=>`<div class="p-3 border rounded bg-yellow-50 mb-2 text-xs"><b>${c.id}</b>: Prod ${c.productAmount} -> <b class="text-emerald-700">${c.pendingModification.newProductAmount}</b> | Fee ${c.deliveryCharge} -> <b class="text-emerald-700">${c.pendingModification.newDeliveryCharge}</b> ${currentUser.role==='AGENT'&&c.assignedTo===currentUser.id?`<button onclick="agentConfirmModification('${c.id}')" class="block mt-2 bg-slate-900 text-yellow-400 font-bold px-3 py-1.5 rounded shadow">Confirm Edit</button>`:'<br/><span class="text-[10px] text-gray-500">Waiting for agent confirmation</span>'}</div>`).join('') : '<p class="text-xs text-gray-500">No pending modification requests.</p>';
+    }
+    function openAmountEditModal(cid) { const c = db.consignments.find(x=>x.id===cid); if(currentUser.role==='AGENT' && c.status==='Delivered') return alert('Cannot edit after delivery.'); document.getElementById('actionModalTitle').textContent = `Edit Financials: ${c.id}`; document.getElementById('actionModalBody').innerHTML = `<p class="text-[10px] text-gray-500 mb-2">Edits to Delivered consignments require Agent confirmation.</p><label class="font-bold">Product Amt</label><input id="editProdAmt" type="number" step="0.01" value="${c.productAmount}" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" /><label class="font-bold">Delivery Fee</label><input id="editDelivFee" type="number" step="0.01" value="${c.deliveryCharge}" class="w-full border rounded px-3 py-2 mb-2 bg-gray-50" /><button onclick="saveAmountModification('${c.id}')" class="w-full bg-slate-900 text-yellow-400 font-bold py-2.5 rounded shadow">Send Modification</button>`; document.getElementById('actionModal').classList.remove('hidden'); }
+    function saveAmountModification(cid) { const c=db.consignments.find(x=>x.id===cid), np=parseFloat(document.getElementById('editProdAmt').value)||0, nd=parseFloat(document.getElementById('editDelivFee').value)||0; if(currentUser.role==='ADMIN') { if(c.status==='Delivered' && c.assignedTo) { c.pendingModification={newProductAmount:np, newDeliveryCharge:nd, requestedBy:currentUser.username}; } else { c.productAmount=np; c.deliveryCharge=nd; } } else { c.productAmount=np; } saveDB(); closeModal('actionModal'); refreshAllViews(); }
+    function agentConfirmModification(cid) { const c=db.consignments.find(x=>x.id===cid); if(!c||!c.pendingModification) return; c.productAmount=c.pendingModification.newProductAmount; c.deliveryCharge=c.pendingModification.newDeliveryCharge; c.pendingModification=null; saveDB(); refreshAllViews(); }
+
+    function inspectConsignmentById() { const id=document.getElementById('globalConsignmentSearch').value.trim().toUpperCase(), c=db.consignments.find(x=>x.id.toUpperCase()===id); if(c) showConsignmentDetails(c.id); else alert('Not found'); }
+    function showConsignmentDetails(cid) { 
+      const c = db.consignments.find(x=>x.id===cid); if(!c) return; 
+      document.getElementById('inspectTitle').textContent = `Details: ${c.id}`; 
+      document.getElementById('inspectContent').innerHTML = `<div class="grid grid-cols-2 gap-2 text-xs mb-3 bg-gray-50 p-3 rounded-lg border border-gray-200"><div class="space-y-1"><p><b>Status:</b> ${c.status}</p><p><b>Vendor:</b> ${c.vendorCode}</p><p><b>Cust Pay:</b> ${formatAmt(c.productAmount)}</p></div><div id="qrCodeCanvas" class="flex justify-center p-1 rounded bg-white border"></div></div><div class="grid grid-cols-2 gap-2 text-xs"><div class="border p-2 rounded bg-gray-50 text-center"><b>Pickup:</b><br/>${c.pickupPhoto?`<img src="${c.pickupPhoto}" class="h-24 object-cover mt-1 mx-auto rounded" />`:'None'}</div><div class="border p-2 rounded bg-gray-50 text-center"><b>Delivery:</b><br/>${c.deliveryPhoto?`<img src="${c.deliveryPhoto}" class="h-24 object-cover mt-1 mx-auto rounded" />`:'None'}</div></div>`; 
+      document.getElementById('inspectModal').classList.remove('hidden'); 
+      if(c.qrGenerated){ setTimeout(()=>{ document.getElementById('qrCodeCanvas').innerHTML=''; new QRCode(document.getElementById('qrCodeCanvas'),{text:JSON.stringify({id:c.id}),width:80,height:80}); }, 100); }
+    }
+
+    // DAILY REPORTS & EXCEL
+    function generateAdminAgentReport() {
+      const id = document.getElementById('adminReportSelect').value, d = document.getElementById('adminReportDate').value, stat = document.getElementById('adminReportStatus').value, ag = db.users.find(u=>u.id===id);
+      const r = db.consignments.filter(c=>c.assignedTo===id && (c.deliveredAt?c.deliveredAt.split('T')[0]:c.createdAt)===d && (stat==='ALL' || c.status===stat));
+      let tc = 0; const tbody = r.map(c=>{const amt=c.status==='Delivered'?c.productAmount:0; tc+=amt; return `<tr><td class="p-2 font-bold">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2">${c.status}</td><td class="p-2 text-right font-black">${formatAmt(amt)}</td><td class="p-2 text-right text-[10px] text-gray-500">${c.feeType}</td></tr>`;}).join('');
+      document.getElementById('printableAdminAgentReport').innerHTML = `<div class="flex justify-between border-b border-gray-200 pb-4"><div><h2 class="text-lg font-black text-slate-900">NEXT WAY DELIVERY</h2><p class="text-xs text-gray-500">Agent Finance Sheet</p></div><div class="text-right"><p class="text-sm font-bold text-slate-900">${ag?ag.name:id}</p><p class="text-xs text-gray-600 font-semibold">${d}</p></div></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4"><div class="p-3 rounded-lg bg-gray-50 border border-gray-200"><p class="text-xs text-gray-500">Deliveries</p><p class="text-lg font-bold text-slate-900">${r.length}</p></div><div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200"><p class="text-xs font-bold text-emerald-800">Total Collected</p><p class="text-lg font-black text-emerald-900">${formatAmt(tc)}</p></div></div><div class="overflow-x-auto"><table class="w-full text-left text-xs border-collapse"><thead><tr class="bg-gray-100 border-b"><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Status</th><th class="p-2 text-right">Amt Collected</th><th class="p-2 text-right">Fee Type</th></tr></thead><tbody class="divide-y divide-gray-200">${tbody}</tbody></table></div>`;
+      document.getElementById('printableAdminAgentReport').classList.remove('hidden');
+    }
+
     function generateAgentFinanceReport() {
       if(currentUser.role !== 'AGENT') return;
       if(!document.getElementById('agentFinanceDate').value) document.getElementById('agentFinanceDate').value=new Date().toISOString().split('T')[0];
@@ -514,65 +514,83 @@
       document.getElementById('afTotalCount').textContent=r.length; document.getElementById('afTotalCollected').textContent=formatAmt(tc);
       document.getElementById('afAgentNameDisplay').textContent = currentUser.name; document.getElementById('afDateDisplay').textContent = d;
     }
-    function printAgentFinanceReport() { document.querySelectorAll('.print-area').forEach(e=>e.classList.remove('print-area')); document.getElementById('printableAgentFinance').classList.add('print-area'); window.print(); }
+    function printAgentFinanceReport(role) { document.querySelectorAll('.print-area').forEach(e=>e.classList.remove('print-area')); if(role==='admin'){document.getElementById('printableAdminAgentReport').classList.add('print-area');} else {document.getElementById('printableAgentFinance').classList.add('print-area');} window.print(); }
+    
+    function exportAgentDailyExcel(role) {
+      const id = role==='admin' ? document.getElementById('adminReportSelect').value : currentUser.id;
+      const d = role==='admin' ? document.getElementById('adminReportDate').value : document.getElementById('agentFinanceDate').value;
+      const stat = role==='admin' ? document.getElementById('adminReportStatus').value : document.getElementById('agentFinanceStatus').value;
+      const ls = db.consignments.filter(c=>c.assignedTo===id && (c.deliveredAt?c.deliveredAt.split('T')[0]:c.createdAt)===d && (stat==='ALL' || c.status===stat));
+      const data = ls.map(c => ({ "ID": c.id, "Customer": c.customerName, "Status": c.status, "Fee Type": c.feeType, "Amount Collected": c.status==='Delivered'?c.productAmount:0 }));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "AgentReport"); XLSX.writeFile(wb, `AgentReport_${d}.xlsx`);
+    }
 
-    // VENDORS & INVOICE
-    function openVendorModal() { document.getElementById('vCode').value = 'VND-00'+(db.vendors.length+1); document.getElementById('vendorModal').classList.remove('hidden'); }
-    function saveVendor(e) { e.preventDefault(); db.vendors.push({code:document.getElementById('vCode').value.toUpperCase(), name:document.getElementById('vName').value, phone:document.getElementById('vPhone').value, address:document.getElementById('vAddress').value}); saveDB(); closeModal('vendorModal'); renderVendors(); }
-    function renderVendors() { document.getElementById('vendorTableBody').innerHTML = (document.getElementById('vendorCodeSearch').value ? db.vendors.filter(v=>v.code.includes(document.getElementById('vendorCodeSearch').value.toUpperCase())) : db.vendors).map(v=>`<tr><td class="p-2 font-bold">${v.code}</td><td class="p-2">${v.name}</td><td class="p-2">${v.phone}</td><td class="p-2">${v.address}</td><td class="p-2 font-bold">${db.consignments.filter(c=>c.vendorCode===v.code).length}</td></tr>`).join(''); }
-    function openAgentModal() { document.getElementById('agentModal').classList.remove('hidden'); }
-    async function saveAgent(e) { e.preventDefault(); db.users.push({id:'AG-'+Math.floor(100+Math.random()*900), username:document.getElementById('aUser').value, name:document.getElementById('aName').value, phone:document.getElementById('aPhone').value, role:'AGENT', passwordHash:await hashPassword(document.getElementById('aPass').value), status:'ACTIVE'}); saveDB(); closeModal('agentModal'); renderAgents(); }
-    function renderAgents() { document.getElementById('agentTableBody').innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<tr><td class="p-2 font-bold">${a.id}</td><td class="p-2">${a.name}</td><td class="p-2">${a.username}</td><td class="p-2 font-bold ${a.status==='ACTIVE'?'text-emerald-600':'text-red-600'}">${a.status}</td><td class="p-2"><button onclick="setAgentStatus('${a.id}','${a.status==='ACTIVE'?'DEACTIVATED':'ACTIVE'}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded border">${a.status==='ACTIVE'?'Deactivate':'Activate'}</button></td></tr>`).join(''); }
-    function setAgentStatus(id, st) { const a=db.users.find(u=>u.id===id); if(a) a.status=st; saveDB(); renderAgents(); }
-
-    function updateInvoiceFilterInputs() { const t=document.getElementById('invFilterType').value; document.getElementById('invSingleDateWrap').classList.toggle('hidden',!['DATE','MONTH','YEAR'].includes(t)); document.getElementById('invRangeStartWrap').classList.toggle('hidden',t!=='RANGE'); document.getElementById('invRangeEndWrap').classList.toggle('hidden',t!=='RANGE'); generateInvoicePreview(); }
+    // INVOICES & EXCEL
+    function updateInvoiceFilterInputs() { const t=document.getElementById('invFilterType').value; document.getElementById('invSingleDateWrap').classList.toggle('hidden',!['DATE','MONTH','YEAR'].includes(t)); document.getElementById('invRangeStartWrap').classList.toggle('hidden',t!=='RANGE'); document.getElementById('invRangeEndWrap').classList.toggle('hidden',t!=='RANGE'); if(t==='MONTH') document.getElementById('invSingleInput').type='month'; else if(t==='YEAR') document.getElementById('invSingleInput').type='number'; else document.getElementById('invSingleInput').type='date'; generateInvoicePreview(); }
     function generateInvoicePreview() { 
-      const v=document.getElementById('invVendorSelect').value;
+      const vCode = document.getElementById('invVendorSelect').value; const type = document.getElementById('invFilterType').value; const sVal = document.getElementById('invSingleInput').value; const start = document.getElementById('invStartDate').value; const end = document.getElementById('invEndDate').value;
+      
+      const v = getVendorByCode(vCode); document.getElementById('invVendorHeader').innerHTML = v ? `${v.name}<br/><span class="text-xs font-normal text-gray-500">${v.phone} <br/> ${v.address}</span>` : 'ALL VENDORS';
+      let period = '';
+      if(type === 'MONTH' && sVal) { const [y, m] = sVal.split('-'); period = `Month : ${new Date(y, m-1).toLocaleString('default', {month:'long'})}, ${y}`; }
+      else if(type === 'YEAR' && sVal) { period = `Year : ${sVal}`; }
+      else if(type === 'DATE' && sVal) { const [y, m, d] = sVal.split('-'); period = `Date : ${m}-${d}-${y}`; }
+      else if(type === 'RANGE') { const fS = start?`${start.split('-')[1]}-${start.split('-')[2]}-${start.split('-')[0]}`:''; const fE = end?`${end.split('-')[1]}-${end.split('-')[2]}-${end.split('-')[0]}`:''; period = `From : ${fS}  To : ${fE}`; }
+      document.getElementById('invPeriodHeader').textContent = period;
+
       const ls=db.consignments.filter(c => {
-        if(v!=='ALL'&&c.vendorCode!==v) return false;
-        if(c.productAmount === 0 && c.feeType === 'COD') return false; // Hide completely
+        if(vCode!=='ALL'&&c.vendorCode!==vCode) return false;
+        if(c.productAmount === 0 && c.feeType === 'COD') return false; 
+        const cd = c.createdAt;
+        if(type==='DATE'&&sVal&&cd!==sVal) return false;
+        if(type==='MONTH'&&sVal&&!cd.startsWith(sVal)) return false;
+        if(type==='YEAR'&&sVal&&!cd.startsWith(String(sVal))) return false;
+        if(type==='RANGE') { if(start&&cd<start) return false; if(end&&cd>end) return false; }
         return true;
       }); 
+      
       let tp=0, td=0; 
       document.getElementById('invTableBody').innerHTML = ls.map(c=>{
-        tp+=c.productAmount; 
-        if(c.feeType === 'COD' || c.feeType === 'CAD') td+=c.deliveryCharge;
+        tp+=c.productAmount; if(c.feeType === 'COD' || c.feeType === 'CAD') td+=c.deliveryCharge;
         return `<tr><td class="p-2">${c.createdAt}</td><td class="p-2 font-bold">${c.id}</td><td class="p-2">${c.customerName}</td><td class="p-2 text-right text-[10px] text-gray-500 font-bold">${c.feeType}</td><td class="p-2 text-right text-red-700">${formatAmt(c.deliveryCharge)}</td><td class="p-2 text-right font-black">${formatAmt(c.productAmount)}</td></tr>`;
       }).join(''); 
-      const settled = 0; // Summarize ledger here if needed
-      document.getElementById('invTotalProduct').textContent=formatAmt(tp); 
-      document.getElementById('invTotalDeductions').textContent=formatAmt(td); 
-      document.getElementById('invNetAmount').textContent=formatAmt(tp-td-settled); 
+      
+      let lp=0; const pL = db.vendorPayments.filter(p=>{
+        if(vCode!=='ALL'&&p.vendorCode!==vCode) return false;
+        const pd = p.date; if(type==='DATE'&&sVal&&pd!==sVal) return false; if(type==='MONTH'&&sVal&&!pd.startsWith(sVal)) return false; if(type==='YEAR'&&sVal&&!pd.startsWith(String(sVal))) return false; if(type==='RANGE') { if(start&&pd<start) return false; if(end&&pd>end) return false; } return true;
+      });
+      if(pL.length>0) { document.getElementById('invSettledLedgerWrap').classList.remove('hidden'); document.getElementById('invSettledTableBody').innerHTML = pL.map(p=>{ if(p.type==='PAID') lp+=p.amount; else lp-=p.amount; return `<tr><td class="p-1.5">${p.date}</td><td class="p-1.5 font-bold ${p.type==='PAID'?'text-emerald-700':'text-blue-700'}">${p.type}</td><td class="p-1.5">${p.notes}</td><td class="p-1.5 text-right font-bold">${formatAmt(p.amount)}</td></tr>`;}).join(''); } else { document.getElementById('invSettledLedgerWrap').classList.add('hidden'); }
+      
+      document.getElementById('invTotalProduct').textContent=formatAmt(tp); document.getElementById('invTotalDeductions').textContent=formatAmt(td); document.getElementById('invSettledAmount').textContent=formatAmt(lp); document.getElementById('invNetAmount').textContent=formatAmt(tp-td-lp); 
+      
+      setTimeout(()=>{ document.getElementById('pdfQrCodeCanvas').innerHTML=''; new QRCode(document.getElementById('pdfQrCodeCanvas'), { text: JSON.stringify({ Vendor: vCode, NetPayable: formatAmt(tp-td-lp), Date: new Date().toISOString() }), width: 64, height: 64 }); }, 100);
     }
+    
+    function exportInvoiceExcel() { 
+      const v = document.getElementById('invVendorSelect').value; const type = document.getElementById('invFilterType').value; const sVal = document.getElementById('invSingleInput').value; const start = document.getElementById('invStartDate').value; const end = document.getElementById('invEndDate').value;
+      const ls = db.consignments.filter(c => {
+        if(v!=='ALL'&&c.vendorCode!==v) return false; if(c.productAmount === 0 && c.feeType === 'COD') return false; 
+        const cd = c.createdAt; if(type==='DATE'&&sVal&&cd!==sVal) return false; if(type==='MONTH'&&sVal&&!cd.startsWith(sVal)) return false; if(type==='YEAR'&&sVal&&!cd.startsWith(String(sVal))) return false; if(type==='RANGE') { if(start&&cd<start) return false; if(end&&cd>end) return false; } return true;
+      });
+      const data = ls.map(c => ({ "Date": c.createdAt, "ID": c.id, "Customer": c.customerName, "Fee Type": c.feeType, "Delivery Fee": c.deliveryCharge, "Product Amount": c.productAmount }));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Invoice"); XLSX.writeFile(wb, `NEXTWAY_Invoice_${v}.xlsx`);
+    }
+
     function printVendorInvoice() { document.querySelectorAll('.print-area').forEach(e=>e.classList.remove('print-area')); document.getElementById('printableInvoice').classList.add('print-area'); window.print(); }
     
+    // UTILS
     function openVendorPaymentModal() { document.getElementById('vpVendorSelect').innerHTML=db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); document.getElementById('vendorPaymentModal').classList.remove('hidden'); }
-    function saveVendorLedgerEntry(e) { e.preventDefault(); db.vendorPayments.unshift({id:'LED-'+Date.now(), vendorCode:document.getElementById('vpVendorSelect').value, type:document.getElementById('vpType').value, amount:parseFloat(document.getElementById('vpAmount').value), date:document.getElementById('vpDate').value, notes:document.getElementById('vpNotes').value}); saveDB(); closeModal('vendorPaymentModal'); renderVendorLedger(); }
-    function renderVendorLedger() { document.getElementById('vendorLedgerTableBody').innerHTML=(db.vendorPayments||[]).map(p=>`<tr><td class="p-2">${p.date}</td><td class="p-2">${p.vendorCode}</td><td class="p-2">${p.type}</td><td class="p-2">${p.amount}</td><td class="p-2">${p.notes}</td><td class="p-2">-</td><td class="p-2">-</td></tr>`).join(''); }
-    
+    function saveVendorLedgerEntry(e) { e.preventDefault(); db.vendorPayments.unshift({id:'LED-'+Date.now(), vendorCode:document.getElementById('vpVendorSelect').value, type:document.getElementById('vpType').value, amount:parseFloat(document.getElementById('vpAmount').value), date:document.getElementById('vpDate').value, notes:document.getElementById('vpNotes').value}); saveDB(); closeModal('vendorPaymentModal'); renderVendorLedger(); generateInvoicePreview(); }
+    function renderVendorLedger() { document.getElementById('vendorLedgerTableBody').innerHTML=(db.vendorPayments||[]).map(p=>`<tr><td class="p-2">${p.date}</td><td class="p-2 font-bold">${p.vendorCode}</td><td class="p-2 text-[10px] font-bold ${p.type==='PAID'?'text-emerald-700':'text-blue-700'}">${p.type}</td><td class="p-2 font-black">${formatAmt(p.amount)}</td><td class="p-2">${p.notes}</td><td class="p-2"><button onclick="deleteLedger('${p.id}')" class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded">Del</button></td></tr>`).join(''); }
+    function deleteLedger(id) { if(confirm('Delete ledger entry?')){ db.vendorPayments = db.vendorPayments.filter(x=>x.id!==id); saveDB(); renderVendorLedger(); generateInvoicePreview(); } }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function downloadBackup() { const a=document.createElement('a'); a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(db)); a.download='Backup.json'; document.body.appendChild(a); a.click(); }
     function restoreBackup(e) { const r=new FileReader(); r.onload=ev=>{db=JSON.parse(ev.target.result);saveDB();location.reload();}; r.readAsText(e.target.files[0]); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     // PWA INSTALLATION HELPER
-    let deferredPrompt;
-    const installBtn = document.getElementById('installPwaBtn');
-    
-    // Check if device is iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
-    if (isIOS && !window.navigator.standalone) {
-      installBtn.classList.remove('hidden');
-      installBtn.textContent = 'Setup iOS App';
-      installBtn.onclick = () => alert("To install the NextWay Premium app on your iPhone: \n\n1. Tap the 'Share' icon at the bottom of Safari (the square with an arrow pointing up).\n2. Scroll down and tap 'Add to Home Screen'.");
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault(); deferredPrompt = e;
-      installBtn.classList.remove('hidden');
-      installBtn.onclick = async () => { deferredPrompt.prompt(); await deferredPrompt.userChoice; installBtn.classList.add('hidden'); deferredPrompt = null; };
-    });
-
+    let deferredPrompt; const installBtn = document.getElementById('installPwaBtn');
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && !window.navigator.standalone) { installBtn.classList.remove('hidden'); installBtn.textContent = 'Setup iOS'; installBtn.onclick = () => alert("To install on iPhone: \n\n1. Tap 'Share' at the bottom of Safari.\n2. Tap 'Add to Home Screen'."); }
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.classList.remove('hidden'); installBtn.onclick = async () => { deferredPrompt.prompt(); await deferredPrompt.userChoice; installBtn.classList.add('hidden'); deferredPrompt = null; }; });
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
     initDB();
   </script>
