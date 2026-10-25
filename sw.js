@@ -1,19 +1,31 @@
-const CACHE_NAME = 'nextway-native-v4'; // Bumped to force clear old cache
-const STATIC_ASSETS = [
+const CACHE_NAME = 'nextway-premium-v1';
+const LOCAL_ASSETS = [
+  './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  './icon-192.png',
+  './icon-512.png',
+  './screenshot-mobile1.png',
+  './screenshot-desktop1.png'
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)));
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of LOCAL_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn('SW cache skip:', asset, err);
+        }
+      }
+    })
+  );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
@@ -21,42 +33,32 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
-  const url = e.request.url;
-  // NEVER cache Realtime Firebase database WebSocket/HTTP requests
-  if (e.request.method !== 'GET' || /firebaseio\.com|firebasedatabase\.app|googleapis\.com/.test(url)) {
+self.addEventListener('fetch', (event) => {
+  const url = event.request.url;
+
+  // Bypass cache for live database connections (Firebase)
+  if (
+    event.request.method !== 'GET' ||
+    /firebaseio\.com|firebasedatabase\.app|googleapis\.com|gstatic\.com/.test(url)
+  ) {
     return;
   }
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        e.waitUntil(
-          fetch(e.request).then((res) => {
-            caches.open(CACHE_NAME).then((c) => c.put(e.request, res.clone()));
-          }).catch(() => {}) 
-        );
         return cachedResponse;
       }
-      return fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((c) => c.put(e.request, copy));
-        return res;
-      }).catch(() => {
-        console.error('Offline and resource missing:', url);
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        return response;
       });
     })
   );
-});
-
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'sync-nextway-data') {
-    event.waitUntil(
-      new Promise((resolve) => {
-        self.clients.matchAll().then(clients => {
-          clients.forEach(client => client.postMessage({ type: 'BACKGROUND_SYNC' }));
-        });
-        resolve();
-      })
-    );
-  }
 });
