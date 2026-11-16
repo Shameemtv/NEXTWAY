@@ -11,6 +11,13 @@ import {
   renderConsignments, debounceRenderConsignments, adminAssignAgent 
 } from './views/dispatch.js';
 
+import {
+  generateAdminAgentReport, generateAgentFinanceReport, updateInvoiceFilterInputs, 
+  generateInvoicePreview, exportAgentDailyExcel, sendAgentReportWhatsApp, 
+  exportInvoiceExcel, printAdminAgentReport, printAgentFinanceReport, printVendorInvoice,
+  openExpenseModal, saveAgentExpense, deleteExpense, updateExpenseStatus
+} from './views/finance.js';
+
 
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
@@ -133,16 +140,16 @@ export const switchTab = (tName) => {
       renderAgentDashboard(); 
   }
   
-  // Route to pending legacy functions (still living in index.html, to be extracted later)
-  if(tName === 'agent-finance' && typeof window.generateAgentFinanceReport === 'function') window.generateAgentFinanceReport();
+  if(tName === 'agent-finance') generateAgentFinanceReport();
   if(tName === 'admin-finance' && typeof window.generateAdminFinanceTab === 'function') window.generateAdminFinanceTab();
   if(tName === 'agent-deficit' && typeof window.renderAgentDeficit === 'function') window.renderAgentDeficit();
-  if(tName === 'invoices' && typeof window.generateInvoicePreview === 'function') { 
+  
+  if(tName === 'invoices') { 
     const db = getDB();
     if(db && db.vendors) {
         document.getElementById('invVendorSelect').innerHTML = `<option value="" selected disabled></option>` + db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); 
     }
-    window.generateInvoicePreview(); 
+    generateInvoicePreview(); 
     if(typeof window.renderVendorLedger === 'function') window.renderVendorLedger(); 
   }
 };
@@ -195,6 +202,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.renderConsignments = renderConsignments;
     window.debounceRenderConsignments = debounceRenderConsignments;
     window.adminAssignAgent = adminAssignAgent;
+
+    // Bind Finance Module
+    window.generateAdminAgentReport = generateAdminAgentReport;
+    window.generateAgentFinanceReport = generateAgentFinanceReport;
+    window.updateInvoiceFilterInputs = updateInvoiceFilterInputs;
+    window.generateInvoicePreview = generateInvoicePreview;
+    window.exportAgentDailyExcel = exportAgentDailyExcel;
+    window.sendAgentReportWhatsApp = sendAgentReportWhatsApp;
+    window.exportInvoiceExcel = exportInvoiceExcel;
+    window.printAdminAgentReport = printAdminAgentReport;
+    window.printAgentFinanceReport = printAgentFinanceReport;
+    window.printVendorInvoice = printVendorInvoice;
+    window.openExpenseModal = openExpenseModal;
+    window.saveAgentExpense = saveAgentExpense;
+    window.deleteExpense = deleteExpense;
+    window.updateExpenseStatus = updateExpenseStatus;
 
     // 5. Restore Session if user was already logged in
     if (getCurrentUser()) {
