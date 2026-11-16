@@ -279,9 +279,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (getCurrentUser()) {
       enterWorkspace();
     }
-    
+    initPWA();
     console.log("NextWay Delivery Modular App initialized successfully!");
   } catch (error) {
     console.error("Failed to initialize app:", error);
   }
 });
+// ==========================================
+// PWA & SERVICE WORKER
+// ==========================================
+const initPWA = () => {
+  let deferredPrompt; 
+  const installBtn = document.getElementById('installPwaBtn');
+  
+  if (installBtn) {
+    // iOS Safari fallback instructions
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && !window.navigator.standalone) { 
+      installBtn.classList.remove('hidden'); 
+      installBtn.textContent = 'Setup iOS'; 
+      installBtn.onclick = () => alert("To install on iPhone: \n\n1. Tap 'Share' at the bottom of Safari.\n2. Tap 'Add to Home Screen'."); 
+    }
+    
+    // Android / Chrome installation prompt
+    window.addEventListener('beforeinstallprompt', (e) => { 
+      e.preventDefault(); 
+      deferredPrompt = e; 
+      installBtn.classList.remove('hidden'); 
+      installBtn.onclick = async () => { 
+        deferredPrompt.prompt(); 
+        await deferredPrompt.userChoice; 
+        installBtn.classList.add('hidden'); 
+        deferredPrompt = null; 
+      }; 
+    });
+  }
+
+  // Register the Service Worker (loads from /public/sw.js)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
+    });
+  }
+};
