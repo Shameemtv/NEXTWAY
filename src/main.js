@@ -4,6 +4,8 @@ import {
   setDashMode, renderAgentDashboard, closeDashSubScreen, 
   openDashAnalysis, openDashList, renderDashListItems 
 } from './views/dashboard.js';
+// Add this near your other imports at the top of main.js
+import { renderConsignments, debounceRenderConsignments, adminAssignAgent } from './views/dispatch.js';
 
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
