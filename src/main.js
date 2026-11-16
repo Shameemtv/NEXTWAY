@@ -1,11 +1,16 @@
 import { initDB, getCurrentUser, setCurrentUser, getDB } from './services/store.js';
 import { handleLoginSubmit } from './views/loginViews.js';
+
+// --- VIEW IMPORTS ---
 import { 
   setDashMode, renderAgentDashboard, closeDashSubScreen, 
   openDashAnalysis, openDashList, renderDashListItems 
 } from './views/dashboard.js';
-// Add this near your other imports at the top of main.js
-import { renderConsignments, debounceRenderConsignments, adminAssignAgent } from './views/dispatch.js';
+
+import { 
+  renderConsignments, debounceRenderConsignments, adminAssignAgent 
+} from './views/dispatch.js';
+
 
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
@@ -157,12 +162,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       loginForm.addEventListener('submit', handleLoginSubmit);
     }
     
-    // 3. Attach Dashboard Search Listener
-    const listSearch = document.getElementById('dashListSearchInput');
-    if (listSearch) {
-      listSearch.addEventListener('input', () => {
+    // 3. Attach Debounced Search Listeners
+    const dashListSearch = document.getElementById('dashListSearchInput');
+    if (dashListSearch) {
+      dashListSearch.addEventListener('input', () => {
          requestAnimationFrame(renderDashListItems);
       });
+    }
+
+    const dispatchSearch = document.getElementById('filterSearchText');
+    if (dispatchSearch) {
+      dispatchSearch.addEventListener('input', debounceRenderConsignments);
     }
     
     // 4. Bind Core Functions to Window (Bridge for inline HTML onclicks)
@@ -173,12 +183,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.switchTabWrapper = switchTabWrapper;
     window.toggleMoreMenu = toggleMoreMenu;
     
+    // Bind Dashboard Module
     window.setDashMode = setDashMode;
     window.renderAgentDashboard = renderAgentDashboard;
     window.closeDashSubScreen = closeDashSubScreen;
     window.openDashAnalysis = openDashAnalysis;
     window.openDashList = openDashList;
     window.renderDashListItems = renderDashListItems;
+
+    // Bind Dispatch Module
+    window.renderConsignments = renderConsignments;
+    window.debounceRenderConsignments = debounceRenderConsignments;
+    window.adminAssignAgent = adminAssignAgent;
 
     // 5. Restore Session if user was already logged in
     if (getCurrentUser()) {
