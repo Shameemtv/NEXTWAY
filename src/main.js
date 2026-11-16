@@ -24,6 +24,16 @@ import {
   clearQuotationForm, generateAndSendQuotation, printQuotation
 } from './views/documents.js';
 
+import { 
+  openNewConsignmentModal, filterVendorSelect, syncVendorPickupAddress, saveNewConsignment,
+  bulkAssign, openEditConsignmentModal, syncEditVendorPickupAddress, confirmEditConsignment,
+  executeEditConsignment, deleteConsignmentFromEdit, inspectConsignmentById, showConsignmentDetails,
+  openPodScreen, handlePodPayMethodChange, handlePodPhoto, submitPodDelivered, executePodDelivered,
+  submitPodReturn, openReturnModal, confirmReturn, viewPickupPhoto, viewDeliveryPhoto,
+  agentMarkCocCollected, markDeficitReceived, adminConfirmPendingCoc, sendWhatsAppStatus,
+  handleModalPhoto
+} from './views/consignment.js';
+
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
 // ==========================================
@@ -235,6 +245,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.clearQuotationForm = clearQuotationForm;
     window.generateAndSendQuotation = generateAndSendQuotation;
     window.printQuotation = printQuotation;
+
+    // Bind Consignment Module
+    window.openNewConsignmentModal = openNewConsignmentModal;
+    window.filterVendorSelect = filterVendorSelect;
+    window.syncVendorPickupAddress = syncVendorPickupAddress;
+    window.saveNewConsignment = saveNewConsignment;
+    window.bulkAssign = bulkAssign;
+    window.openEditConsignmentModal = openEditConsignmentModal;
+    window.syncEditVendorPickupAddress = syncEditVendorPickupAddress;
+    window.confirmEditConsignment = confirmEditConsignment;
+    window.executeEditConsignment = executeEditConsignment;
+    window.deleteConsignmentFromEdit = deleteConsignmentFromEdit;
+    window.inspectConsignmentById = inspectConsignmentById;
+    window.showConsignmentDetails = showConsignmentDetails;
+    window.openPodScreen = openPodScreen;
+    window.handlePodPayMethodChange = handlePodPayMethodChange;
+    window.handlePodPhoto = handlePodPhoto;
+    window.submitPodDelivered = submitPodDelivered;
+    window.executePodDelivered = executePodDelivered;
+    window.submitPodReturn = submitPodReturn;
+    window.openReturnModal = openReturnModal;
+    window.confirmReturn = confirmReturn;
+    window.viewPickupPhoto = viewPickupPhoto;
+    window.viewDeliveryPhoto = viewDeliveryPhoto;
+    window.agentMarkCocCollected = agentMarkCocCollected;
+    window.markDeficitReceived = markDeficitReceived;
+    window.adminConfirmPendingCoc = adminConfirmPendingCoc;
+    window.sendWhatsAppStatus = sendWhatsAppStatus;
+    window.handleModalPhoto = handleModalPhoto;
 
     // 5. Restore Session if user was already logged in
     if (getCurrentUser()) {
