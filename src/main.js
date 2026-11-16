@@ -18,6 +18,11 @@ import {
   openExpenseModal, saveAgentExpense, deleteExpense, updateExpenseStatus
 } from './views/finance.js';
 
+import {
+  toggleWaybillView, clearWaybillForm, generateAndSendWaybill,
+  addQuotationRow, removeQuotationRow, calcQtRow, calcQtGrandTotal,
+  clearQuotationForm, generateAndSendQuotation, printQuotation
+} from './views/documents.js';
 
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
@@ -218,6 +223,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.saveAgentExpense = saveAgentExpense;
     window.deleteExpense = deleteExpense;
     window.updateExpenseStatus = updateExpenseStatus;
+
+    // Bind Documents Module
+    window.toggleWaybillView = toggleWaybillView;
+    window.clearWaybillForm = clearWaybillForm;
+    window.generateAndSendWaybill = generateAndSendWaybill;
+    window.addQuotationRow = addQuotationRow;
+    window.removeQuotationRow = removeQuotationRow;
+    window.calcQtRow = calcQtRow;
+    window.calcQtGrandTotal = calcQtGrandTotal;
+    window.clearQuotationForm = clearQuotationForm;
+    window.generateAndSendQuotation = generateAndSendQuotation;
+    window.printQuotation = printQuotation;
 
     // 5. Restore Session if user was already logged in
     if (getCurrentUser()) {
