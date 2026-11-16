@@ -138,3 +138,8 @@ export const getDeficitInfo = (c) => {
     
     return { isDeficit, deficitAmt, deductionInInvoice, excludeFromNet };
 };
+// Add to the bottom of /src/utils/helpers.js
+export const closeModal = (id) => { 
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden'); 
+};
