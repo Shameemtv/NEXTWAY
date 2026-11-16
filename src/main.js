@@ -34,6 +34,18 @@ import {
   handleModalPhoto
 } from './views/consignment.js';
 
+import {
+  saveSupabaseConfigFromTab, clearSupabaseConfig, toggleCloudSyncVisibility, applySettingsUi,
+  archiveOldDeliveries, purgeOldPhotos60Days, clearAllConsignments, downloadBackup, restoreBackup,
+  downloadImportTemplate, importConsignmentsFromExcel, toggleAutoAdjust, openVendorModal,
+  openEditVendorModal, saveVendor, deleteVendor, renderVendors, openVendorPaymentModal,
+  saveVendorLedgerEntry, renderVendorLedger, deleteLedger, openVendorSettlementOtpModal,
+  sendSettlementOtp, verifySettlementOtp, cancelSettlementOtp, openAgentModal, saveAgent,
+  renderAgents, setAgentStatus, adminDeleteAgent, adminResetAgentPassword, openCredentialsModal,
+  changeOwnPassword, renderConfirmations, generateAdminFinanceTab
+} from './views/admin.js';
+
+
 // ==========================================
 // CORE SHELL & NAVIGATION LOGIC
 // ==========================================
@@ -92,10 +104,8 @@ export const enterWorkspace = () => {
   // Route to initial tab
   switchTab(isA ? 'consignments' : 'dashboard'); 
   
-  // Trigger global refresh (Calling back to index.html bridge temporarily)
-  if (typeof window.refreshAllViews === 'function') {
-    window.refreshAllViews();
-  }
+  // Trigger global component refresh
+  refreshAllViews();
 };
 
 export const logout = () => { 
@@ -150,13 +160,11 @@ export const switchTab = (tName) => {
   });
   
   // Route to extracted ES Modules
-  if(tName === 'dashboard') { 
-      closeDashSubScreen(); 
-      renderAgentDashboard(); 
-  }
-  
+  if(tName === 'dashboard') { closeDashSubScreen(); renderAgentDashboard(); }
   if(tName === 'agent-finance') generateAgentFinanceReport();
-  if(tName === 'admin-finance' && typeof window.generateAdminFinanceTab === 'function') window.generateAdminFinanceTab();
+  if(tName === 'admin-finance') generateAdminFinanceTab();
+  
+  // Check if we need to render the deficit screen, depending on where it's housed. 
   if(tName === 'agent-deficit' && typeof window.renderAgentDeficit === 'function') window.renderAgentDeficit();
   
   if(tName === 'invoices') { 
@@ -165,9 +173,79 @@ export const switchTab = (tName) => {
         document.getElementById('invVendorSelect').innerHTML = `<option value="" selected disabled></option>` + db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); 
     }
     generateInvoicePreview(); 
-    if(typeof window.renderVendorLedger === 'function') window.renderVendorLedger(); 
+    renderVendorLedger(); 
   }
 };
+
+export const refreshAllViews = () => {
+    applySettingsUi();
+    renderConsignments();
+    renderConfirmations();
+    
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role === 'ADMIN') { 
+        renderVendors(); 
+        renderAgents(); 
+        generateAdminFinanceTab();
+    }
+    
+    renderAgentDashboard();
+    
+    const dashListScreen = document.getElementById('dashListScreen');
+    if (dashListScreen && !dashListScreen.classList.contains('hidden')) {
+        renderDashListItems();
+    }
+
+    if (currentUser && currentUser.role === 'AGENT' && typeof window.renderAgentDeficit === 'function'){ 
+        window.renderAgentDeficit(); 
+    }
+};
+
+export const updateSyncBadge = (state, label) => {
+    const dot = document.getElementById('syncDot');
+    if (!dot) return; 
+    dot.title = label;
+    if (state === 'LIVE') { dot.className = 'w-2.5 h-2.5 rounded-full bg-[#10b981] shadow ring-2 ring-[#10b981]/20 animate-pulse'; }
+    else if (state === 'SYNCING') { dot.className = 'w-2.5 h-2.5 rounded-full bg-[#c9a24b] shadow ring-2 ring-[#c9a24b]/20 animate-pulse'; }
+    else { dot.className = 'w-2.5 h-2.5 rounded-full bg-[#f43f5e] shadow ring-2 ring-[#f43f5e]/20'; }
+};
+
+// ==========================================
+// PWA & SERVICE WORKER
+// ==========================================
+const initPWA = () => {
+  let deferredPrompt; 
+  const installBtn = document.getElementById('installPwaBtn');
+  
+  if (installBtn) {
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && !window.navigator.standalone) { 
+      installBtn.classList.remove('hidden'); 
+      installBtn.textContent = 'Setup iOS'; 
+      installBtn.onclick = () => alert("To install on iPhone: \n\n1. Tap 'Share' at the bottom of Safari.\n2. Tap 'Add to Home Screen'."); 
+    }
+    
+    window.addEventListener('beforeinstallprompt', (e) => { 
+      e.preventDefault(); 
+      deferredPrompt = e; 
+      installBtn.classList.remove('hidden'); 
+      installBtn.onclick = async () => { 
+        deferredPrompt.prompt(); 
+        await deferredPrompt.userChoice; 
+        installBtn.classList.add('hidden'); 
+        deferredPrompt = null; 
+      }; 
+    });
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
+    });
+  }
+};
+
 
 // ==========================================
 // APP INITIALIZATION
@@ -204,6 +282,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.switchTab = switchTab;
     window.switchTabWrapper = switchTabWrapper;
     window.toggleMoreMenu = toggleMoreMenu;
+    window.refreshAllViews = refreshAllViews;
+    window.updateSyncBadge = updateSyncBadge;
     
     // Bind Dashboard Module
     window.setDashMode = setDashMode;
@@ -275,51 +355,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.sendWhatsAppStatus = sendWhatsAppStatus;
     window.handleModalPhoto = handleModalPhoto;
 
+    // Bind Admin Module
+    window.saveSupabaseConfigFromTab = saveSupabaseConfigFromTab;
+    window.clearSupabaseConfig = clearSupabaseConfig;
+    window.toggleCloudSyncVisibility = toggleCloudSyncVisibility;
+    window.applySettingsUi = applySettingsUi;
+    window.archiveOldDeliveries = archiveOldDeliveries;
+    window.purgeOldPhotos60Days = purgeOldPhotos60Days;
+    window.clearAllConsignments = clearAllConsignments;
+    window.downloadBackup = downloadBackup;
+    window.restoreBackup = restoreBackup;
+    window.downloadImportTemplate = downloadImportTemplate;
+    window.importConsignmentsFromExcel = importConsignmentsFromExcel;
+    window.toggleAutoAdjust = toggleAutoAdjust;
+    window.openVendorModal = openVendorModal;
+    window.openEditVendorModal = openEditVendorModal;
+    window.saveVendor = saveVendor;
+    window.deleteVendor = deleteVendor;
+    window.renderVendors = renderVendors;
+    window.openVendorPaymentModal = openVendorPaymentModal;
+    window.saveVendorLedgerEntry = saveVendorLedgerEntry;
+    window.renderVendorLedger = renderVendorLedger;
+    window.deleteLedger = deleteLedger;
+    window.openVendorSettlementOtpModal = openVendorSettlementOtpModal;
+    window.sendSettlementOtp = sendSettlementOtp;
+    window.verifySettlementOtp = verifySettlementOtp;
+    window.cancelSettlementOtp = cancelSettlementOtp;
+    window.openAgentModal = openAgentModal;
+    window.saveAgent = saveAgent;
+    window.renderAgents = renderAgents;
+    window.setAgentStatus = setAgentStatus;
+    window.adminDeleteAgent = adminDeleteAgent;
+    window.adminResetAgentPassword = adminResetAgentPassword;
+    window.openCredentialsModal = openCredentialsModal;
+    window.changeOwnPassword = changeOwnPassword;
+    window.renderConfirmations = renderConfirmations;
+    window.generateAdminFinanceTab = generateAdminFinanceTab;
+
+    // Initialize PWA Service Worker
+    initPWA();
+
     // 5. Restore Session if user was already logged in
     if (getCurrentUser()) {
       enterWorkspace();
     }
-    initPWA();
+    
     console.log("NextWay Delivery Modular App initialized successfully!");
   } catch (error) {
     console.error("Failed to initialize app:", error);
   }
 });
-// ==========================================
-// PWA & SERVICE WORKER
-// ==========================================
-const initPWA = () => {
-  let deferredPrompt; 
-  const installBtn = document.getElementById('installPwaBtn');
-  
-  if (installBtn) {
-    // iOS Safari fallback instructions
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && !window.navigator.standalone) { 
-      installBtn.classList.remove('hidden'); 
-      installBtn.textContent = 'Setup iOS'; 
-      installBtn.onclick = () => alert("To install on iPhone: \n\n1. Tap 'Share' at the bottom of Safari.\n2. Tap 'Add to Home Screen'."); 
-    }
-    
-    // Android / Chrome installation prompt
-    window.addEventListener('beforeinstallprompt', (e) => { 
-      e.preventDefault(); 
-      deferredPrompt = e; 
-      installBtn.classList.remove('hidden'); 
-      installBtn.onclick = async () => { 
-        deferredPrompt.prompt(); 
-        await deferredPrompt.userChoice; 
-        installBtn.classList.add('hidden'); 
-        deferredPrompt = null; 
-      }; 
-    });
-  }
-
-  // Register the Service Worker (loads from /public/sw.js)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('Service Worker registration failed:', err);
-      });
-    });
-  }
-};
