@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { pushLocalDBToCloud } from './sync.js'; // We will build this next
+import { pushLocalDBToCloud } from './sync.js';
 
 const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';
 
@@ -29,8 +29,9 @@ export const saveDB = async () => {
   await localforage.setItem(DB_KEY, JSON.stringify(db)); 
   
   // Trigger cloud sync automatically whenever local DB saves
+  // We pass null for the UI callback here (the UI can handle its own loading states)
   if (!isApplyingRemoteUpdate) { 
-    pushLocalDBToCloud(db); 
+    pushLocalDBToCloud(db, null); 
   }
 };
 
