@@ -717,10 +717,10 @@
                               <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider">Orgin</th>
                               <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider">Consignee</th>
                               <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider">Destination</th>
-                              <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider">WGT</th>
+                              <th class="py-2.5 px-1 border-r border-gray-700 font-extrabold uppercase tracking-wider">WGT</th>
                               <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right">Amount</th>
-                              <th class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right">Discount</th>
-                              <th id="thVatPct" class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right">Vat(%)</th>
+                              <th class="py-2.5 px-1 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right w-10 sm:w-12">Disc.</th>
+                              <th id="thVatPct" class="py-2.5 px-1 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right w-10 sm:w-12">Vat(%)</th>
                               <th id="thVatAmt" class="py-2.5 px-2 border-r border-gray-700 font-extrabold uppercase tracking-wider text-right">VAT Amt</th>
                               <th class="py-2.5 px-2 font-extrabold uppercase tracking-wider text-right">Total</th>
                           </tr>
@@ -732,7 +732,7 @@
               <div class="flex justify-end mt-8 text-xs">
                   <table class="w-80 text-right text-xs tabular-nums">
                       <tr><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total Amount</td><td class="py-1.5 font-black" id="taxTotalAmt"></td></tr>
-                      <tr><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total Discount</td><td class="py-1.5 font-black">0.000</td></tr>
+                      <tr><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total Discount</td><td class="py-1.5 font-black">0.00</td></tr>
                       <tr id="rowTotalBeforeVat"><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total before VAT</td><td class="py-1.5 font-black" id="taxTotalBeforeVat"></td></tr>
                       <tr id="rowTotalVat"><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Vat Amount (5%)</td><td class="py-1.5 font-black" id="taxTotalVat"></td></tr>
                       <tr class="border-t-2 border-gray-900"><td class="py-3 text-gray-900 font-black uppercase tracking-widest">Net Invoice Amount</td><td class="py-3 font-black text-xl text-gray-900" id="taxNetAmt"></td></tr>
@@ -3961,18 +3961,18 @@
                 <td class="py-2.5 px-2 border-r border-gray-200 border-b">${c.pickupFrom || 'Dubai'}</td>
                 <td class="py-2.5 px-2 border-r border-gray-200 border-b uppercase font-bold">${c.customerName || ''}</td>
                 <td class="py-2.5 px-2 border-r border-gray-200 border-b">${c.deliveryAddress || ''}</td>
-                <td class="py-2.5 px-2 border-r border-gray-200 border-b">${c.weight || 0.5}</td>
-                <td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">${amount.toFixed(3)}</td>
-                <td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">0.000</td>
-                ${!isNoVat ? `<td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">5.000</td><td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">${vatAmt.toFixed(3)}</td>` : ''}
-                <td class="py-2.5 px-2 border-b text-right font-bold">${total.toFixed(3)}</td>
+                <td class="py-2.5 px-1 border-r border-gray-200 border-b">${c.weight || 0.5}</td>
+                <td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">${amount.toFixed(2)}</td>
+                <td class="py-2.5 px-1 border-r border-gray-200 border-b text-right font-bold">0.00</td>
+                ${!isNoVat ? `<td class="py-2.5 px-1 border-r border-gray-200 border-b text-right font-bold">5.00</td><td class="py-2.5 px-2 border-r border-gray-200 border-b text-right font-bold">${vatAmt.toFixed(2)}</td>` : ''}
+                <td class="py-2.5 px-2 border-b text-right font-bold">${total.toFixed(2)}</td>
             </tr>`;
         }).join('');
 
-        document.getElementById('taxTotalAmt').textContent = tAmt.toFixed(3);
-        document.getElementById('taxTotalBeforeVat').textContent = tBeforeVat.toFixed(3);
-        document.getElementById('taxTotalVat').textContent = tVat.toFixed(3);
-        document.getElementById('taxNetAmt').textContent = tAmt.toFixed(3);
+        document.getElementById('taxTotalAmt').textContent = tAmt.toFixed(2);
+        document.getElementById('taxTotalBeforeVat').textContent = tBeforeVat.toFixed(2);
+        document.getElementById('taxTotalVat').textContent = tVat.toFixed(2);
+        document.getElementById('taxNetAmt').textContent = tAmt.toFixed(2);
 
     } else {
         document.getElementById('standardInvoiceWrap').classList.remove('hidden');
