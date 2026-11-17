@@ -1474,13 +1474,19 @@
               </div>
           </div>
 
-          <!-- D.O Collection ENTRY (Enabled) -->
+          <!-- D.O Collection ENTRY (Enabled & Mutually Exclusive) -->
           <div class="rounded-xl overflow-hidden shadow-sm border border-[var(--border-color)]">
               <div class="bg-[var(--status-rose)] text-white font-black text-[11px] tracking-widest uppercase p-3 border-b border-[var(--status-rose)]">D.O Collection ENTRY</div>
               <div class="bg-[var(--bg-surface)] p-4 space-y-4">
                   <div class="flex gap-4 text-xs font-bold text-[var(--text-primary)]">
-                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="podDoCollected" class="w-4 h-4 rounded accent-[var(--status-rose)] transition-all" /> DO Collected</label>
-                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="podDoToBeCollected" class="w-4 h-4 rounded accent-[var(--status-rose)] transition-all" /> DO To Be Collected</label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" id="podDoCollected" onchange="if(this.checked) document.getElementById('podDoToBeCollected').checked = false;" class="w-4 h-4 rounded accent-[var(--status-rose)] transition-all" /> 
+                          DO Collected
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" id="podDoToBeCollected" onchange="if(this.checked) document.getElementById('podDoCollected').checked = false;" class="w-4 h-4 rounded accent-[var(--status-rose)] transition-all" /> 
+                          DO To Be Collected
+                      </label>
                   </div>
                   <div>
                       <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">DO Remarks</label>
