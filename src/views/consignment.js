@@ -14,46 +14,117 @@ let tempPhotoData = null;
 // ==========================================
 // CREATE & EDIT CONSIGNMENT
 // ==========================================
-export const openNewConsignmentModal = () => {
+export const resetNewConsignmentForm = (retainMerchant = false) => {
     const db = getDB();
     const currentUser = getCurrentUser();
-    
+
     document.getElementById('cIdInput').value = '';
-    document.getElementById('cVendorSearch').value = '';
-    document.getElementById('cVendorSelect').innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join(''); 
-    syncVendorPickupAddress();
+    
+    if (!retainMerchant) {
+        document.getElementById('cVendorSearch').value = '';
+        document.getElementById('cVendorSelect').innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
+        syncVendorPickupAddress();
+    }
     
     const agSelect = document.getElementById('cAgentSelect');
     const puSelect = document.getElementById('cPickedUpBy');
     const agentPoolOptions = db.users.filter(u=>u.role==='AGENT'&&u.status==='ACTIVE').map(a=>`<option value="${a.id}">${a.name} - ${a.id}</option>`).join('');
 
     if (currentUser.role === 'ADMIN') {
-      agSelect.innerHTML = `<option value="">-- Pool --</option>` + agentPoolOptions;
-      document.getElementById('agentSelectContainer').classList.remove('hidden');
-      
-      puSelect.innerHTML = `<option value="">-- Select Picker --</option>` + agentPoolOptions;
-      puSelect.disabled = false;
-      puSelect.classList.remove('bg-[var(--border-color-strong)]');
+        agSelect.innerHTML = `<option value="">-- Pool --</option>` + agentPoolOptions;
+        document.getElementById('agentSelectContainer').classList.remove('hidden');
+        
+        puSelect.innerHTML = `<option value="">-- Select Picker --</option>` + agentPoolOptions;
+        puSelect.disabled = false;
+        puSelect.classList.remove('bg-[var(--border-color-strong)]');
     } else {
-      agSelect.innerHTML = `<option value="">-- Unassigned Pool --</option>`;
-      document.getElementById('agentSelectContainer').classList.add('hidden');
-      
-      puSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name} - ${currentUser.id}</option>`;
-      puSelect.value = currentUser.id;
-      puSelect.disabled = true;
-      puSelect.classList.add('bg-[var(--border-color-strong)]');
+        agSelect.innerHTML = `<option value="">-- Unassigned Pool --</option>`;
+        document.getElementById('agentSelectContainer').classList.add('hidden');
+        
+        puSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name} - ${currentUser.id}</option>`;
+        puSelect.value = currentUser.id;
+        puSelect.disabled = true;
+        puSelect.classList.add('bg-[var(--border-color-strong)]');
     }
     
-    document.getElementById('cWeight').value = "1";
-    document.getElementById('cPieces').value = "1";
+    // Blank all specific fields but retain +971
+    document.getElementById('cWeight').value = "";
+    document.getElementById('cPieces').value = "";
     document.getElementById('cCustomerName').value = ''; 
     document.getElementById('cCustomerPhone').value = '+971'; 
     document.getElementById('cDeliveryAddress').value = ''; 
-    document.getElementById('cRefVendorName').value = '';
-    document.getElementById('cRefVendorPhone').value = '';
+    document.getElementById('cProductAmt').value = '';
+    document.getElementById('cDeliveryFee').value = '';
     
+    if(document.getElementById('cRefVendorName')) document.getElementById('cRefVendorName').value = '';
+    if(document.getElementById('cRefVendorPhone')) document.getElementById('cRefVendorPhone').value = '';
+};
+
+export const openNewConsignmentModal = () => {
+    resetNewConsignmentForm(false);
     document.getElementById('consignmentModal').classList.remove('hidden');
 };
+
+export const saveNewConsignment = (e) => {
+    e.preventDefault(); 
+    const db = getDB();
+    const id = document.getElementById('cIdInput').value.trim().toUpperCase(); 
+    if (db.consignments.some(c=>c.id.toUpperCase()===id)) { alert('ID exists!'); return; }
+    
+    // Launch Confirmation Modal instead of saving directly
+    document.getElementById('actionModalTitle').textContent = `Add New Consignment`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">Are you sure you want to log this consignment?</p>
+        <p class="text-xl font-black text-[var(--status-emerald)] tracking-widest tabular-nums uppercase">${id}</p>
+      </div>
+      <button onclick="window.executeNewConsignment()" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">Confirm Entry</button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeNewConsignment = async () => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    
+    const id = document.getElementById('cIdInput').value.trim().toUpperCase(); 
+    const ag = document.getElementById('cAgentSelect').value || null; 
+    const isAgent = currentUser.role === 'AGENT';
+    const pickedUpBy = isAgent ? currentUser.id : (document.getElementById('cPickedUpBy').value || null);
+    
+    const pAmt = parseFloat(document.getElementById('cProductAmt').value)||0;
+    const dFee = parseFloat(document.getElementById('cDeliveryFee').value)||0;
+    const fType = document.getElementById('cFeeType').value;
+    const weightVal = parseFloat(document.getElementById('cWeight').value) || 1;
+    const piecesVal = parseInt(document.getElementById('cPieces').value, 10) || 1;
+    
+    let deficitReceivedDate = (fType === 'COC') ? getUAEISOString() : null;
+    let initialStatus = ag ? 'Assigned' : 'Created';
+    if (pickedUpBy) initialStatus = ag ? 'Out for delivery' : 'Picked Up';
+    
+    db.consignments.unshift({ 
+      id, vendorCode: document.getElementById('cVendorSelect').value, pickupFrom: document.getElementById('cPickupFrom').value, 
+      refVendorName: document.getElementById('cRefVendorName') ? document.getElementById('cRefVendorName').value.trim() : '',
+      refVendorPhone: document.getElementById('cRefVendorPhone') ? document.getElementById('cRefVendorPhone').value.trim() : '',
+      customerName: document.getElementById('cCustomerName').value, customerPhone: document.getElementById('cCustomerPhone').value, 
+      deliveryAddress: document.getElementById('cDeliveryAddress').value, productAmount: pAmt, deliveryCharge: dFee, feeType: fType, 
+      weight: weightVal, pieces: piecesVal, pendingModification: null, assignedTo: ag, pickedUpBy: pickedUpBy, deficitReceivedDate: deficitReceivedDate,
+      cocPendingAmount: 0, cocStatus: null, status: initialStatus, qrGenerated: false, otpCode: String(Math.floor(1000+Math.random()*9000)), 
+      otpVerified: false, pickupPhoto: null, deliveryPhoto: null, returnReason: '', createdAt: getUAEISOString().split('T')[0], 
+      pickedUpAt: pickedUpBy ? getUAEISOString() : null, deliveredAt: null 
+    });
+    
+    await saveDB(); 
+    closeModal('actionModal'); // Close confirmation prompt
+    
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (isAgent) { alert("Consignment Picked Up and added to the Unassigned Pool."); }
+    
+    // Clear screen for the next input but retain the selected Merchant
+    resetNewConsignmentForm(true);
+};
+// Add to window namespace (if using module)
+window.executeNewConsignment = executeNewConsignment;
 
 export const filterVendorSelect = () => {
     const db = getDB();
@@ -377,6 +448,10 @@ export const showConsignmentDetails = (cid) => {
               <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">NCND Collected:</b> <span class="font-bold tabular-nums">${c.podData.ncndCollected} ${c.podData.ncndPayMethod === 'Cheque' ? '(Cheque)' : ''}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.ncndRemarks || 'N/A'}</span></p>
               <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">Payment Mode:</b> <span class="font-bold">${c.podData.payMethod}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.payModeRemarks || 'N/A'}</span></p>
               <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">COD Collected:</b> <span class="font-bold tabular-nums">${c.podData.codCollected}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.codRemarks || 'N/A'}</span></p>
+          ${(c.podData.doCollected || c.podData.doToBeCollected || c.podData.doRemarks) ? `
+          <div class="h-px bg-[#f43f5e]/20 w-full my-2"></div>
+          <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">D.O Status:</b> <span class="font-bold">${c.podData.doCollected ? 'Collected' : (c.podData.doToBeCollected ? 'To Be Collected' : 'None')}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.doRemarks || 'N/A'}</span></p>
+          ` : ''}
           </div>
           ` : ''}
         </div>
@@ -508,6 +583,9 @@ export const openPodScreen = (cid) => {
     document.getElementById('podShipper').textContent = v ? v.name : c.vendorCode;
     document.getElementById('podConsignee').textContent = c.customerName;
     document.getElementById('podReceiverName').value = '';
+    document.getElementById('podDoCollected').checked = false;
+    document.getElementById('podDoToBeCollected').checked = false;
+    document.getElementById('podDoRemarks').value = '';
     
     document.getElementById('podNcndAmount').value = c.productAmount || 0;
     document.getElementById('podNcndCollected').value = c.productAmount || 0;
@@ -609,6 +687,9 @@ export const executePodDelivered = async (cid) => {
     const courierCharge = parseFloat(document.getElementById('podCourierCharge').value) || 0;
     const codCol = parseFloat(document.getElementById('podCodCollected').value) || 0;
     const codRemarks = document.getElementById('podCodRemarks').value.trim();
+    const doCollected = document.getElementById('podDoCollected').checked;
+    const doToBeCollected = document.getElementById('podDoToBeCollected').checked;
+    const doRemarks = document.getElementById('podDoRemarks').value.trim();
 
     const btn = document.querySelector('#actionModal button');
     if (btn) {
@@ -636,7 +717,10 @@ export const executePodDelivered = async (cid) => {
         payMethod: selectedPayMethod,
         payModeRemarks: payModeRemarks,
         codCollected: codCol,
-        codRemarks: codRemarks
+        codRemarks: codRemarks,
+        doCollected: doCollected,
+        doToBeCollected: doToBeCollected,
+        doRemarks: doRemarks
     };
     
     await saveDB();
