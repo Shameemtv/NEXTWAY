@@ -31,7 +31,8 @@ import {
   openPodScreen, handlePodPayMethodChange, handlePodPhoto, submitPodDelivered, executePodDelivered,
   submitPodReturn, openReturnModal, confirmReturn, viewPickupPhoto, viewDeliveryPhoto,
   agentMarkCocCollected, markDeficitReceived, adminConfirmPendingCoc, sendWhatsAppStatus,
-  handleModalPhoto
+  handleModalPhoto,
+  adminAssignRto, agentSubmitRtoToMerchant, adminConfirmRtoReturn
 } from './views/consignment.js';
 
 import {
@@ -354,6 +355,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.adminConfirmPendingCoc = adminConfirmPendingCoc;
     window.sendWhatsAppStatus = sendWhatsAppStatus;
     window.handleModalPhoto = handleModalPhoto;
+    window.adminAssignRto = adminAssignRto;
+    window.agentSubmitRtoToMerchant = agentSubmitRtoToMerchant;
+    window.adminConfirmRtoReturn = adminConfirmRtoReturn;
 
     // Bind Admin Module
     window.saveSupabaseConfigFromTab = saveSupabaseConfigFromTab;
