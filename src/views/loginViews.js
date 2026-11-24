@@ -1,5 +1,4 @@
 import { login } from '../services/auth.js';
-import { enterWorkspace } from '../main.js';
 
 export const handleLoginSubmit = async (event) => {
   event.preventDefault();
@@ -10,7 +9,6 @@ export const handleLoginSubmit = async (event) => {
   
   errBox.classList.add('hidden');
 
-  // Call the auth service
   const result = await login(uName, pass);
 
   if (!result.success) {
@@ -19,7 +17,6 @@ export const handleLoginSubmit = async (event) => {
     return;
   }
 
-  // Success! Clean up UI and transition to app
   document.getElementById('loginPassword').value = ''; 
-  enterWorkspace();
+  if (typeof window.enterWorkspace === 'function') window.enterWorkspace();
 };

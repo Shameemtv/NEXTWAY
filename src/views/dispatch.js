@@ -1,5 +1,6 @@
+// /src/views/dispatch.js
 import { getDB, getCurrentUser, saveDB } from '../services/store.js';
-import { getVendorByCode, getAgentName, formatAmt } from '../utils/helpers.js';
+import { getVendorByCode } from '../utils/helpers.js';
 
 let searchDebounceTimer = null;
 
@@ -36,10 +37,10 @@ export const renderConsignments = () => {
           if (c.pickedUpBy === currentUser.id && !isAssigned) return false;
           if (!isAssigned && !isPool) return false;
       }
-      if (stat === 'PENDING_ALL') { if(c.status === 'Delivered' || c.status === 'Returned') return false; } 
+      if (stat === 'PENDING_ALL') { if (c.status === 'Delivered' || c.status === 'Returned') return false; } 
       else if (stat !== 'ALL' && c.status !== stat) return false;
       
-      if (isA && slc !== 'ALL') { if(slc === 'UNASSIGNED' && c.assignedTo) return false; if(slc !== 'UNASSIGNED' && c.assignedTo !== slc) return false; }
+      if (isA && slc !== 'ALL') { if (slc === 'UNASSIGNED' && c.assignedTo) return false; if (slc !== 'UNASSIGNED' && c.assignedTo !== slc) return false; }
       if (q && !`${c.id} ${c.customerName} ${c.vendorCode}`.toLowerCase().includes(q)) return false; 
       return true;
     });
@@ -83,21 +84,21 @@ export const renderConsignments = () => {
 export const adminAssignAgent = async (cid, aid) => { 
     const currentUser = getCurrentUser();
     const db = getDB();
-    if(currentUser.role !== 'ADMIN') return; 
+    if (currentUser.role !== 'ADMIN') return; 
     
     const c = db.consignments.find(x => x.id === cid); 
-    if(!c || c.status === 'Delivered') return; 
+    if (!c || c.status === 'Delivered') return; 
     
     const actionText = aid ? 'assign' : 'unassign';
-    if(!confirm(`Are you sure you want to ${actionText} this consignment?`)) {
+    if (!confirm(`Are you sure you want to ${actionText} this consignment?`)) {
       renderConsignments(); 
       return;
     }
 
     c.assignedTo = aid || null; 
-    if(c.status === 'Created' && aid) c.status = 'Assigned'; 
-    if(!aid && c.status === 'Assigned') c.status = 'Created'; 
-    if(c.status === 'Picked Up' && aid) c.status = 'Out for delivery';
+    if (c.status === 'Created' && aid) c.status = 'Assigned'; 
+    if (!aid && c.status === 'Assigned') c.status = 'Created'; 
+    if (c.status === 'Picked Up' && aid) c.status = 'Out for delivery';
     
     await saveDB(); 
     renderConsignments(); 

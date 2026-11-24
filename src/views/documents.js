@@ -91,8 +91,9 @@ export const generateAndSendWaybill = () => {
 
         const random4 = Math.floor(1000 + Math.random() * 9000).toString();
         const bcCanvas = document.createElement('canvas');
-        if (typeof window.JsBarcode !== 'undefined') {
-            window.JsBarcode(bcCanvas, random4, { height: 40, width: 2, displayValue: false, margin: 0, background: "transparent" });
+        const jsBarcodeFn = window['JsBarcode'];
+        if (typeof jsBarcodeFn === 'function') {
+            jsBarcodeFn(bcCanvas, random4, { height: 40, width: 2, displayValue: false, margin: 0, background: "transparent" });
             ctx.drawImage(bcCanvas, 780 * scaleX, 40 * scaleY, 160 * scaleX, 50 * scaleY);
         }
         
@@ -113,7 +114,7 @@ export const generateAndSendWaybill = () => {
 
             if (cleanPhone) {
                 setTimeout(() => {
-                    if(confirm('Image Saved to downloads! Open WhatsApp to attach and send?')) {
+                    if (confirm('Image Saved to downloads! Open WhatsApp to attach and send?')) {
                         const message = encodeURIComponent("Please find the attached Waybill.");
                         window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${message}`, '_blank');
                     }
@@ -156,12 +157,12 @@ export const removeQuotationRow = (btn) => {
 export const calcQtRow = (el) => {
     const row = el.closest('.qt-item-row');
     const qtyRaw = row.querySelector('.qt-qty').value;
-    const qtyMatch = qtyRaw.match(/[\d\.]+/);
+    const qtyMatch = qtyRaw.match(/[\d.]+/);
     const qty = qtyMatch ? parseFloat(qtyMatch[0]) : 0;
     
     const price = parseFloat(row.querySelector('.qt-price').value) || 0;
     
-    if(qty > 0 && price > 0) {
+    if (qty > 0 && price > 0) {
         row.querySelector('.qt-total').value = (qty * price).toFixed(2);
     } else {
         row.querySelector('.qt-total').value = '';
@@ -221,7 +222,7 @@ export const generateQuotationCanvas = (callback) => {
         const dateVal = document.getElementById('qt_date').value;
         if (dateVal) {
             const d = new Date(dateVal);
-            const ds = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+            const ds = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
             ctx.fillStyle = '#404040'; 
             ctx.font = `normal ${14 * scaleY}px Helvetica`;
             ctx.fillText(ds, 830 * scaleX, 185 * scaleY); 
@@ -288,7 +289,7 @@ export const generateAndSendQuotation = () => {
 
             if (cleanPhone) {
                 setTimeout(() => {
-                    if(confirm('Quotation Saved to downloads! Open WhatsApp to attach and send?')) {
+                    if (confirm('Quotation Saved to downloads! Open WhatsApp to attach and send?')) {
                         const message = encodeURIComponent("Please find the attached Quotation from NextWay Delivery.");
                         window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${message}`, '_blank');
                     }
