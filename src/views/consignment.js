@@ -476,6 +476,9 @@ export const showConsignmentDetails = (cid) => {
     const isA = currentUser.role === 'ADMIN';
     const ags = db.users.filter(u=>u.role==='AGENT'&&u.status==='ACTIVE');
     
+    const rtoDefaultPicker = c.rtoAssignedTo || c.pickedUpBy || '';
+    const rtoStatusText = c.rtoStatus || 'PENDING_RTO_ASSIGNMENT';
+
     let actionButtons = `<div class="flex flex-wrap gap-2 pt-5 border-t border-[var(--border-color)]">`;
     
     if (isA) {
@@ -508,6 +511,32 @@ export const showConsignmentDetails = (cid) => {
         }
     }
     
+    if (c.status === 'Returned') {
+        if (isA) {
+            actionButtons += `
+            <div class="w-full mt-3 p-3 rounded-xl bg-[var(--bg-base)] border border-[var(--border-color)] space-y-2">
+                <div class="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest">
+                    <span class="text-[var(--text-secondary)]">RTO Pickup Person:</span>
+                    <span class="text-[var(--accent-gold)]">${rtoStatusText}</span>
+                </div>
+                <select onchange="window.adminAssignRto('${c.id}', this.value)" class="w-full border border-[var(--border-color)] rounded-xl px-3 py-2 text-xs font-bold bg-[var(--bg-surface)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)]">
+                    <option value="">-- Select Pickup Person for RTO --</option>
+                    ${ags.map(a => `<option value="${a.id}" ${rtoDefaultPicker === a.id ? 'selected' : ''}>${a.name} - ${a.id}</option>`).join('')}
+                </select>
+                ${c.rtoStatus === 'SUBMITTED_TO_MERCHANT' ? `
+                    <button onclick="window.adminConfirmRtoReturn('${c.id}')" class="w-full mt-2 bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-2.5 px-4 rounded-xl text-[10px] uppercase tracking-widest shadow-sm">
+                        Confirm RTO Return to Merchant
+                    </button>
+                ` : ''}
+            </div>`;
+        } else if (c.rtoAssignedTo === currentUser.id && c.rtoStatus === 'ASSIGNED_RTO') {
+            actionButtons += `
+                <button onclick="window.agentSubmitRtoToMerchant('${c.id}')" class="w-full mt-2 bg-[var(--status-blue)] hover:bg-[#2563eb] text-white font-extrabold py-2.5 px-4 rounded-xl text-[10px] uppercase tracking-widest shadow-sm">
+                    Submit RTO to Merchant
+                </button>`;
+        }
+    }
+
     actionButtons += `</div>`;
     document.getElementById('inspectContent').innerHTML = html + actionButtons; 
     document.getElementById('inspectModal').classList.remove('hidden'); 
@@ -766,6 +795,70 @@ export const confirmReturn = async (cid) => {
     await saveDB();
     closeModal('actionModal');
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
+export const adminAssignRto = async (cid, agentId) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'ADMIN') return;
+    if (!agentId) return alert('Please select a Pickup Person for RTO.');
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c || c.status !== 'Returned') return;
+
+    const agent = db.users.find(u => u.id === agentId);
+    const label = agent ? `${agent.name} - ${agent.id}` : agentId;
+    if (!confirm(`Assign consignment ${c.id} for RTO to ${label}?`)) return;
+
+    c.rtoAssignedTo = agentId;
+    c.rtoStatus = 'ASSIGNED_RTO';
+    c.rtoAssignedAt = getUAEISOString();
+
+    await saveDB();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    showConsignmentDetails(c.id);
+};
+
+export const agentSubmitRtoToMerchant = async (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c || !currentUser) return;
+
+    if (currentUser.role !== 'ADMIN' && c.rtoAssignedTo !== currentUser.id) {
+        return alert('Only the assigned RTO pickup person can submit this consignment.');
+    }
+    if (!confirm(`Confirm you have submitted returned consignment ${c.id} back to the merchant?`)) return;
+
+    c.rtoStatus = 'SUBMITTED_TO_MERCHANT';
+    c.rtoSubmittedAt = getUAEISOString();
+    c.rtoSubmittedBy = currentUser.id;
+
+    await saveDB();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (!document.getElementById('inspectModal').classList.contains('hidden')) {
+        showConsignmentDetails(c.id);
+    }
+};
+
+export const adminConfirmRtoReturn = async (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'ADMIN') return;
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+    if (!confirm(`Confirm that consignment ${c.id} has been returned to the merchant?`)) return;
+
+    c.rtoStatus = 'CONFIRMED_BY_ADMIN';
+    c.rtoConfirmedAt = getUAEISOString();
+    c.rtoConfirmedBy = currentUser.id;
+
+    await saveDB();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (!document.getElementById('inspectModal').classList.contains('hidden')) {
+        showConsignmentDetails(c.id);
+    }
 };
 
 export const viewPickupPhoto = (cid) => {

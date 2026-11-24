@@ -80,6 +80,7 @@ export const renderAgentDashboard = () => {
   const deliveredList = assigned.filter(c => c.status === 'Delivered');
   const pendingList = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
   const failedList = assigned.filter(c => c.status === 'Returned');
+  const rtoFiledList = assigned.filter(c => c.status === 'Returned');
 
   const delPct = totalDelivery > 0 ? Math.round((deliveredList.length / totalDelivery) * 100) : 0;
   const penPct = totalDelivery > 0 ? Math.round((pendingList.length / totalDelivery) * 100) : 0;
@@ -112,9 +113,9 @@ export const renderAgentDashboard = () => {
         <div class="flex items-center gap-3">${iconClockYellow}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Pending</span></div>
         <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pendingList.length}</p>
       </div>
-      <div onclick="openDashList('FAILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Failed</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${failedList.length}</p>
+      <div onclick="openDashList('RTO_FILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
+        <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">RTO Filed</span></div>
+        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${rtoFiledList.length}</p>
       </div>
     `;
   } else if (currentDashMode === 'PICKUP') {
@@ -220,7 +221,7 @@ export const renderDashListItems = () => {
     if (currentDashListFilter === 'TOTAL_DELIVERY') list = assigned;
     else if (currentDashListFilter === 'DELIVERED') list = assigned.filter(c => c.status === 'Delivered');
     else if (currentDashListFilter === 'PENDING') list = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-    else if (currentDashListFilter === 'FAILED') list = assigned.filter(c => c.status === 'Returned');
+    else if (currentDashListFilter === 'RTO_FILED' || currentDashListFilter === 'FAILED') list = assigned.filter(c => c.status === 'Returned');
   }
 
   if (q) list = list.filter(c => `${c.id} ${c.customerName} ${c.customerPhone}`.toLowerCase().includes(q));
