@@ -1,9 +1,8 @@
 // /src/views/admin.js
 import { getDB, saveDB, getCurrentUser } from '../services/store.js';
-import { getUAEISOString, formatAmt, closeModal, getVendorByCode } from '../utils/helpers.js';
+import { getUAEISOString, formatAmt, closeModal, getVendorByCode, getDeficitInfo } from '../utils/helpers.js';
 import { hashPassword } from '../services/auth.js';
 import { generateInvoicePreview } from './finance.js';
-import { renderConsignments } from './dispatch.js';
 
 let editingVendorCode = null;
 
@@ -32,12 +31,12 @@ export const toggleCloudSyncVisibility = async () => {
     if (!db.settings) db.settings = {};
     db.settings.showCloudSyncConfig = db.settings.showCloudSyncConfig === false ? true : false;
     await saveDB();
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
 export const applySettingsUi = () => {
     const db = getDB();
-    if(!db.settings) db.settings = {};
+    if (!db.settings) db.settings = {};
     const showSync = db.settings.showCloudSyncConfig !== false;
     const block = document.getElementById('cloudSyncConfigBlock');
     if (block) block.classList.toggle('hidden', !showSync);
@@ -48,33 +47,33 @@ export const applySettingsUi = () => {
 // ==========================================
 export const archiveOldDeliveries = async () => {
     const db = getDB();
-    if(!confirm('Archive delivered & returned consignments older than 24 hours? \n\nThis permanently removes them from the Live Sync feed to keep your app fast.')) return;
+    if (!confirm('Archive delivered & returned consignments older than 24 hours? \n\nThis permanently removes them from the Live Sync feed to keep your app fast.')) return;
     const now = new Date(); 
     let initialCount = db.consignments.length;
     
     db.consignments = db.consignments.filter(c => {
-        if(c.status !== 'Delivered' && c.status !== 'Returned') return true; 
+        if (c.status !== 'Delivered' && c.status !== 'Returned') return true; 
         const dDate = new Date(c.deliveredAt || c.createdAt); 
-        return ((now - dDate) / (1000 * 60 * 60)) < 24; 
+        return ((now.getTime() - dDate.getTime()) / (1000 * 60 * 60)) < 24; 
     });
     
     const removed = initialCount - db.consignments.length; 
     await saveDB(); 
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
     alert(removed + ' old consignments archived.');
 };
 
 export const purgeOldPhotos60Days = async () => {
     const db = getDB();
-    if(!confirm('Purge photos from delivered & returned consignments older than 60 days? \n\nThis keeps the text data but removes the heavy image files.')) return;
+    if (!confirm('Purge photos from delivered & returned consignments older than 60 days? \n\nThis keeps the text data but removes the heavy image files.')) return;
     
     const now = new Date(); 
     let purgedCount = 0;
     
     db.consignments.forEach(c => {
-        if(c.status === 'Delivered' || c.status === 'Returned') {
+        if (c.status === 'Delivered' || c.status === 'Returned') {
             const dDate = new Date(c.deliveredAt || c.createdAt); 
-            const daysOld = (now - dDate) / (1000 * 60 * 60 * 24);
+            const daysOld = (now.getTime() - dDate.getTime()) / (1000 * 60 * 60 * 24);
             
             if (daysOld >= 60 && (c.pickupPhoto || c.deliveryPhoto)) {
                 c.pickupPhoto = null;
@@ -86,7 +85,7 @@ export const purgeOldPhotos60Days = async () => {
     
     if (purgedCount > 0) { 
         await saveDB(); 
-        if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+        if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
         alert(purgedCount + ' consignments had their photos successfully purged.'); 
     } else {
         alert('No photos older than 60 days were found.');
@@ -95,11 +94,11 @@ export const purgeOldPhotos60Days = async () => {
 
 export const clearAllConsignments = async () => {
     const db = getDB();
-    if(!confirm('WARNING: This will permanently delete ALL consignments without retaining any history or archive.\n\nAre you sure you want to proceed?')) return;
-    if(!confirm('Are you absolutely sure? This action cannot be undone.')) return;
+    if (!confirm('WARNING: This will permanently delete ALL consignments without retaining any history or archive.\n\nAre you sure you want to proceed?')) return;
+    if (!confirm('Are you absolutely sure? This action cannot be undone.')) return;
     db.consignments = []; 
     await saveDB(); 
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
     alert('All consignments have been successfully cleared.');
 };
 
@@ -128,7 +127,7 @@ export const restoreBackup = (e) => {
 // EXCEL IMPORT & EXPORT
 // ==========================================
 export const downloadImportTemplate = () => {
-    if(typeof window.XLSX === 'undefined') { alert("Excel library loading. Please try again."); return; }
+    if (typeof window.XLSX === 'undefined') { alert("Excel library loading. Please try again."); return; }
     const wb = window.XLSX.utils.book_new();
     const wsData = [
         ["Consignment ID", "Merchant Code", "Customer Name", "Customer Phone", "Delivery Address", "Weight", "Pieces", "Product Amount", "Delivery Fee", "Fee Type", "Picked Up Origin"],
@@ -150,7 +149,7 @@ export const importConsignmentsFromExcel = (e) => {
         try {
             const workbook = window.XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
             const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            if(rows.length === 0) { alert("The uploaded spreadsheet is empty."); return; }
+            if (rows.length === 0) { alert("The uploaded spreadsheet is empty."); return; }
             
             let importedCount = 0; let errorCount = 0;
 
@@ -162,18 +161,18 @@ export const importConsignmentsFromExcel = (e) => {
                 if (vCode) {
                     const v = getVendorByCode(vCode);
                     if (!v) {
-                        alert(`Import Rejected: Merchant Code "${vCode}" in row ${i+1} does not exist in the system.`);
+                        alert(`Import Rejected: Merchant Code "${vCode}" in row ${i + 1} does not exist in the system.`);
                         e.target.value = ""; return;
                     }
                 } else {
-                    alert(`Import Rejected: Missing Merchant Code in row ${i+1}.`);
+                    alert(`Import Rejected: Missing Merchant Code in row ${i + 1}.`);
                     e.target.value = ""; return;
                 }
 
                 if (rawPicker) {
                     const pUser = db.users.find(u => u.role === 'AGENT' && (u.username.toLowerCase() === rawPicker.toLowerCase() || u.name.toLowerCase() === rawPicker.toLowerCase() || u.id.toUpperCase() === rawPicker.toUpperCase()));
                     if (!pUser) {
-                        alert(`Import Rejected: Picked Up Origin "${rawPicker}" in row ${i+1} does not match any active personnel.`);
+                        alert(`Import Rejected: Picked Up Origin "${rawPicker}" in row ${i + 1} does not match any active personnel.`);
                         e.target.value = ""; return;
                     }
                 }
@@ -192,9 +191,9 @@ export const importConsignmentsFromExcel = (e) => {
                 const fType = (row["Fee Type"] || "COD").toString().trim().toUpperCase();
                 const rawPicker = (row["Picked Up Origin"] || "").toString().trim();
 
-                if(!vCode || !cName || !dAddress) { errorCount++; continue; }
+                if (!vCode || !cName || !dAddress) { errorCount++; continue; }
                 if (!id) { errorCount++; continue; } 
-                else { if(db.consignments.some(c => c.id.toUpperCase() === id.toUpperCase())) { errorCount++; continue; } }
+                else { if (db.consignments.some(c => c.id.toUpperCase() === id.toUpperCase())) { errorCount++; continue; } }
 
                 const v = getVendorByCode(vCode);
                 
@@ -215,9 +214,13 @@ export const importConsignmentsFromExcel = (e) => {
                 importedCount++;
             }
             await saveDB(); 
-            if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+            if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
             alert(`Successfully imported ${importedCount} consignments.\nSkipped ${errorCount} invalid rows.`);
-        } catch (err) { alert("Error parsing the file. Please ensure it follows the downloaded template format."); } finally { e.target.value = ""; }
+        } catch {
+            alert("Error parsing the file. Please ensure it follows the downloaded template format.");
+        } finally {
+            e.target.value = "";
+        }
     };
     reader.readAsArrayBuffer(file);
 };
@@ -243,13 +246,13 @@ export const openVendorModal = () => {
     const db = getDB();
     editingVendorCode = null; 
     document.getElementById('vendorModalTitle').textContent = 'Add Merchant'; 
-    document.getElementById('vCode').value = 'VND-00'+(db.vendors.length+1); 
+    document.getElementById('vCode').value = 'VND-00' + (db.vendors.length + 1); 
     document.getElementById('vCode').readOnly = false; 
     document.getElementById('vCode').classList.remove('bg-[var(--border-color-strong)]');
-    document.getElementById('vName').value=''; 
-    document.getElementById('vPhone').value='+971'; 
-    document.getElementById('vAddress').value=''; 
-    document.getElementById('vTRN').value=''; 
+    document.getElementById('vName').value = ''; 
+    document.getElementById('vPhone').value = '+971'; 
+    document.getElementById('vAddress').value = ''; 
+    document.getElementById('vTRN').value = ''; 
     
     const btn = document.getElementById('vAutoAdjustBtn'); 
     const val = document.getElementById('vAutoAdjustVal');
@@ -260,7 +263,7 @@ export const openVendorModal = () => {
 };
 
 export const openEditVendorModal = (code) => {
-    const v = getVendorByCode(code); if(!v) return; 
+    const v = getVendorByCode(code); if (!v) return; 
     editingVendorCode = code; 
     document.getElementById('vendorModalTitle').textContent = 'Edit Merchant';
     document.getElementById('vCode').value = v.code; 
@@ -289,7 +292,7 @@ export const saveVendor = async (e) => {
     
     if (editingVendorCode) { 
         const v = db.vendors.find(x => x.code === editingVendorCode); 
-        if(v) { 
+        if (v) { 
             v.name = document.getElementById('vName').value; 
             v.phone = document.getElementById('vPhone').value; 
             v.address = document.getElementById('vAddress').value; 
@@ -321,7 +324,7 @@ export const saveVendor = async (e) => {
 
 export const deleteVendor = async (code) => { 
     const db = getDB();
-    if(!confirm(`Permanently remove vendor record ${code}? This action cannot be undone.`)) return; 
+    if (!confirm(`Permanently remove vendor record ${code}? This action cannot be undone.`)) return; 
     db.vendors = db.vendors.filter(v => v.code !== code); 
     await saveDB(); 
     renderVendors(); 
@@ -330,7 +333,7 @@ export const deleteVendor = async (code) => {
 export const renderVendors = () => { 
     const db = getDB();
     document.getElementById('vendorTableBody').innerHTML = (document.getElementById('vendorCodeSearch').value 
-      ? db.vendors.filter(v=>v.code.includes(document.getElementById('vendorCodeSearch').value.toUpperCase())) 
+      ? db.vendors.filter(v => v.code.includes(document.getElementById('vendorCodeSearch').value.toUpperCase())) 
       : db.vendors).map(v => {
         const autoBadge = v.autoAdjustment !== false 
           ? '<span class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[var(--status-emerald-bg)] text-[var(--status-emerald)] border border-[#10b981]/20 uppercase tracking-widest">Enabled</span>' 
@@ -342,7 +345,7 @@ export const renderVendors = () => {
           <td class="p-4 font-bold text-[var(--text-secondary)] tabular-nums">${v.phone}</td>
           <td class="p-4 font-bold text-[var(--text-secondary)]">${v.address}</td>
           <td class="p-4">${autoBadge}</td>
-          <td class="p-4 font-black text-[var(--text-primary)] tabular-nums">${db.consignments.filter(c=>c.vendorCode===v.code).length}</td>
+          <td class="p-4 font-black text-[var(--text-primary)] tabular-nums">${db.consignments.filter(c => c.vendorCode === v.code).length}</td>
           <td class="p-4">
             <div class="flex gap-2">
               <button onclick="window.openEditVendorModal('${v.code}')" class="text-[var(--text-primary)] font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">Edit</button>
@@ -358,7 +361,7 @@ export const renderVendors = () => {
 // ==========================================
 export const openVendorPaymentModal = () => { 
     const db = getDB();
-    document.getElementById('vpVendorSelect').innerHTML=db.vendors.map(v=>`<option value="${v.code}">${v.name}</option>`).join(''); 
+    document.getElementById('vpVendorSelect').innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join(''); 
     document.getElementById('vendorPaymentModal').classList.remove('hidden'); 
 };
 
@@ -366,7 +369,7 @@ export const saveVendorLedgerEntry = async (e) => {
     e.preventDefault(); 
     const db = getDB();
     db.vendorPayments.unshift({
-        id: 'LED-'+Date.now(), 
+        id: 'LED-' + Date.now(), 
         vendorCode: document.getElementById('vpVendorSelect').value, 
         type: document.getElementById('vpType').value, 
         amount: parseFloat(document.getElementById('vpAmount').value), 
@@ -381,10 +384,10 @@ export const saveVendorLedgerEntry = async (e) => {
 
 export const renderVendorLedger = () => { 
     const db = getDB();
-    document.getElementById('vendorLedgerTableBody').innerHTML=(db.vendorPayments||[]).map(p=>`<tr class="hover:bg-[var(--bg-base)] transition-colors">
+    document.getElementById('vendorLedgerTableBody').innerHTML = (db.vendorPayments || []).map(p => `<tr class="hover:bg-[var(--bg-base)] transition-colors">
       <td class="p-4 font-bold text-[var(--text-secondary)]">${p.date}</td>
       <td class="p-4 font-black text-[var(--text-primary)] uppercase">${p.vendorCode}</td>
-      <td class="p-4 text-[10px] font-extrabold uppercase tracking-widest ${p.type==='PAID'?'text-[var(--status-emerald)]':'text-[var(--status-blue)]'}">${p.type}</td>
+      <td class="p-4 text-[10px] font-extrabold uppercase tracking-widest ${p.type === 'PAID' ? 'text-[var(--status-emerald)]' : 'text-[var(--status-blue)]'}">${p.type}</td>
       <td class="p-4 font-black text-right text-[var(--text-primary)] tabular-nums">${formatAmt(p.amount)} AED</td>
       <td class="p-4 font-bold text-[var(--text-secondary)]">${p.notes}</td>
       <td class="p-4 text-center"><button onclick="window.deleteLedger('${p.id}')" class="text-[var(--status-rose)] font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">Remove</button></td>
@@ -393,8 +396,8 @@ export const renderVendorLedger = () => {
   
 export const deleteLedger = async (id) => { 
     const db = getDB();
-    if(confirm('Delete ledger entry?')){ 
-        db.vendorPayments = db.vendorPayments.filter(x=>x.id!==id); 
+    if (confirm('Delete ledger entry?')) { 
+        db.vendorPayments = db.vendorPayments.filter(x => x.id !== id); 
         await saveDB(); 
         renderVendorLedger(); 
         generateInvoicePreview(); 
@@ -428,7 +431,7 @@ export const sendSettlementOtp = async (e) => {
     
     await saveDB(); 
     closeModal('vendorSettlementOtpModal'); 
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 
     const msg = `Hello ${v.name},\n\nA settlement amount of *${formatAmt(amt)} AED* is being processed for handover by our Delivery Agent, *${a.name}*.\n\nPlease share this OTP: *${otp}* with the agent ONLY after you have received the exact amount.\n\nThank you,\nNEXT WAY DELIVERY`;
     window.open(`https://wa.me/${v.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -449,7 +452,7 @@ export const verifySettlementOtp = async (otpId) => {
     
     await saveDB(); 
     alert('OTP Verified successfully! Payment has been recorded in the ledger.'); 
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
     
     if (document.getElementById('tab-invoices').classList.contains('tab-active')) { 
         generateInvoicePreview(); 
@@ -459,20 +462,20 @@ export const verifySettlementOtp = async (otpId) => {
 
 export const cancelSettlementOtp = async (otpId) => {
     const db = getDB();
-    if(!confirm('Are you sure you want to cancel and delete this OTP?')) return;
+    if (!confirm('Are you sure you want to cancel and delete this OTP?')) return;
     db.vendorSettlementOtps = db.vendorSettlementOtps.filter(x => x.id !== otpId); 
     await saveDB(); 
-    if(typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
 // ==========================================
 // USER / AGENT MANAGEMENT
 // ==========================================
 export const openAgentModal = () => { 
-    document.getElementById('aName').value=''; 
-    document.getElementById('aUser').value=''; 
-    document.getElementById('aPhone').value=''; 
-    document.getElementById('aPass').value=''; 
+    document.getElementById('aName').value = ''; 
+    document.getElementById('aUser').value = ''; 
+    document.getElementById('aPhone').value = ''; 
+    document.getElementById('aPass').value = ''; 
     document.getElementById('agentModal').classList.remove('hidden'); 
 };
 
@@ -480,7 +483,7 @@ export const saveAgent = async (e) => {
     e.preventDefault(); 
     const db = getDB();
     db.users.push({
-        id: 'AG-'+Math.floor(100+Math.random()*900), 
+        id: 'AG-' + Math.floor(100 + Math.random() * 900), 
         username: document.getElementById('aUser').value, 
         name: document.getElementById('aName').value, 
         phone: document.getElementById('aPhone').value, 
@@ -495,14 +498,14 @@ export const saveAgent = async (e) => {
 
 export const renderAgents = () => { 
     const db = getDB();
-    document.getElementById('agentTableBody').innerHTML = db.users.filter(u=>u.role==='AGENT').map(a=>`<tr class="hover:bg-[var(--bg-base)] transition-colors">
+    document.getElementById('agentTableBody').innerHTML = db.users.filter(u => u.role === 'AGENT').map(a => `<tr class="hover:bg-[var(--bg-base)] transition-colors">
       <td class="p-4 font-black text-[var(--text-primary)]">${a.id}</td>
       <td class="p-4 font-bold uppercase text-[var(--text-primary)]">${a.name}</td>
       <td class="p-4 font-bold text-[var(--text-secondary)]">${a.username}</td>
-      <td class="p-4 text-[10px] font-extrabold uppercase tracking-widest ${a.status==='ACTIVE'?'text-[var(--status-emerald)]':'text-[var(--status-rose)]'}">${a.status}</td>
+      <td class="p-4 text-[10px] font-extrabold uppercase tracking-widest ${a.status === 'ACTIVE' ? 'text-[var(--status-emerald)]' : 'text-[var(--status-rose)]'}">${a.status}</td>
       <td class="p-4">
         <div class="flex gap-2">
-          <button onclick="window.setAgentStatus('${a.id}','${a.status==='ACTIVE'?'DEACTIVATED':'ACTIVE'}')" class="${a.status==='ACTIVE'?'text-[var(--status-rose)]':'text-[var(--status-emerald)]'} font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">${a.status==='ACTIVE'?'Deactivate':'Activate'}</button>
+          <button onclick="window.setAgentStatus('${a.id}','${a.status === 'ACTIVE' ? 'DEACTIVATED' : 'ACTIVE'}')" class="${a.status === 'ACTIVE' ? 'text-[var(--status-rose)]' : 'text-[var(--status-emerald)]'} font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">${a.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
           <button onclick="window.adminResetAgentPassword('${a.id}')" class="text-[var(--text-primary)] font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">Reset</button>
           <button onclick="window.adminDeleteAgent('${a.id}')" class="text-[var(--status-rose)] font-extrabold bg-[var(--bg-base)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color-strong)] transition-colors text-[10px] uppercase tracking-widest shadow-sm">Del</button>
         </div>
@@ -512,15 +515,15 @@ export const renderAgents = () => {
 
 export const setAgentStatus = async (id, st) => { 
     const db = getDB();
-    const a = db.users.find(u=>u.id===id); 
-    if(a) a.status=st; 
+    const a = db.users.find(u => u.id === id); 
+    if (a) a.status = st; 
     await saveDB(); 
     renderAgents(); 
 };
 
 export const adminDeleteAgent = async (id) => { 
     const db = getDB();
-    if(!confirm('Permanently remove this agent account?')) return; 
+    if (!confirm('Permanently remove this agent account?')) return; 
     db.users = db.users.filter(x => x.id !== id); 
     await saveDB(); 
     renderAgents(); 
@@ -600,6 +603,39 @@ export const renderConfirmations = () => {
           : `<div class="mt-4"><span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Waiting for field agent confirmation</span></div>`;
       return `<div class="p-5 border border-[#c9a24b]/30 rounded-xl bg-[#c9a24b]/10 mb-4 text-xs shadow-sm">${changesText} ${btnHtml}</div>`;
     }).join('') : '<div class="p-8 text-center text-[var(--text-muted)] font-bold text-[10px] uppercase tracking-widest border border-[var(--border-color)] rounded-xl bg-[var(--bg-base)]">No pending modifications.</div>';
+
+    const rtoActionItems = db.consignments.filter(c => {
+        if (c.status !== 'Returned') return false;
+        if (currentUser.role === 'ADMIN') {
+            return c.rtoStatus === 'SUBMITTED_TO_MERCHANT' || c.rtoStatus === 'ASSIGNED_RTO';
+        }
+        return c.rtoAssignedTo === currentUser.id && c.rtoStatus === 'ASSIGNED_RTO';
+    });
+
+    if (rtoActionItems.length > 0) {
+        const rtoHtml = rtoActionItems.map(c => {
+            const v = getVendorByCode(c.vendorCode);
+            const pickerLabel = c.rtoAssignedTo ? `RTO Picker: ${c.rtoAssignedTo}` : 'Unassigned';
+            let btn = '';
+            if (currentUser.role === 'ADMIN' && c.rtoStatus === 'SUBMITTED_TO_MERCHANT') {
+                btn = `<button onclick="window.adminConfirmRtoReturn('${c.id}')" class="bg-[var(--status-emerald)] text-white font-extrabold px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest">Confirm Return</button>`;
+            } else if (c.rtoAssignedTo === currentUser.id && c.rtoStatus === 'ASSIGNED_RTO') {
+                btn = `<button onclick="window.agentSubmitRtoToMerchant('${c.id}')" class="bg-[var(--status-blue)] text-white font-extrabold px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest">Submit to Merchant</button>`;
+            } else {
+                btn = `<span class="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">${c.rtoStatus}</span>`;
+            }
+            return `
+                <div class="p-4 border border-[var(--border-color)] rounded-xl bg-[var(--bg-base)] flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-xs">
+                    <div>
+                        <b class="text-[var(--text-primary)] font-black uppercase tracking-widest">${c.id}</b>
+                        <span class="text-[var(--text-secondary)] font-bold ml-2">${v ? v.name : c.vendorCode}</span>
+                        <p class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1">${pickerLabel} • ${c.rtoStatus}</p>
+                    </div>
+                    <div class="flex gap-2 shrink-0">${btn}</div>
+                </div>`;
+        }).join('');
+        document.getElementById('confirmationsList').innerHTML += `<div class="mt-4 pt-4 border-t border-[var(--border-color)] space-y-3"><h4 class="font-extrabold text-[10px] text-[var(--status-rose)] uppercase tracking-wider">RTO Handover & Confirmations</h4>${rtoHtml}</div>`;
+    }
 
     if (currentUser.role === 'ADMIN') {
       const pendingOtps = db.vendorSettlementOtps.filter(o => o.status === 'PENDING');
