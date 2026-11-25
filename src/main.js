@@ -45,9 +45,9 @@ import {
   openEditVendorModal, saveVendor, deleteVendor, renderVendors, openVendorPaymentModal,
   saveVendorLedgerEntry, renderVendorLedger, deleteLedger, openVendorSettlementOtpModal,
   sendSettlementOtp, verifySettlementOtp, cancelSettlementOtp, adminConfirmRto,
-  executeAdminConfirmRto, openAgentModal, saveAgent, renderAgents, setAgentStatus,
-  adminDeleteAgent, adminResetAgentPassword, openCredentialsModal, changeOwnPassword,
-  renderConfirmations, generateAdminFinanceTab
+  executeAdminConfirmRto, adminRejectRto, executeAdminRejectRto, openAgentModal, saveAgent,
+  renderAgents, setAgentStatus, adminDeleteAgent, adminResetAgentPassword,
+  openCredentialsModal, changeOwnPassword, renderConfirmations, generateAdminFinanceTab
 } from './views/admin.js';
 
 export const applySavedTheme = () => {
@@ -440,6 +440,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.cancelSettlementOtp = cancelSettlementOtp;
     window.adminConfirmRto = adminConfirmRto;
     window.executeAdminConfirmRto = executeAdminConfirmRto;
+    window.adminRejectRto = adminRejectRto;
+    window.executeAdminRejectRto = executeAdminRejectRto;
     window.openAgentModal = openAgentModal;
     window.saveAgent = saveAgent;
     window.renderAgents = renderAgents;
