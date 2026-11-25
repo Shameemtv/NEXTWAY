@@ -1,5 +1,5 @@
 // /src/services/sync.js
-import { createClient } from '@supabase/supabase-js'; // Requires: npm install @supabase/supabase-js
+const createClient = window.supabase?.createClient; // Requires: npm install @supabase/supabase-js
 import { getDB, setApplyingRemoteUpdate, saveDB, getCurrentUser } from './store.js';
 
 const CLIENT_INSTANCE_ID = 'CLIENT_' + Math.random().toString(36).substring(2, 9);
