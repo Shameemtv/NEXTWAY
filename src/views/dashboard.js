@@ -286,6 +286,7 @@ export const renderDashListItems = () => {
 
   const currentUser = getCurrentUser();
   const isAgent = currentUser && currentUser.role === 'AGENT';
+  const isAdmin = currentUser && currentUser.role === 'ADMIN';
 
   container.innerHTML = list.map((c, idx) => {
     const v = getVendorByCode(c.vendorCode);
@@ -341,7 +342,27 @@ export const renderDashListItems = () => {
       `;
     }
 
-    const canSubmitRto = c.rtoStatus === 'ASSIGNED' && (currentUser.role === 'AGENT' ? c.rtoPickupBy === currentUser.id : currentUser.role === 'ADMIN');
+    if (currentDashListFilter === 'FAILED' && isAdmin && !c.rtoStatus) {
+      return `
+        <div onclick="window.showConsignmentDetails('${c.id}')" class="cursor-pointer ql-card p-4 sm:p-5 hover:border-[var(--accent-gold)] transition-colors space-y-3 text-xs mb-3">
+          <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-3 mb-1">
+            <button onclick="event.stopPropagation(); window.openAssignRtoModal('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all tracking-widest text-[10px] uppercase border border-[#1e293b]">Assign RTO</button>
+            <div class="flex items-center gap-3">
+              <span class="font-black text-[var(--text-primary)] text-sm tracking-widest uppercase">${c.id}</span>
+              <span class="w-6 h-6 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] font-black text-[10px] flex items-center justify-center shadow-sm tabular-nums">${idx + 1}</span>
+            </div>
+          </div>
+          <p class="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[11px]">${c.customerName}</p>
+          <div class="flex justify-between items-center pt-2 font-bold text-[var(--text-primary)]">
+            <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Shipper: <span class="text-[var(--text-primary)] font-bold ml-1 uppercase">${vendorName}</span></span>
+            <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Mob <span class="text-[var(--text-primary)] font-bold ml-1 tabular-nums">${c.customerPhone || ''}</span></span>
+          </div>
+          <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Pick Origin: <span class="text-[var(--text-primary)]">${getAgentName(c.pickedUpBy)}</span></p>
+        </div>
+      `;
+    }
+
+    const canAgentSubmitRto = isAgent && c.rtoStatus === 'ASSIGNED' && c.rtoPickupBy === currentUser.id;
     const rtoBadge = c.rtoStatus
       ? `<span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--status-blue-bg)] text-[var(--status-blue)] border border-[#3b82f6]/20">${c.rtoStatus.replace(/_/g, ' ')}</span>`
       : '';
@@ -351,7 +372,7 @@ export const renderDashListItems = () => {
         <div class="flex justify-between items-center gap-3">
           <div class="flex items-center gap-2">
             ${rtoBadge}
-            ${canSubmitRto ? `<button onclick="event.stopPropagation(); window.submitRtoToOwner('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest border border-[#1e293b] shadow-sm">Submit</button>` : ''}
+            ${canAgentSubmitRto ? `<button onclick="event.stopPropagation(); window.submitRtoToOwner('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest border border-[#1e293b] shadow-sm">Submit</button>` : ''}
           </div>
           <div class="flex items-center gap-3">
             <span class="font-black text-sm text-[var(--text-primary)] tracking-widest uppercase">${c.id}</span>
