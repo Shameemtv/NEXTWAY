@@ -1,391 +1,899 @@
-// /src/views/dashboard.js
-import { getDB, getCurrentUser } from '../services/store.js';
-import { getUAEDisplayDate, getUAEISOString, formatAmt, getVendorByCode, getAgentName } from '../utils/helpers.js';
+// /src/views/consignment.js
+import { getDB, getCurrentUser, saveDB } from '../services/store.js';
+import { getUAEISOString, getVendorByCode, getAgentName, formatAmt, getDeficitInfo, closeModal } from '../utils/helpers.js';
+import { uploadImageToSupabase } from '../services/sync.js';
+import { renderConsignments } from './dispatch.js';
+import { generateInvoicePreview } from './finance.js';
 
-let currentDashMode = 'DELIVERY';
-let currentDashListFilter = 'ALL';
+let tempEditData = null;
+let currentPodCid = null;
+let currentPodDefaultMethod = '';
+let tempPodPhotoData = null;
+let tempPhotoData = null;
 
-const getDashboardConsignments = (type = 'DELIVERY') => {
-  const db = getDB();
-  const currentUser = getCurrentUser();
-  let list = [];
+export const resetNewConsignmentForm = (retainMerchant = false) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
 
-  if (currentUser.role === 'ADMIN') {
-    const filterId = document.getElementById('adminDashAgentFilter').value || 'ALL';
-    if (type === 'PICKUP') {
-      list = filterId === 'ALL'
-        ? db.consignments.filter(c => c.pickedUpBy || c.rtoPickupBy)
-        : db.consignments.filter(c => c.pickedUpBy === filterId || c.rtoPickupBy === filterId);
+    document.getElementById('cIdInput').value = '';
+
+    if (!retainMerchant) {
+        document.getElementById('cVendorSearch').value = '';
+        document.getElementById('cVendorSelect').innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
+        syncVendorPickupAddress();
+    }
+
+    const agSelect = document.getElementById('cAgentSelect');
+    const puSelect = document.getElementById('cPickedUpBy');
+    const agentPoolOptions = db.users.filter(u => u.role === 'AGENT' && u.status === 'ACTIVE').map(a => `<option value="${a.id}">${a.name} - ${a.id}</option>`).join('');
+
+    if (currentUser.role === 'ADMIN') {
+        agSelect.innerHTML = `<option value="">-- Pool --</option>` + agentPoolOptions;
+        document.getElementById('agentSelectContainer').classList.remove('hidden');
+
+        puSelect.innerHTML = `<option value="">-- Select Picker --</option>` + agentPoolOptions;
+        puSelect.disabled = false;
+        puSelect.classList.remove('bg-[var(--border-color-strong)]');
     } else {
-      list = filterId === 'ALL'
-        ? db.consignments.filter(c => c.assignedTo || c.rtoStatus)
-        : db.consignments.filter(c => c.assignedTo === filterId || c.rtoPickupBy === filterId);
-    }
-  } else {
-    if (type === 'PICKUP') {
-      list = db.consignments.filter(c => c.pickedUpBy === currentUser.id || c.rtoPickupBy === currentUser.id);
-    } else {
-      list = db.consignments.filter(c => c.assignedTo === currentUser.id || c.rtoPickupBy === currentUser.id);
-    }
-  }
+        agSelect.innerHTML = `<option value="">-- Unassigned Pool --</option>`;
+        document.getElementById('agentSelectContainer').classList.add('hidden');
 
-  const today = getUAEISOString().split('T')[0];
-  return list.filter(c => {
-    if (c.rtoStatus === 'ASSIGNED' || c.rtoStatus === 'SUBMITTED_BY_AGENT') {
-      return true;
+        puSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name} - ${currentUser.id}</option>`;
+        puSelect.value = currentUser.id;
+        puSelect.disabled = true;
+        puSelect.classList.add('bg-[var(--border-color-strong)]');
     }
-    if (c.rtoStatus === 'CONFIRMED') {
-      const rtoDate = c.rtoConfirmedAt ? c.rtoConfirmedAt.split('T')[0] : today;
-      return rtoDate === today;
+
+    document.getElementById('cWeight').value = "";
+    document.getElementById('cPieces').value = "";
+    document.getElementById('cCustomerName').value = '';
+    document.getElementById('cCustomerPhone').value = '+971';
+    document.getElementById('cDeliveryAddress').value = '';
+    document.getElementById('cProductAmt').value = '';
+    document.getElementById('cDeliveryFee').value = '';
+
+    if (document.getElementById('cRefVendorName')) document.getElementById('cRefVendorName').value = '';
+    if (document.getElementById('cRefVendorPhone')) document.getElementById('cRefVendorPhone').value = '';
+};
+
+export const openNewConsignmentModal = () => {
+    resetNewConsignmentForm(false);
+    document.getElementById('consignmentModal').classList.remove('hidden');
+};
+
+export const saveNewConsignment = (e) => {
+    e.preventDefault();
+    const db = getDB();
+    const id = document.getElementById('cIdInput').value.trim().toUpperCase();
+    if (db.consignments.some(c => c.id.toUpperCase() === id)) { alert('ID exists!'); return; }
+
+    document.getElementById('actionModalTitle').textContent = `Add New Consignment`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">Are you sure you want to log this consignment?</p>
+        <p class="text-xl font-black text-[var(--status-emerald)] tracking-widest tabular-nums uppercase">${id}</p>
+      </div>
+      <button onclick="window.executeNewConsignment()" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">Confirm Entry</button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeNewConsignment = async () => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+
+    const id = document.getElementById('cIdInput').value.trim().toUpperCase();
+    const ag = document.getElementById('cAgentSelect').value || null;
+    const isAgent = currentUser.role === 'AGENT';
+    const pickedUpBy = isAgent ? currentUser.id : (document.getElementById('cPickedUpBy').value || null);
+
+    const pAmt = parseFloat(document.getElementById('cProductAmt').value) || 0;
+    const dFee = parseFloat(document.getElementById('cDeliveryFee').value) || 0;
+    const fType = document.getElementById('cFeeType').value;
+    const weightVal = parseFloat(document.getElementById('cWeight').value) || 1;
+    const piecesVal = parseInt(document.getElementById('cPieces').value, 10) || 1;
+
+    const deficitReceivedDate = (fType === 'COC') ? getUAEISOString() : null;
+    let initialStatus = ag ? 'Assigned' : 'Created';
+    if (pickedUpBy) initialStatus = ag ? 'Out for delivery' : 'Picked Up';
+
+    db.consignments.unshift({
+      id, vendorCode: document.getElementById('cVendorSelect').value, pickupFrom: document.getElementById('cPickupFrom').value,
+      refVendorName: document.getElementById('cRefVendorName') ? document.getElementById('cRefVendorName').value.trim() : '',
+      refVendorPhone: document.getElementById('cRefVendorPhone') ? document.getElementById('cRefVendorPhone').value.trim() : '',
+      customerName: document.getElementById('cCustomerName').value, customerPhone: document.getElementById('cCustomerPhone').value,
+      deliveryAddress: document.getElementById('cDeliveryAddress').value, productAmount: pAmt, deliveryCharge: dFee, feeType: fType,
+      weight: weightVal, pieces: piecesVal, pendingModification: null, assignedTo: ag, pickedUpBy: pickedUpBy, deficitReceivedDate: deficitReceivedDate,
+      rtoStatus: null, rtoAssignedTo: null, rtoPickupBy: null, rtoAssignedAt: null, rtoSubmittedAt: null, rtoConfirmedAt: null,
+      cocPendingAmount: 0, cocStatus: null, status: initialStatus, qrGenerated: false, otpCode: String(Math.floor(1000 + Math.random() * 9000)),
+      otpVerified: false, pickupPhoto: null, deliveryPhoto: null, returnReason: '', createdAt: getUAEISOString().split('T')[0],
+      pickedUpAt: pickedUpBy ? getUAEISOString() : null, deliveredAt: null
+    });
+
+    await saveDB();
+    closeModal('actionModal');
+
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+    if (isAgent) { alert("Consignment Picked Up and added to the Unassigned Pool."); }
+
+    resetNewConsignmentForm(true);
+};
+window.executeNewConsignment = executeNewConsignment;
+
+export const filterVendorSelect = () => {
+    const db = getDB();
+    const q = document.getElementById('cVendorSearch').value.toLowerCase();
+    const select = document.getElementById('cVendorSelect');
+    const filtered = db.vendors.filter(v => v.name.toLowerCase().includes(q) || v.code.toLowerCase().includes(q));
+
+    select.innerHTML = filtered.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
+    if (filtered.length === 0) select.innerHTML = `<option value="">No matches</option>`;
+    syncVendorPickupAddress();
+};
+
+export const syncVendorPickupAddress = () => {
+    const code = document.getElementById('cVendorSelect').value;
+    const v = getVendorByCode(code);
+    if (v) document.getElementById('cPickupFrom').value = v.address;
+
+    const walkInContainer = document.getElementById('walkInFields');
+    if (walkInContainer) {
+      if (code === 'WALK-IN') {
+        walkInContainer.classList.remove('hidden');
+        walkInContainer.classList.add('grid');
+      } else {
+        walkInContainer.classList.add('hidden');
+        walkInContainer.classList.remove('grid');
+        document.getElementById('cRefVendorName').value = '';
+        document.getElementById('cRefVendorPhone').value = '';
+      }
     }
+};
+
+export const bulkAssign = async () => {
+    const db = getDB();
+    const ids = document.getElementById('bulkIds').value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+    const agent = document.getElementById('bulkAgent').value;
+    if (!ids.length || !agent) return alert('Enter comma separated IDs and select an agent.');
+
+    if (!confirm(`Are you sure you want to assign ${ids.length} consignment(s) to this personnel?`)) return;
+
+    let updated = 0;
+    ids.forEach(id => {
+      const c = db.consignments.find(x => x.id.toUpperCase() === id);
+      if (c && c.status !== 'Delivered' && c.status !== 'Returned') {
+        c.assignedTo = agent;
+        if (c.status === 'Created') c.status = 'Assigned';
+        if (c.status === 'Picked Up') c.status = 'Out for delivery';
+        updated++;
+      }
+    });
+    if (updated > 0) {
+        await saveDB();
+        renderConsignments();
+        document.getElementById('bulkIds').value = '';
+        alert(updated + ' consignments assigned.');
+    }
+};
+
+export const openEditConsignmentModal = (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    closeModal('inspectModal');
+
+    document.getElementById('eIdInput').value = c.id;
+    document.getElementById('eCid').value = c.id;
+
+    document.getElementById('eVendorSelect').innerHTML = db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
+    document.getElementById('eVendorSelect').value = c.vendorCode;
+
+    document.getElementById('ePickupFrom').value = c.pickupFrom;
+    document.getElementById('eCustomerName').value = c.customerName;
+    document.getElementById('eCustomerPhone').value = c.customerPhone;
+    document.getElementById('eDeliveryAddress').value = c.deliveryAddress;
+    document.getElementById('eWeight').value = c.weight || 1;
+    document.getElementById('ePieces').value = c.pieces || 1;
+    document.getElementById('eProductAmt').value = c.productAmount;
+    document.getElementById('eDeliveryFee').value = c.deliveryCharge;
+    document.getElementById('eFeeType').value = c.feeType;
+
+    const agSelect = document.getElementById('eAgentSelect');
+    const puSelect = document.getElementById('ePickedUpBy');
+    const agentPoolOptions = db.users.filter(u => u.role === 'AGENT' && u.status === 'ACTIVE').map(a => `<option value="${a.id}">${a.name} - ${a.id}</option>`).join('');
+
+    if (currentUser.role === 'ADMIN') {
+        agSelect.innerHTML = `<option value="">-- Pool --</option>` + agentPoolOptions;
+        agSelect.value = c.assignedTo || '';
+        document.getElementById('eAgentSelectContainer').classList.remove('hidden');
+
+        puSelect.innerHTML = `<option value="">-- Select Picker --</option>` + agentPoolOptions;
+        puSelect.value = c.pickedUpBy || '';
+        puSelect.disabled = false;
+        puSelect.classList.remove('bg-[var(--border-color-strong)]');
+    } else {
+        agSelect.innerHTML = `<option value="">-- Unassigned Pool --</option>`;
+        document.getElementById('eAgentSelectContainer').classList.add('hidden');
+
+        puSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name} - ${currentUser.id}</option>`;
+        puSelect.value = currentUser.id;
+        puSelect.disabled = true;
+        puSelect.classList.add('bg-[var(--border-color-strong)]');
+    }
+
+    tempEditData = {
+        id: c.id, vendorCode: c.vendorCode, pickupFrom: c.pickupFrom, customerName: c.customerName,
+        customerPhone: c.customerPhone, deliveryAddress: c.deliveryAddress, weight: c.weight,
+        pieces: c.pieces, productAmount: c.productAmount, deliveryCharge: c.deliveryCharge,
+        feeType: c.feeType, assignedTo: c.assignedTo || '', pickedUpBy: c.pickedUpBy || ''
+    };
+
+    document.getElementById('eOriginalData').value = JSON.stringify(tempEditData);
+    document.getElementById('editConsignmentModal').classList.remove('hidden');
+};
+
+export const syncEditVendorPickupAddress = () => {
+    const v = getVendorByCode(document.getElementById('eVendorSelect').value);
+    if (v) document.getElementById('ePickupFrom').value = v.address;
+};
+
+export const confirmEditConsignment = (e) => {
+    e.preventDefault();
+    const db = getDB();
+    const cid = document.getElementById('eCid').value;
+    const orig = JSON.parse(document.getElementById('eOriginalData').value);
+
+    const newData = {
+        id: document.getElementById('eIdInput').value.trim().toUpperCase(),
+        vendorCode: document.getElementById('eVendorSelect').value,
+        pickupFrom: document.getElementById('ePickupFrom').value,
+        customerName: document.getElementById('eCustomerName').value,
+        customerPhone: document.getElementById('eCustomerPhone').value,
+        deliveryAddress: document.getElementById('eDeliveryAddress').value,
+        weight: parseFloat(document.getElementById('eWeight').value) || 1,
+        pieces: parseInt(document.getElementById('ePieces').value, 10) || 1,
+        productAmount: parseFloat(document.getElementById('eProductAmt').value) || 0,
+        deliveryCharge: parseFloat(document.getElementById('eDeliveryFee').value) || 0,
+        feeType: document.getElementById('eFeeType').value,
+        assignedTo: document.getElementById('eAgentSelect').value || '',
+        pickedUpBy: document.getElementById('ePickedUpBy').value || ''
+    };
+
+    if (newData.id !== cid && db.consignments.some(x => x.id.toUpperCase() === newData.id)) {
+        return alert('This Consignment ID already exists!');
+    }
+
+    const hasChanges = Object.keys(newData).some(key => orig[key] != newData[key]);
+    if (!hasChanges) return closeModal('editConsignmentModal');
+
+    document.getElementById('actionModalTitle').textContent = `Update Consignment: ${cid}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[#c9a24b]/10 border border-[#c9a24b]/30 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--accent-gold)] uppercase tracking-widest mb-1.5">You made changes to this entry. Update now?</p>
+      </div>
+      <button onclick="window.executeEditConsignment('${cid}')" class="w-full bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-all uppercase tracking-widest text-[11px] border border-[#1e293b]">Confirm Update</button>
+    `;
+    tempEditData = newData;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeEditConsignment = async (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
     if (c.status === 'Delivered') {
-      const deliveredDate = c.deliveredAt ? c.deliveredAt.split('T')[0] : (c.createdAt ? c.createdAt.split('T')[0] : '');
-      return deliveredDate === today;
+        c.pendingModification = { type: 'FULL_EDIT', requestedBy: currentUser.username, ...tempEditData };
+        await saveDB();
+        closeModal('actionModal');
+        closeModal('editConsignmentModal');
+        if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+        return alert("Modifications to this Delivered consignment have been sent to the assigned Delivery Agent for confirmation.");
     }
-    return true;
-  });
-};
 
-const formatDashDateTime = (isoStr) => {
-  if (!isoStr) return '-';
-  if (isoStr.includes('T')) {
-    const [d, t] = isoStr.split('T');
-    return `${d}<br/><span class="text-[10px]">${t.split('.')[0]}</span>`;
-  }
-  return isoStr;
-};
+    Object.assign(c, tempEditData);
 
-export const setDashMode = (mode) => {
-  currentDashMode = mode;
-  ['PICKUP', 'DELIVERY', 'COD'].forEach(m => {
-    const lbl = document.getElementById(`dashTabLabel-${m}`);
-    const btn = lbl ? lbl.parentElement : null;
-    if (lbl && btn) {
-      btn.classList.toggle('bg-[var(--border-color)]', m === mode);
-      btn.classList.toggle('rounded-full', m === mode);
-      btn.classList.toggle('shadow-sm', m === mode);
-      lbl.classList.toggle('text-[var(--text-primary)]', m === mode);
-      lbl.classList.toggle('text-[var(--text-secondary)]', m !== mode);
+    const newAssignedTo = tempEditData.assignedTo || null;
+    const newPickedUpBy = tempEditData.pickedUpBy || null;
+
+    c.assignedTo = newAssignedTo;
+    c.pickedUpBy = newPickedUpBy;
+
+    if (newPickedUpBy && !c.pickedUpAt) {
+        c.pickedUpAt = getUAEISOString();
+        c.status = newAssignedTo ? 'Out for delivery' : 'Picked Up';
+    } else if (!newPickedUpBy) {
+        c.pickedUpAt = null;
+        c.status = newAssignedTo ? 'Assigned' : 'Created';
+    } else {
+        if (c.status === 'Created' && newAssignedTo) c.status = 'Assigned';
+        if (c.status === 'Assigned' && !newAssignedTo) c.status = 'Created';
     }
-  });
-  renderAgentDashboard();
+
+    await saveDB();
+    closeModal('actionModal');
+    closeModal('editConsignmentModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
-export const renderAgentDashboard = () => {
-  const currentUser = getCurrentUser();
-  const db = getDB();
-  if (!currentUser || !db) return;
+export const deleteConsignmentFromEdit = async () => {
+    const db = getDB();
+    const cid = document.getElementById('eCid').value;
+    if (!confirm(`Are you sure you want to permanently delete Consignment ${cid}? This action cannot be undone.`)) return;
 
-  let headerText = '';
-  if (currentUser.role === 'ADMIN') {
-    const filterId = document.getElementById('adminDashAgentFilter').value || 'ALL';
-    if (filterId === 'ALL') headerText = 'OVERALL DASHBOARD';
-    else {
-      const ag = db.users.find(u => u.id === filterId);
-      headerText = ag ? `${ag.name} - ${ag.id}` : 'AGENT DASHBOARD';
+    db.consignments = db.consignments.filter(c => c.id !== cid);
+    await saveDB();
+    closeModal('editConsignmentModal');
+    closeModal('inspectModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
+export const openAssignRtoModal = (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'ADMIN') return;
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    const activeAgents = db.users.filter(u => u.role === 'AGENT' && u.status === 'ACTIVE');
+    const defaultPicker = c.rtoPickupBy || c.pickedUpBy || c.assignedTo || '';
+
+    closeModal('inspectModal');
+    document.getElementById('actionModalTitle').textContent = `Assign RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center space-y-1.5">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest">Assign RTO pickup person for ${c.id}?</p>
+        <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Pick Origin: <span class="text-[var(--text-primary)] font-black">${getAgentName(c.pickedUpBy)}</span></p>
+      </div>
+      <div class="mb-4">
+        <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">RTO Pickup Person (Editable)</label>
+        <select id="rtoPickupAgentSelect" class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--status-emerald)]">
+          <option value="">-- Select Agent --</option>
+          ${activeAgents.map(a => `<option value="${a.id}" ${a.id === defaultPicker ? 'selected' : ''}>${a.name} - ${a.id}</option>`).join('')}
+        </select>
+      </div>
+      <button onclick="window.confirmAssignRto('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Move to RTO Card
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const confirmAssignRto = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    const selectedAgent = document.getElementById('rtoPickupAgentSelect')?.value;
+    if (!c) return;
+    if (!selectedAgent) return alert('Please select an RTO pickup person.');
+
+    const agentLabel = getAgentName(selectedAgent);
+    document.getElementById('actionModalTitle').textContent = `Confirm RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center space-y-1.5">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest">You want to move ${c.id} to RTO card?</p>
+        <p class="text-xs font-black text-[var(--text-primary)] uppercase tracking-wider">${agentLabel}</p>
+      </div>
+      <button onclick="window.executeAssignRto('${c.id}', '${selectedAgent}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm RTO Assignment
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeAssignRto = async (cid, selectedAgent) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c || !selectedAgent) return;
+
+    c.rtoStatus = 'ASSIGNED';
+    c.rtoAssignedTo = c.assignedTo || selectedAgent;
+    c.rtoPickupBy = selectedAgent;
+    c.rtoAssignedAt = getUAEISOString();
+
+    await saveDB();
+    closeModal('actionModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
+export const submitRtoToOwner = (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'AGENT') return;
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    if (c.rtoPickupBy && c.rtoPickupBy !== currentUser.id) {
+        return alert('Only the assigned RTO pickup person can submit this consignment.');
     }
-  } else {
-    headerText = `${currentUser.name} - ${currentUser.id}`;
-  }
-  document.getElementById('dashAgentName').textContent = headerText;
 
-  const now = getUAEDisplayDate();
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('dashCurrentDate').textContent = `Date : ${String(now.getDate()).padStart(2, '0')}-${months[now.getMonth()]}-${now.getFullYear()}`;
-
-  const assigned = getDashboardConsignments('DELIVERY');
-  const totalDelivery = assigned.length;
-  const deliveredList = assigned.filter(c => c.status === 'Delivered');
-  const pendingList = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-  const failedList = assigned.filter(c => c.status === 'Returned');
-  const rtoList = assigned.filter(c => ['ASSIGNED', 'SUBMITTED_BY_AGENT', 'CONFIRMED'].includes(c.rtoStatus));
-
-  const delPct = totalDelivery > 0 ? Math.round((deliveredList.length / totalDelivery) * 100) : 0;
-  const penPct = totalDelivery > 0 ? Math.round((pendingList.length / totalDelivery) * 100) : 0;
-  const circumference = 264;
-
-  document.getElementById('dashDeliveredPct').textContent = `${delPct}%`;
-  document.getElementById('dashDeliveredCircle').style.strokeDashoffset = circumference - (delPct / 100) * circumference;
-
-  document.getElementById('dashPendingPct').textContent = `${penPct}%`;
-  document.getElementById('dashPendingCircle').style.strokeDashoffset = circumference - (penPct / 100) * circumference;
-
-  const iconBagBlue = `<div class="w-10 h-10 rounded-full bg-[var(--status-blue-bg)] border border-[#3b82f6]/30 flex items-center justify-center text-[var(--status-blue)] shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>`;
-  const iconBagGreen = `<div class="w-10 h-10 rounded-full bg-[var(--status-emerald-bg)] border border-[#10b981]/30 flex items-center justify-center text-[var(--status-emerald)] shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div>`;
-  const iconClockYellow = `<div class="w-10 h-10 rounded-full bg-[#c9a24b]/10 border border-[#c9a24b]/30 flex items-center justify-center text-[var(--accent-gold)] shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5"/></svg></div>`;
-  const iconCrossRed = `<div class="w-10 h-10 rounded-full bg-[var(--status-rose-bg)] border border-[#f43f5e]/30 flex items-center justify-center text-[var(--status-rose)] shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></div>`;
-  const iconRtoBlue = `<div class="w-10 h-10 rounded-full bg-[var(--status-blue-bg)] border border-[#3b82f6]/30 flex items-center justify-center text-[var(--status-blue)] shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg></div>`;
-
-  const grid = document.getElementById('dashCardsGrid');
-
-  if (currentDashMode === 'DELIVERY') {
-    grid.innerHTML = `
-      <div onclick="openDashList('TOTAL_DELIVERY')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagBlue}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Total Delivery</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${totalDelivery}</p>
+    closeModal('inspectModal');
+    document.getElementById('actionModalTitle').textContent = `Submit RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">You want to submit RTO ${c.id} back to the owner?</p>
       </div>
-      <div onclick="openDashList('DELIVERED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-emerald)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagGreen}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Delivered</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${deliveredList.length}</p>
-      </div>
-      <div onclick="openDashList('PENDING')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconClockYellow}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Pending</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pendingList.length}</p>
-      </div>
-      <div onclick="openDashList('FAILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Failed</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${failedList.length}</p>
-      </div>
-      <div onclick="openDashList('RTO')" class="col-span-2 cursor-pointer ql-card p-5 hover:border-[var(--status-blue)] transition-colors flex items-center justify-between min-h-[100px]">
-        <div class="flex items-center gap-3">${iconRtoBlue}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">RTO</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] tabular-nums">${rtoList.length}</p>
-      </div>
+      <button onclick="window.executeSubmitRtoToOwner('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm Submit
+      </button>
     `;
-  } else if (currentDashMode === 'PICKUP') {
-    const pickups = getDashboardConsignments('PICKUP');
-    grid.innerHTML = `
-      <div onclick="openDashList('PICKUP_TOTAL')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagBlue}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Total Pickups</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.length}</p>
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeSubmitRtoToOwner = async (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    c.rtoStatus = 'SUBMITTED_BY_AGENT';
+    c.rtoSubmittedAt = getUAEISOString();
+
+    await saveDB();
+    closeModal('actionModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
+export const inspectConsignmentById = () => {
+    const db = getDB();
+    const id = document.getElementById('globalConsignmentSearch').value.trim().toUpperCase();
+    const c = db.consignments.find(x => x.id.toUpperCase() === id);
+    if (c) showConsignmentDetails(c.id);
+    else alert('Record not found.');
+};
+
+export const showConsignmentDetails = (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    const v = getVendorByCode(c.vendorCode);
+    const collectAmt = c.feeType === 'COD' ? (parseFloat(c.productAmount) + parseFloat(c.deliveryCharge)) : parseFloat(c.productAmount);
+    document.getElementById('inspectTitle').textContent = `Consignment Record: ${c.id}`;
+
+    const html = `
+      <div class="flex flex-col sm:flex-row gap-5 text-xs mb-4 bg-[var(--bg-base)] p-5 rounded-2xl border border-[var(--border-color)]">
+        <div class="flex-1 space-y-2.5 text-[var(--text-primary)]">
+          <p class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Status:</span> <span class="px-2.5 py-1 bg-[var(--border-color-strong)] text-[var(--text-primary)] rounded-lg font-black uppercase tracking-widest text-[9px] shadow-sm">${c.status}</span>${c.rtoStatus ? `<span class="px-2.5 py-1 bg-[var(--status-blue-bg)] text-[var(--status-blue)] border border-[#3b82f6]/20 rounded-lg font-black uppercase tracking-widest text-[9px]">${c.rtoStatus.replace(/_/g, ' ')}</span>` : ''}</p>
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Merchant:</span> <span class="font-bold uppercase">${v ? v.name : c.vendorCode}</span></p>
+          ${c.refVendorName ? `<p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Ref Vendor:</span> <span class="text-[var(--status-blue)] font-black uppercase">${c.refVendorName}</span> ${c.refVendorPhone ? `<span class="text-[var(--text-muted)]">(${c.refVendorPhone})</span>` : ''}</p>` : ''}
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Customer:</span> <span class="font-bold uppercase">${c.customerName}</span></p>
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Phone:</span> <span class="font-bold tabular-nums">${c.customerPhone}</span></p>
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Destination:</span> <span class="font-bold">${c.deliveryAddress}</span></p>
+          <p class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Weight:</span> <span class="font-bold tabular-nums">${c.weight || 1} kg</span></p>
+          <p class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Pieces:</span> <span class="font-bold tabular-nums">${c.pieces || 1}</span></p>
+          <p class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Collect Val:</span> <span class="text-[var(--status-emerald)] font-black tabular-nums">${formatAmt(collectAmt)} AED</span></p>
+          <p class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Terms:</span> <span class="font-black text-[var(--status-blue)]">${c.feeType}</span></p>
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Pick Origin:</span> <span class="font-bold">${getAgentName(c.pickedUpBy)}</span></p>
+          <p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">Deliv Agent:</span> <span class="font-bold">${getAgentName(c.assignedTo)}</span></p>
+          ${c.rtoPickupBy ? `<p class="flex items-start gap-2"><span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest w-20 shrink-0">RTO Picker:</span> <span class="font-bold">${getAgentName(c.rtoPickupBy)}</span></p>` : ''}
+          ${c.cocPendingAmount > 0 ? `<p class="text-[var(--status-rose)] font-black border border-[#f43f5e]/20 bg-[var(--status-rose-bg)] p-2 rounded-xl inline-block mt-2 shadow-sm text-[10px] uppercase tracking-widest">COC Pending: ${formatAmt(c.cocPendingAmount)} (${c.cocStatus})</p>` : ''}
+          ${c.status === 'Returned' ? `<p class="text-[var(--status-rose)] font-bold bg-[var(--status-rose-bg)] border border-[#f43f5e]/20 p-3 rounded-xl mt-3 leading-relaxed shadow-sm">Returned: ${c.returnReason}</p>` : ''}
+
+          ${c.podData ? `
+          <div class="mt-4 p-4 bg-[var(--status-rose-bg)] rounded-xl border border-[#f43f5e]/20 text-xs space-y-2 shadow-sm">
+              <h4 class="font-black text-[var(--status-rose)] border-b border-[#f43f5e]/20 pb-2 mb-3 uppercase tracking-widest text-[10px]">Captured POD Data</h4>
+              <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">Receiver Name:</b> <span class="font-bold">${c.podData.receiverName || 'Not Provided'}</span></p>
+              <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">NCND Collected:</b> <span class="font-bold tabular-nums">${c.podData.ncndCollected} ${c.podData.ncndPayMethod === 'Cheque' ? '(Cheque)' : ''}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.ncndRemarks || 'N/A'}</span></p>
+              <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">Payment Mode:</b> <span class="font-bold">${c.podData.payMethod}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.payModeRemarks || 'N/A'}</span></p>
+              <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">COD Collected:</b> <span class="font-bold tabular-nums">${c.podData.codCollected}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.codRemarks || 'N/A'}</span></p>
+          ${(c.podData.doCollected || c.podData.doToBeCollected || c.podData.doRemarks) ? `
+          <div class="h-px bg-[#f43f5e]/20 w-full my-2"></div>
+          <p class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><b class="text-[var(--status-rose)] text-[10px] uppercase tracking-wider">D.O Status:</b> <span class="font-bold">${c.podData.doCollected ? 'Collected' : (c.podData.doToBeCollected ? 'To Be Collected' : 'None')}</span> <span class="text-[var(--text-muted)] font-medium italic text-[10px]">- Rmk: ${c.podData.doRemarks || 'N/A'}</span></p>
+          ` : ''}
+          </div>
+          ` : ''}
+        </div>
+        <div id="qrCodeCanvas" class="flex justify-center items-center p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] shrink-0 min-w-[90px] shadow-sm self-start sm:self-auto"></div>
       </div>
-      <div onclick="openDashList('PICKUP_COLLECTED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-emerald)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagGreen}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Collected</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.filter(c => ['Picked Up', 'Out for delivery', 'Delivered'].includes(c.status)).length}</p>
+
+      <div class="grid grid-cols-2 gap-4 text-xs mb-5">
+        <div class="border border-[var(--border-color)] p-4 rounded-2xl bg-[var(--bg-base)] text-center flex flex-col justify-between shadow-sm">
+          <b class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest">Pickup Proof</b>
+          ${c.pickupPhoto ? `<img src="${c.pickupPhoto}" class="h-28 object-cover mt-3 mx-auto rounded-xl shadow-sm border border-[var(--border-color)]" /><a href="${c.pickupPhoto}" download="${c.id}_pickup.jpg" class="mt-3 block w-full bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold py-2 rounded-xl shadow-sm transition-all border border-[#1e293b] text-[10px] uppercase tracking-widest">View Full</a>` : '<span class="text-[var(--text-muted)] mt-3 block font-bold text-[10px] uppercase tracking-widest">None</span>'}
+        </div>
+        <div class="border border-[var(--border-color)] p-4 rounded-2xl bg-[var(--bg-base)] text-center flex flex-col justify-between shadow-sm">
+          <b class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest">Delivery Proof</b>
+          ${c.deliveryPhoto ? `<img src="${c.deliveryPhoto}" class="h-28 object-cover mt-3 mx-auto rounded-xl shadow-sm border border-[var(--border-color)]" /><a href="${c.deliveryPhoto}" download="${c.id}_delivery.jpg" class="mt-3 block w-full bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold py-2 rounded-xl shadow-sm transition-all border border-[#1e293b] text-[10px] uppercase tracking-widest">View Full</a>` : '<span class="text-[var(--text-muted)] mt-3 block font-bold text-[10px] uppercase tracking-widest">None</span>'}
+        </div>
+      </div>`;
+
+    const canDeliver = ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status) && c.assignedTo === currentUser.id;
+    const { isDeficit } = getDeficitInfo(c);
+    const needsDeficitCollection = isDeficit && !c.deficitReceivedDate && c.pickedUpBy;
+    const canMarkDeficit = needsDeficitCollection && (currentUser.role === 'ADMIN' || currentUser.id === c.pickedUpBy);
+    const isA = currentUser.role === 'ADMIN';
+    const ags = db.users.filter(u => u.role === 'AGENT' && u.status === 'ACTIVE');
+
+    let actionButtons = `<div class="flex flex-wrap gap-2 pt-5 border-t border-[var(--border-color)]">`;
+
+    if (isA) {
+        actionButtons += `<button onclick="window.openEditConsignmentModal('${c.id}')" class="bg-[var(--bg-base)] hover:bg-[var(--border-color-strong)] text-[var(--text-primary)] border border-[var(--border-color)] font-extrabold py-2 px-4 rounded-xl text-[10px] shadow-sm transition-colors uppercase tracking-widest flex-1 sm:flex-none">Edit</button>`;
+        if (canDeliver) {
+            actionButtons += `<button onclick="window.closeModal('inspectModal'); window.openPodScreen('${c.id}')" class="bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-2 px-4 rounded-xl text-[10px] shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest flex-1 sm:flex-none">Deliver</button>`;
+            actionButtons += `<button onclick="window.closeModal('inspectModal'); window.openReturnModal('${c.id}')" class="bg-[var(--status-rose)] hover:bg-[#e11d48] text-white font-extrabold py-2 px-4 rounded-xl text-[10px] shadow-sm transition-colors uppercase tracking-widest flex-1 sm:flex-none">Return</button>`;
+        }
+    }
+
+    if (canMarkDeficit) {
+        actionButtons += `<button onclick="window.closeModal('inspectModal'); window.markDeficitReceived('${c.id}')" class="bg-[var(--status-blue)] hover:bg-[#2563eb] text-white font-extrabold py-2 px-4 rounded-xl text-[10px] shadow-sm transition-colors uppercase tracking-widest flex-1 sm:flex-none">Amt Recv</button>`;
+    }
+
+    if (c.feeType === 'COC' && c.cocPendingAmount > 0 && c.cocStatus === 'PENDING' && c.pickedUpBy === currentUser.id) {
+        actionButtons += `<button onclick="window.closeModal('inspectModal'); window.agentMarkCocCollected('${c.id}')" class="bg-[var(--status-blue)] hover:bg-[#2563eb] text-white font-extrabold py-2 px-4 rounded-xl text-[10px] shadow-sm transition-colors uppercase tracking-widest flex-1 sm:flex-none">COC Recv</button>`;
+    }
+
+    if (isA && c.status !== 'Delivered') {
+        actionButtons += `
+        <div class="w-full mt-3 flex flex-col sm:flex-row sm:items-center gap-2">
+            <span class="font-extrabold text-[10px] text-[var(--text-secondary)] uppercase tracking-widest shrink-0">Assign:</span>
+            <select onchange="window.adminAssignAgent('${c.id}',this.value); window.closeModal('inspectModal');" class="w-full sm:flex-1 border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs font-bold bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all cursor-pointer">
+                <option value="">- Assign Pool -</option>
+                ${ags.map(a => `<option value="${a.id}" ${c.assignedTo === a.id ? 'selected' : ''}>${a.name} - ${a.id}</option>`).join('')}
+            </select>
+        </div>`;
+    }
+
+    actionButtons += `</div>`;
+    document.getElementById('inspectContent').innerHTML = html + actionButtons;
+    document.getElementById('inspectModal').classList.remove('hidden');
+
+    if (c.qrGenerated) {
+        setTimeout(() => {
+            document.getElementById('qrCodeCanvas').innerHTML = '';
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            if (window.QRCode) {
+                new window.QRCode(document.getElementById('qrCodeCanvas'), {
+                    text: JSON.stringify({ id: c.id }),
+                    width: 72, height: 72,
+                    colorDark: isDarkMode ? "#ffffff" : "#0b0f19",
+                    colorLight: isDarkMode ? "#0b0f19" : "#ffffff",
+                    correctLevel: window.QRCode.CorrectLevel.L
+                });
+            }
+        }, 100);
+    }
+};
+
+const compressImageFile = (file, cb) => {
+    const r = new FileReader();
+    r.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            const cvs = document.createElement('canvas');
+            let w = img.width, h = img.height, m = 480;
+            if (w > h && w > m) { h *= m / w; w = m; } else if (h > m) { w *= m / h; h = m; }
+            cvs.width = w; cvs.height = h;
+            cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+            cb(cvs.toDataURL('image/jpeg', 0.55));
+        };
+        img.src = e.target.result;
+    };
+    r.readAsDataURL(file);
+};
+
+export const handlePodPhoto = (e) => {
+    if (e.target.files[0]) {
+        compressImageFile(e.target.files[0], b64 => {
+            tempPodPhotoData = b64;
+            const img = document.getElementById('podPhotoPreview');
+            img.src = b64;
+            img.classList.remove('hidden');
+        });
+    }
+};
+
+export const handleModalPhoto = (e) => {
+    if (e.target.files[0]) {
+        compressImageFile(e.target.files[0], b64 => {
+            tempPhotoData = b64;
+            const img = document.getElementById('modalPhotoPreview');
+            if (img) { img.src = b64; img.classList.remove('hidden'); }
+        });
+    }
+};
+
+export const openPodScreen = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    currentPodCid = cid;
+    tempPodPhotoData = null;
+
+    const v = getVendorByCode(c.vendorCode);
+    document.getElementById('podAwb').textContent = c.id;
+    document.getElementById('podShipper').textContent = v ? v.name : c.vendorCode;
+    document.getElementById('podConsignee').textContent = c.customerName;
+    document.getElementById('podReceiverName').value = '';
+    document.getElementById('podDoCollected').checked = false;
+    document.getElementById('podDoToBeCollected').checked = false;
+    document.getElementById('podDoRemarks').value = '';
+
+    document.getElementById('podNcndAmount').value = c.productAmount || 0;
+    document.getElementById('podNcndCollected').value = c.productAmount || 0;
+    document.getElementById('podNcndRemarks').value = '';
+
+    let currentModeText = '';
+    let defaultMethod = '';
+
+    if (c.feeType === 'COD') { currentModeText = 'Cash On Delivery'; defaultMethod = 'COD'; }
+    else if (c.feeType === 'CAD') { currentModeText = 'Cash After Delivery'; defaultMethod = 'CAD'; }
+    else if (c.feeType === 'COC') { currentModeText = 'Pickup Cash'; defaultMethod = 'PKP'; }
+
+    currentPodDefaultMethod = defaultMethod;
+    document.getElementById('podCurrentPayMode').textContent = currentModeText;
+
+    document.querySelectorAll('input[name="podPayMethod"]').forEach(r => {
+        r.checked = (r.value === defaultMethod);
+    });
+
+    document.getElementById('podPayModeRemarks').value = '';
+    document.getElementById('podCourierCharge').value = c.deliveryCharge || 0;
+    document.getElementById('podCodCollected').value = c.deliveryCharge || 0;
+    document.getElementById('podCodRemarks').value = '';
+
+    document.getElementById('podPhotoPreview').classList.add('hidden');
+    document.getElementById('podPhotoPreview').src = '';
+
+    handlePodPayMethodChange();
+    document.getElementById('podModal').classList.remove('hidden');
+};
+
+export const handlePodPayMethodChange = () => {
+    const selected = document.querySelector('input[name="podPayMethod"]:checked')?.value || 'COD';
+    const codCol = document.getElementById('podCodCollected');
+
+    if (selected === 'COD') {
+        codCol.disabled = false;
+    } else {
+        codCol.disabled = true;
+        codCol.value = '0';
+    }
+};
+
+export const submitPodDelivered = (e) => {
+    if (e) e.preventDefault();
+    const db = getDB();
+    const cid = currentPodCid;
+    if (!cid) return alert('Error: Consignment ID missing.');
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    const ncndAmt = parseFloat(document.getElementById('podNcndAmount').value) || 0;
+    const ncndCol = parseFloat(document.getElementById('podNcndCollected').value) || 0;
+    const ncndRemarks = document.getElementById('podNcndRemarks').value.trim();
+
+    if (ncndCol < ncndAmt && !ncndRemarks) {
+        return alert('Validation Failed: Please enter NCND Remarks because NCND Collected is less than NCND Amount.');
+    }
+
+    const selectedPayRadio = document.querySelector('input[name="podPayMethod"]:checked');
+    const selectedPayMethod = selectedPayRadio ? selectedPayRadio.value : 'COD';
+
+    const payModeRemarks = document.getElementById('podPayModeRemarks').value.trim();
+
+    if (selectedPayMethod !== (currentPodDefaultMethod || 'COD') && !payModeRemarks) {
+        return alert('Validation Failed: Please enter Payment Mode Remarks since the default Payment Method was changed.');
+    }
+
+    const courierCharge = parseFloat(document.getElementById('podCourierCharge').value) || 0;
+    const codCol = parseFloat(document.getElementById('podCodCollected').value) || 0;
+    const codRemarks = document.getElementById('podCodRemarks').value.trim();
+
+    if (selectedPayMethod === 'COD' && codCol !== courierCharge && !codRemarks) {
+        return alert('Validation Failed: Please enter COD Remarks because COD Collected is different from the Courier Charge.');
+    }
+
+    document.getElementById('actionModalTitle').textContent = `Deliver Consignment: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">You want to mark this consignment as Delivered?</p>
       </div>
-      <div onclick="openDashList('PICKUP_PENDING')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconClockYellow}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Pending</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.filter(c => ['Created', 'Assigned'].includes(c.status)).length}</p>
-      </div>
-      <div onclick="openDashList('PICKUP_FAILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Failed</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.filter(c => c.status === 'Returned').length}</p>
-      </div>
+      <button onclick="window.executePodDelivered('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">Confirm Delivery</button>
     `;
-  } else if (currentDashMode === 'COD') {
-    const sumAmt = arr => arr.reduce((sum, c) => {
-      const baseAmt = Number(c.productAmount) || 0;
-      const delCharge = Number(c.deliveryCharge) || 0;
-      return sum + (c.feeType === 'COD' ? baseAmt + delCharge : baseAmt);
-    }, 0);
-    grid.innerHTML = `
-      <div onclick="openDashAnalysis('COD_TOTAL')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagBlue}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Total COD</span></div>
-        <p class="text-right font-black text-[18px] text-[var(--text-primary)] mt-3 tabular-nums">${formatAmt(sumAmt(assigned))} <span class="text-xs">د.إ</span></p>
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executePodDelivered = async (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    const ncndAmt = parseFloat(document.getElementById('podNcndAmount').value) || 0;
+    const ncndCol = parseFloat(document.getElementById('podNcndCollected').value) || 0;
+    const ncndRemarks = document.getElementById('podNcndRemarks').value.trim();
+    const selectedPayRadio = document.querySelector('input[name="podPayMethod"]:checked');
+    const selectedPayMethod = selectedPayRadio ? selectedPayRadio.value : 'COD';
+    const payModeRemarks = document.getElementById('podPayModeRemarks').value.trim();
+    const courierCharge = parseFloat(document.getElementById('podCourierCharge').value) || 0;
+    const codCol = parseFloat(document.getElementById('podCodCollected').value) || 0;
+    const codRemarks = document.getElementById('podCodRemarks').value.trim();
+    const doCollected = document.getElementById('podDoCollected').checked;
+    const doToBeCollected = document.getElementById('podDoToBeCollected').checked;
+    const doRemarks = document.getElementById('podDoRemarks').value.trim();
+
+    const btn = document.querySelector('#actionModal button');
+    if (btn) {
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+    }
+
+    let photoUrl = c.deliveryPhoto;
+    if (tempPodPhotoData) {
+        photoUrl = await uploadImageToSupabase(tempPodPhotoData, `delivery_pod_${cid}_${Date.now()}.jpg`);
+    }
+
+    if (ncndCol !== ncndAmt) { c.productAmount = ncndCol; }
+    if (selectedPayMethod === 'COD' && codCol !== courierCharge) { c.deliveryCharge = codCol; }
+    if (selectedPayMethod === 'PKP') { c.feeType = 'COC'; } else { c.feeType = selectedPayMethod; }
+
+    c.status = 'Delivered';
+    c.deliveredAt = getUAEISOString();
+    c.deliveryPhoto = photoUrl;
+    c.podData = {
+        receiverName: document.getElementById('podReceiverName').value.trim(),
+        ncndCollected: ncndCol,
+        ncndPayMethod: document.querySelector('input[name="podNcndPayMethod"]:checked') ? document.querySelector('input[name="podNcndPayMethod"]:checked').value : 'Cash',
+        ncndRemarks: ncndRemarks,
+        payMethod: selectedPayMethod,
+        payModeRemarks: payModeRemarks,
+        codCollected: codCol,
+        codRemarks: codRemarks,
+        doCollected: doCollected,
+        doToBeCollected: doToBeCollected,
+        doRemarks: doRemarks
+    };
+
+    await saveDB();
+    closeModal('actionModal');
+    closeModal('podModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
+export const submitPodReturn = () => {
+    const cid = currentPodCid;
+    if (!cid) return alert("Error: Consignment ID not found.");
+    closeModal('podModal');
+    openReturnModal(cid);
+};
+
+export const openReturnModal = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    document.getElementById('actionModalTitle').textContent = `Return Consignment: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-rose-bg)] border border-[#f43f5e]/20 rounded-xl">
+        <p class="text-[10px] font-extrabold text-[var(--status-rose)] uppercase tracking-widest mb-2">Reason for Return</p>
+        <textarea id="returnRemark" rows="3" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-xs font-bold bg-[var(--bg-surface)] text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-[var(--status-rose)] focus:border-[var(--status-rose)] transition-all placeholder-[var(--text-muted)] resize-none" placeholder="e.g., Customer not available..."></textarea>
       </div>
-      <div onclick="openDashAnalysis('COD_COLLECTED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-emerald)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconBagGreen}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Collected</span></div>
-        <p class="text-right font-black text-[18px] text-[var(--text-primary)] mt-3 tabular-nums">${formatAmt(sumAmt(deliveredList))} <span class="text-xs">د.إ</span></p>
-      </div>
-      <div onclick="openDashAnalysis('COD_PENDING')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconClockYellow}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Pending</span></div>
-        <p class="text-right font-black text-[18px] text-[var(--text-primary)] mt-3 tabular-nums">${formatAmt(sumAmt(pendingList))} <span class="text-xs">د.إ</span></p>
-      </div>
-      <div onclick="openDashAnalysis('COD_FAILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
-        <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Failed</span></div>
-        <p class="text-right font-black text-[18px] text-[var(--text-primary)] mt-3 tabular-nums">${formatAmt(sumAmt(failedList))} <span class="text-xs">د.إ</span></p>
-      </div>
+      <button onclick="window.confirmReturn('${c.id}')" class="w-full bg-[var(--status-rose)] hover:bg-[#e11d48] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">Confirm Return</button>
     `;
-  }
+    document.getElementById('actionModal').classList.remove('hidden');
 };
 
-export const closeDashSubScreen = () => {
-  document.getElementById('dashAnalysisScreen').classList.add('hidden');
-  document.getElementById('dashListScreen').classList.add('hidden');
-  document.getElementById('dashMainScreen').classList.remove('hidden');
+export const confirmReturn = async (cid) => {
+    const db = getDB();
+    const remark = document.getElementById('returnRemark').value.trim();
+    if (!remark) return alert('Please enter a remark or reason for the return.');
+    if (!confirm('Are you sure you want to mark this consignment as Returned?')) return;
+
+    const c = db.consignments.find(x => x.id === cid);
+    c.status = 'Returned';
+    c.returnReason = remark;
+    c.deliveredAt = getUAEISOString();
+
+    await saveDB();
+    closeModal('actionModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
-export const openDashAnalysis = (type) => {
-  document.getElementById('dashMainScreen').classList.add('hidden');
-  document.getElementById('dashListScreen').classList.add('hidden');
-  document.getElementById('dashAnalysisScreen').classList.remove('hidden');
+export const viewPickupPhoto = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
 
-  const assigned = getDashboardConsignments('DELIVERY');
-  const heading = document.getElementById('dashAnalysisHeading');
-  const thead = document.getElementById('dashAnalysisThead');
-  const tbody = document.getElementById('dashAnalysisTbody');
-
-  if (type === 'DELIVERED_ANALYSIS' || type === 'PENDING_ANALYSIS') {
-    const isDel = type === 'DELIVERED_ANALYSIS';
-    heading.textContent = isDel ? 'Delivery Analysis' : 'Pending Delivery Analysis';
-    const rows = isDel
-      ? assigned.filter(c => c.status === 'Delivered')
-      : assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-
-    thead.innerHTML = `<tr><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">#</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">AWB Number</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">Merchant</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">Status</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">Date Time</th></tr>`;
-    tbody.innerHTML = rows.length ? rows.map((c, idx) => {
-      const v = getVendorByCode(c.vendorCode);
-      return `<tr class="hover:bg-[var(--bg-base)] transition-colors"><td class="p-4 font-bold text-[var(--text-primary)]">${idx + 1}</td><td class="p-4 font-black text-[var(--text-primary)]">${c.id}</td><td class="p-4 font-bold uppercase text-[var(--text-secondary)]">${v ? v.name : c.vendorCode}</td><td class="p-4 lowercase font-bold text-[var(--text-muted)]">${c.status}</td><td class="p-4 leading-tight font-bold text-[var(--text-secondary)] whitespace-nowrap">${formatDashDateTime(c.deliveredAt || c.pickedUpAt || c.createdAt)}</td></tr>`;
-    }).join('') : `<tr><td colspan="5" class="p-8 text-center text-[var(--text-muted)] font-bold uppercase tracking-widest text-[10px]">No records found.</td></tr>`;
-  } else {
-    heading.textContent = 'COD Analysis';
-    let rows = assigned;
-    if (type === 'COD_COLLECTED') rows = assigned.filter(c => c.status === 'Delivered');
-    else if (type === 'COD_PENDING') rows = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-    else if (type === 'COD_FAILED') rows = assigned.filter(c => c.status === 'Returned');
-
-    thead.innerHTML = `<tr><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">#</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">AWB Number</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">Merchant</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold text-right">Collect</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold text-right">Received</th></tr>`;
-    tbody.innerHTML = rows.length ? rows.map((c, idx) => {
-      const v = getVendorByCode(c.vendorCode);
-      const baseAmt = Number(c.productAmount) || 0;
-      const delCharge = Number(c.deliveryCharge) || 0;
-      const collectAmt = c.feeType === 'COD' ? (baseAmt + delCharge) : baseAmt;
-      const receivedAmt = c.status === 'Delivered' ? collectAmt : 0;
-      return `<tr class="hover:bg-[var(--bg-base)] transition-colors"><td class="p-4 font-bold text-[var(--text-primary)]">${idx + 1}</td><td class="p-4 font-black text-[var(--text-primary)]">${c.id}</td><td class="p-4 font-bold uppercase text-[var(--text-secondary)]">${v ? v.name : c.vendorCode}</td><td class="p-4 font-black text-[var(--text-primary)] text-right">${collectAmt}</td><td class="p-4 font-black text-[var(--text-primary)] text-right">${formatAmt(receivedAmt)}</td></tr>`;
-    }).join('') : `<tr><td colspan="5" class="p-8 text-center text-[var(--text-muted)] font-bold uppercase tracking-widest text-[10px]">No records found.</td></tr>`;
-  }
+    document.getElementById('actionModalTitle').textContent = `Pick Up Photo: ${c.id}`;
+    if (c.pickupPhoto) {
+      document.getElementById('actionModalBody').innerHTML = `<div class="flex justify-center bg-[var(--bg-surface)] p-3 rounded-xl border border-[var(--border-color)]"><img src="${c.pickupPhoto}" class="max-h-[60vh] object-contain rounded-lg shadow-sm" alt="Pickup Photo" /></div>`;
+    } else {
+      document.getElementById('actionModalBody').innerHTML = `<div class="p-8 text-center text-[var(--text-muted)] font-bold border border-[var(--border-color)] rounded-xl bg-[var(--bg-base)] text-[10px] uppercase tracking-widest">No Pick Up Photo available.</div>`;
+    }
+    document.getElementById('actionModal').classList.remove('hidden');
 };
 
-export const openDashList = (filterType) => {
-  currentDashListFilter = filterType;
-  document.getElementById('dashMainScreen').classList.add('hidden');
-  document.getElementById('dashAnalysisScreen').classList.add('hidden');
-  document.getElementById('dashListScreen').classList.remove('hidden');
-  document.getElementById('dashListSearchInput').value = '';
+export const viewDeliveryPhoto = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
 
-  const headings = {
-    'TOTAL_DELIVERY': 'Total Delivery List',
-    'DELIVERED': 'Delivered List',
-    'PENDING': 'Pending Delivery List',
-    'FAILED': 'Failed List',
-    'RTO': 'RTO List',
-    'PICKUP_TOTAL': 'Total Pickups List',
-    'PICKUP_COLLECTED': 'Collected List',
-    'PICKUP_PENDING': 'Pending Pickups List',
-    'PICKUP_FAILED': 'Failed Pickups List'
-  };
-  document.getElementById('dashListHeading').textContent = headings[filterType] || 'Delivery List';
-  renderDashListItems();
+    document.getElementById('actionModalTitle').textContent = `Delivery Photo: ${c.id}`;
+    if (c.deliveryPhoto) {
+      document.getElementById('actionModalBody').innerHTML = `<div class="flex justify-center bg-[var(--bg-surface)] p-3 rounded-xl border border-[var(--border-color)]"><img src="${c.deliveryPhoto}" class="max-h-[60vh] object-contain rounded-lg shadow-sm" alt="Delivery Photo" /></div>`;
+    } else {
+      document.getElementById('actionModalBody').innerHTML = `<div class="p-8 text-center text-[var(--text-muted)] font-bold border border-[var(--border-color)] rounded-xl bg-[var(--bg-base)] text-[10px] uppercase tracking-widest">No Delivery Photo available.</div>`;
+    }
+    document.getElementById('actionModal').classList.remove('hidden');
 };
 
-export const renderDashListItems = () => {
-  const q = (document.getElementById('dashListSearchInput').value || '').trim().toLowerCase();
-  let list = [];
+export const agentMarkCocCollected = async (cid) => {
+    const db = getDB();
+    if (!confirm('Mark this pending COC amount as collected from the vendor?')) return;
+    const c = db.consignments.find(x => x.id === cid);
+    if (c) {
+      c.cocStatus = 'COLLECTED';
+      await saveDB();
+      if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+      alert('Marked as collected. The Admin must now confirm receipt in the office.');
+    }
+};
 
-  if (currentDashListFilter.startsWith('PICKUP_')) {
-    const pickups = getDashboardConsignments('PICKUP');
-    if (currentDashListFilter === 'PICKUP_TOTAL') list = pickups;
-    else if (currentDashListFilter === 'PICKUP_COLLECTED') list = pickups.filter(c => ['Picked Up', 'Out for delivery', 'Delivered'].includes(c.status));
-    else if (currentDashListFilter === 'PICKUP_PENDING') list = pickups.filter(c => ['Created', 'Assigned'].includes(c.status));
-    else if (currentDashListFilter === 'PICKUP_FAILED') list = pickups.filter(c => c.status === 'Returned');
-  } else {
-    const assigned = getDashboardConsignments('DELIVERY');
-    if (currentDashListFilter === 'TOTAL_DELIVERY') list = assigned;
-    else if (currentDashListFilter === 'DELIVERED') list = assigned.filter(c => c.status === 'Delivered');
-    else if (currentDashListFilter === 'PENDING') list = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-    else if (currentDashListFilter === 'FAILED') list = assigned.filter(c => c.status === 'Returned');
-    else if (currentDashListFilter === 'RTO') list = assigned.filter(c => ['ASSIGNED', 'SUBMITTED_BY_AGENT', 'CONFIRMED'].includes(c.rtoStatus));
-  }
+export const markDeficitReceived = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
 
-  if (q) list = list.filter(c => `${c.id} ${c.customerName} ${c.customerPhone}`.toLowerCase().includes(q));
+    const v = getVendorByCode(c.vendorCode);
+    const { deficitAmt } = getDeficitInfo(c);
 
-  const container = document.getElementById('dashListContainer');
-  if (list.length === 0) {
-    container.innerHTML = `<div class="ql-card p-10 text-center text-[var(--text-muted)] font-bold text-xs uppercase tracking-widest">No consignments found.</div>`;
-    return;
-  }
+    document.getElementById('deficitModalContent').innerHTML = `
+      <div class="p-4 bg-[var(--bg-surface)] rounded-xl border border-[var(--border-color)] space-y-2 text-[var(--text-primary)]">
+        <p><b class="text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mr-2">Tracking ID:</b> <span class="font-black tracking-widest uppercase">${c.id}</span></p>
+        <p><b class="text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mr-2">Merchant:</b> <span class="font-bold">${v ? v.name : c.vendorCode}</span></p>
+        <p><b class="text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mr-2">Pickup Origin:</b> <span class="font-bold">${getAgentName(c.pickedUpBy)}</span></p>
+        <div class="h-px bg-[var(--border-color)] w-full my-2"></div>
+        <p><b class="text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mr-2">Deficit Due:</b> <span class="text-[var(--status-rose)] font-black text-lg tabular-nums">${formatAmt(deficitAmt)} AED</span></p>
+      </div>
+      <p class="mt-4 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-center leading-relaxed">Confirm cash has been received from the merchant for this balance deficit.</p>
+    `;
 
-  const currentUser = getCurrentUser();
-  const isAgent = currentUser && currentUser.role === 'AGENT';
-  const isAdmin = currentUser && currentUser.role === 'ADMIN';
+    document.getElementById('deficitConfirmBtn').onclick = async function () {
+      c.deficitReceivedDate = getUAEISOString();
+      db.vendorPayments.unshift({
+          id: 'LED-' + Date.now() + Math.floor(Math.random() * 1000),
+          vendorCode: c.vendorCode, type: 'RECEIVED', amount: deficitAmt,
+          date: getUAEISOString().split('T')[0], notes: `Deficit Settled at Pickup for AWB: ${c.id}`
+      });
+      await saveDB();
+      closeModal('deficitModal');
 
-  container.innerHTML = list.map((c, idx) => {
+      if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+      if (document.getElementById('tab-invoices')?.classList.contains('tab-active')) {
+          generateInvoicePreview();
+          if (typeof window.renderVendorLedger === 'function') window.renderVendorLedger();
+      }
+    };
+
+    document.getElementById('deficitModal').classList.remove('hidden');
+};
+
+export const adminConfirmPendingCoc = async (cid) => {
+    const db = getDB();
+    if (!confirm('Confirm physical receipt of this pending COC amount in the office?')) return;
+    const c = db.consignments.find(x => x.id === cid);
+    if (c) {
+      c.cocStatus = 'SETTLED';
+      c.cocPendingAmount = 0;
+      await saveDB();
+      if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+      if (document.getElementById('tab-invoices')?.classList.contains('tab-active')) generateInvoicePreview();
+    }
+};
+
+export const sendWhatsAppStatus = (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
     const v = getVendorByCode(c.vendorCode);
     const vendorName = v ? v.name : c.vendorCode;
-    const baseAmt = Number(c.productAmount) || 0;
-    const delCharge = Number(c.deliveryCharge) || 0;
-    const collectAmt = c.feeType === 'COD' ? (baseAmt + delCharge) : baseAmt;
-    const waMessage = `Dear Customer,\nYour Shipment RefNo: *${c.id}*\n(From : *${vendorName}*),is on the way for delivery.\nAmount: Aed *${formatAmt(collectAmt)}*`;
-    const cleanPhone = (c.customerPhone || '').replace(/[^0-9]/g, '');
+    const collectAmt = c.feeType === 'COD' ? (parseFloat(c.productAmount) + parseFloat(c.deliveryCharge)) : parseFloat(c.productAmount);
 
-    if (currentDashListFilter === 'PENDING' && isAgent) {
-      return `
-        <div onclick="window.showConsignmentDetails('${c.id}')" class="cursor-pointer ql-card p-4 sm:p-5 hover:border-[var(--accent-gold)] transition-colors space-y-3 text-xs">
-          <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-3 mb-1">
-            <button onclick="event.stopPropagation(); window.openPodScreen('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all tracking-widest text-[10px] uppercase border border-[#1e293b]">Start</button>
-            <div class="flex items-center gap-3">
-              <span class="font-black text-[var(--text-primary)] text-sm tracking-widest uppercase">${c.id}</span>
-              <span class="w-6 h-6 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] font-black text-[10px] flex items-center justify-center shadow-sm tabular-nums">${idx + 1}</span>
-            </div>
-          </div>
-
-          <div class="flex justify-between items-end gap-3">
-            <div class="flex-1 space-y-2.5 min-w-0">
-              <p class="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[11px]">${c.customerName}</p>
-              <div class="flex items-center">
-                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Loc</span>
-                <span class="font-bold text-[var(--text-primary)] truncate">${c.deliveryAddress || ''}</span>
-              </div>
-              <div class="flex items-center">
-                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Pcs</span>
-                <span class="font-bold text-[var(--text-primary)] tabular-nums">${c.pieces || 1}</span>
-              </div>
-              <div class="flex items-center">
-                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Mob</span>
-                <span class="font-bold text-[var(--text-primary)] tabular-nums">${c.customerPhone || ''}</span>
-              </div>
-              <div class="flex items-center">
-                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Shipper</span>
-                <span class="font-bold text-[var(--text-primary)] uppercase truncate">${vendorName}</span>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-3 shrink-0">
-              <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}" target="_blank" onclick="event.stopPropagation()" class="w-10 h-10 rounded-full bg-[#0b0f19] border border-[#1e293b] text-[var(--accent-gold)] flex items-center justify-center shadow-[var(--shadow-elevated)] hover:scale-110 transition-transform" title="WhatsApp">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.128.552 4.195 1.6 6.02L.015 24l6.104-1.592c1.748.956 3.715 1.464 5.912 1.464 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm0 21.874c-1.802 0-3.565-.483-5.111-1.398l-.366-.217-3.8.992.992-3.801-.238-.378c-.997-1.583-1.523-3.411-1.523-5.253 0-5.467 4.45-9.917 9.916-9.917 5.467 0 9.917 4.45 9.917 9.917s-4.45 9.917-9.917 9.917zm5.442-7.44c-.298-.15-1.765-.871-2.037-.971-.272-.1-.472-.15-.671.15-.199.3-.77 1.018-.944 1.218-.174.2-.348.25-.646.1-1.258-.636-2.316-1.29-3.238-2.613-.238-.344.238-.328.665-1.182.1-.2.05-.375-.025-.525-.075-.15-.671-1.618-.921-2.218-.242-.582-.487-.503-.671-.513-.174-.01-.374-.01-.573-.01-.199 0-.522.075-.796.375-.273.3-1.044 1.022-1.044 2.493s1.07 2.892 1.219 3.092c.15.2 2.11 3.22 5.11 4.515.714.308 1.27.492 1.706.63.717.228 1.368.196 1.884.119.58-.087 1.765-.722 2.014-1.422.249-.7.249-1.3.174-1.422-.075-.122-.274-.197-.573-.347z"/></svg>
-              </a>
-              <a href="tel:${c.customerPhone || ''}" onclick="event.stopPropagation()" class="w-10 h-10 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] flex items-center justify-center shadow-sm hover:scale-110 transition-transform" title="Call">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    if (currentDashListFilter === 'FAILED' && isAdmin && !c.rtoStatus) {
-      return `
-        <div onclick="window.showConsignmentDetails('${c.id}')" class="cursor-pointer ql-card p-4 sm:p-5 hover:border-[var(--accent-gold)] transition-colors space-y-3 text-xs mb-3">
-          <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-3 mb-1">
-            <button onclick="event.stopPropagation(); window.openAssignRtoModal('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all tracking-widest text-[10px] uppercase border border-[#1e293b]">Assign RTO</button>
-            <div class="flex items-center gap-3">
-              <span class="font-black text-[var(--text-primary)] text-sm tracking-widest uppercase">${c.id}</span>
-              <span class="w-6 h-6 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] font-black text-[10px] flex items-center justify-center shadow-sm tabular-nums">${idx + 1}</span>
-            </div>
-          </div>
-          <p class="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[11px]">${c.customerName}</p>
-          <div class="flex justify-between items-center pt-2 font-bold text-[var(--text-primary)]">
-            <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Shipper: <span class="text-[var(--text-primary)] font-bold ml-1 uppercase">${vendorName}</span></span>
-            <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Mob <span class="text-[var(--text-primary)] font-bold ml-1 tabular-nums">${c.customerPhone || ''}</span></span>
-          </div>
-          <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Pick Origin: <span class="text-[var(--text-primary)]">${getAgentName(c.pickedUpBy)}</span></p>
-        </div>
-      `;
-    }
-
-    const canAgentSubmitRto = isAgent && c.rtoStatus === 'ASSIGNED' && c.rtoPickupBy === currentUser.id;
-    const rtoBadge = c.rtoStatus
-      ? `<span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--status-blue-bg)] text-[var(--status-blue)] border border-[#3b82f6]/20">${c.rtoStatus.replace(/_/g, ' ')}</span>`
-      : '';
-
-    return `
-      <div onclick="window.showConsignmentDetails('${c.id}')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors space-y-3 text-xs mb-3">
-        <div class="flex justify-between items-center gap-3">
-          <div class="flex items-center gap-2">
-            ${rtoBadge}
-            ${canAgentSubmitRto ? `<button onclick="event.stopPropagation(); window.submitRtoToOwner('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest border border-[#1e293b] shadow-sm">Submit</button>` : ''}
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="font-black text-sm text-[var(--text-primary)] tracking-widest uppercase">${c.id}</span>
-            <span class="w-7 h-7 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] font-black text-[10px] flex items-center justify-center shadow-sm tabular-nums">${idx + 1}</span>
-          </div>
-        </div>
-        <p class="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[11px]">${c.customerName}</p>
-        <div class="flex justify-between items-center pt-2 font-bold text-[var(--text-primary)]">
-          <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Shipper: <span class="text-[var(--text-primary)] font-bold ml-1 uppercase">${vendorName}</span></span>
-          <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)]">Mob <span class="text-[var(--text-primary)] font-bold ml-1 tabular-nums">${c.customerPhone || ''}</span></span>
-        </div>
-        ${c.rtoPickupBy ? `<p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">RTO Pickup Person: <span class="text-[var(--text-primary)]">${getAgentName(c.rtoPickupBy)}</span></p>` : ''}
-      </div>
-    `;
-  }).join('');
+    const message = `Dear Customer,\nYour Shipment RefNo: *${c.id}*\n(From : *${vendorName}*),is on the way for delivery.\nAmount: Aed *${formatAmt(collectAmt)}*`;
+    window.open(`https://wa.me/${c.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
 };
