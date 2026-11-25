@@ -345,27 +345,25 @@ export const openAssignRtoModal = (cid) => {
     closeModal('inspectModal');
     document.getElementById('actionModalTitle').textContent = `Assign RTO: ${c.id}`;
     document.getElementById('actionModalBody').innerHTML = `
-      <div class="space-y-4">
-        <div class="p-3.5 rounded-xl bg-[var(--bg-base)] border border-[var(--border-color)] text-xs space-y-1">
-          <p><span class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Consignment:</span> <b class="font-black">${c.id}</b></p>
-          <p><span class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Assigned Person:</span> <b>${getAgentName(c.assignedTo)}</b></p>
-        </div>
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">RTO Pickup Person (Editable)</label>
-          <select id="rtoPickupAgentSelect" class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)]">
-            <option value="">-- Select Agent --</option>
-            ${activeAgents.map(a => `<option value="${a.id}" ${a.id === defaultPicker ? 'selected' : ''}>${a.name} - ${a.id}</option>`).join('')}
-          </select>
-        </div>
-        <button onclick="window.confirmAssignRto('${c.id}')" class="w-full bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-all uppercase tracking-widest text-[11px] border border-[#1e293b]">
-          Move to RTO Card
-        </button>
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center space-y-1.5">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest">Assign RTO pickup person for ${c.id}?</p>
+        <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Assigned Person: <span class="text-[var(--text-primary)] font-black">${getAgentName(c.assignedTo)}</span></p>
       </div>
+      <div class="mb-4">
+        <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">RTO Pickup Person (Editable)</label>
+        <select id="rtoPickupAgentSelect" class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--status-emerald)]">
+          <option value="">-- Select Agent --</option>
+          ${activeAgents.map(a => `<option value="${a.id}" ${a.id === defaultPicker ? 'selected' : ''}>${a.name} - ${a.id}</option>`).join('')}
+        </select>
+      </div>
+      <button onclick="window.confirmAssignRto('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Move to RTO Card
+      </button>
     `;
     document.getElementById('actionModal').classList.remove('hidden');
 };
 
-export const confirmAssignRto = async (cid) => {
+export const confirmAssignRto = (cid) => {
     const db = getDB();
     const c = db.consignments.find(x => x.id === cid);
     const selectedAgent = document.getElementById('rtoPickupAgentSelect')?.value;
@@ -373,7 +371,23 @@ export const confirmAssignRto = async (cid) => {
     if (!selectedAgent) return alert('Please select an RTO pickup person.');
 
     const agentLabel = getAgentName(selectedAgent);
-    if (!confirm(`Move consignment ${c.id} to the RTO card with "${agentLabel}" as the pickup person?`)) return;
+    document.getElementById('actionModalTitle').textContent = `Confirm RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center space-y-1.5">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest">You want to move ${c.id} to RTO card?</p>
+        <p class="text-xs font-black text-[var(--text-primary)] uppercase tracking-wider">${agentLabel}</p>
+      </div>
+      <button onclick="window.executeAssignRto('${c.id}', '${selectedAgent}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm RTO Assignment
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeAssignRto = async (cid, selectedAgent) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c || !selectedAgent) return;
 
     c.rtoStatus = 'ASSIGNED';
     c.rtoAssignedTo = c.assignedTo || selectedAgent;
@@ -385,7 +399,7 @@ export const confirmAssignRto = async (cid) => {
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
-export const submitRtoToOwner = async (cid) => {
+export const submitRtoToOwner = (cid) => {
     const db = getDB();
     const currentUser = getCurrentUser();
     const c = db.consignments.find(x => x.id === cid);
@@ -395,13 +409,29 @@ export const submitRtoToOwner = async (cid) => {
         return alert('Only the assigned RTO pickup person can submit this consignment.');
     }
 
-    if (!confirm(`Submit RTO consignment ${c.id} back to the owner for admin confirmation?`)) return;
+    closeModal('inspectModal');
+    document.getElementById('actionModalTitle').textContent = `Submit RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">You want to submit RTO ${c.id} back to the owner?</p>
+      </div>
+      <button onclick="window.executeSubmitRtoToOwner('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm Submit
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeSubmitRtoToOwner = async (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
 
     c.rtoStatus = 'SUBMITTED_BY_AGENT';
     c.rtoSubmittedAt = getUAEISOString();
 
     await saveDB();
-    closeModal('inspectModal');
+    closeModal('actionModal');
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
