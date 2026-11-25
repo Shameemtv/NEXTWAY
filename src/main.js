@@ -53,7 +53,7 @@ const getDefaultSeedDB = async () => {
   const adminHash = await hashPassword('admin123');[span_21](start_span)[span_21](end_span)[span_22](start_span)[span_22](end_span)
   const agentHash = await hashPassword('agent123');[span_23](start_span)[span_23](end_span)[span_24](start_span)[span_24](end_span)
   return {
-    settings: { companyName: 'NEXT WAY DELIVERY', otpMandatory: true, showCloudSyncConfig: true, invoiceCounter: 1001 },[span_25](start_span)[span_25](end_span)
+    settings: [{ companyName: 'NEXT WAY DELIVERY', otpMandatory: true, showCloudSyncConfig: true, invoiceCounter: 1001 }],[span_25](start_span)[span_25](end_span)
     users: [
       { id: 'USR-ADMIN', username: 'NEXTWAY', name: 'System Administrator', role: 'ADMIN', phone: '+917012133095', passwordHash: adminHash, status: 'ACTIVE' },[span_26](start_span)[span_26](end_span)
       { id: 'AG-101', username: 'agent1', name: 'Ramesh Kumar', role: 'AGENT', phone: '+971501112233', passwordHash: agentHash, status: 'ACTIVE' }[span_27](start_span)[span_27](end_span)
