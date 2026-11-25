@@ -31,11 +31,11 @@ import {
   openNewConsignmentModal, filterVendorSelect, syncVendorPickupAddress, saveNewConsignment,
   bulkAssign, openEditConsignmentModal, syncEditVendorPickupAddress, confirmEditConsignment,
   executeEditConsignment, deleteConsignmentFromEdit, openAssignRtoModal, confirmAssignRto,
-  submitRtoToOwner, inspectConsignmentById, showConsignmentDetails, openPodScreen,
-  handlePodPayMethodChange, handlePodPhoto, submitPodDelivered, executePodDelivered,
-  submitPodReturn, openReturnModal, confirmReturn, viewPickupPhoto, viewDeliveryPhoto,
-  agentMarkCocCollected, markDeficitReceived, adminConfirmPendingCoc, sendWhatsAppStatus,
-  handleModalPhoto
+  executeAssignRto, submitRtoToOwner, executeSubmitRtoToOwner, inspectConsignmentById,
+  showConsignmentDetails, openPodScreen, handlePodPayMethodChange, handlePodPhoto,
+  submitPodDelivered, executePodDelivered, submitPodReturn, openReturnModal, confirmReturn,
+  viewPickupPhoto, viewDeliveryPhoto, agentMarkCocCollected, markDeficitReceived,
+  adminConfirmPendingCoc, sendWhatsAppStatus, handleModalPhoto
 } from './views/consignment.js';
 
 import {
@@ -44,9 +44,10 @@ import {
   downloadImportTemplate, importConsignmentsFromExcel, toggleAutoAdjust, openVendorModal,
   openEditVendorModal, saveVendor, deleteVendor, renderVendors, openVendorPaymentModal,
   saveVendorLedgerEntry, renderVendorLedger, deleteLedger, openVendorSettlementOtpModal,
-  sendSettlementOtp, verifySettlementOtp, cancelSettlementOtp, adminConfirmRto, openAgentModal,
-  saveAgent, renderAgents, setAgentStatus, adminDeleteAgent, adminResetAgentPassword,
-  openCredentialsModal, changeOwnPassword, renderConfirmations, generateAdminFinanceTab
+  sendSettlementOtp, verifySettlementOtp, cancelSettlementOtp, adminConfirmRto,
+  executeAdminConfirmRto, openAgentModal, saveAgent, renderAgents, setAgentStatus,
+  adminDeleteAgent, adminResetAgentPassword, openCredentialsModal, changeOwnPassword,
+  renderConfirmations, generateAdminFinanceTab
 } from './views/admin.js';
 
 const getDefaultSeedDB = async () => {
@@ -364,7 +365,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.deleteConsignmentFromEdit = deleteConsignmentFromEdit;
     window.openAssignRtoModal = openAssignRtoModal;
     window.confirmAssignRto = confirmAssignRto;
+    window.executeAssignRto = executeAssignRto;
     window.submitRtoToOwner = submitRtoToOwner;
+    window.executeSubmitRtoToOwner = executeSubmitRtoToOwner;
     window.inspectConsignmentById = inspectConsignmentById;
     window.showConsignmentDetails = showConsignmentDetails;
     window.openPodScreen = openPodScreen;
@@ -409,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.verifySettlementOtp = verifySettlementOtp;
     window.cancelSettlementOtp = cancelSettlementOtp;
     window.adminConfirmRto = adminConfirmRto;
+    window.executeAdminConfirmRto = executeAdminConfirmRto;
     window.openAgentModal = openAgentModal;
     window.saveAgent = saveAgent;
     window.renderAgents = renderAgents;
