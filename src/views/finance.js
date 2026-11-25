@@ -199,9 +199,9 @@ export const generateInvoicePreview = () => {
     const v = getVendorByCode(vCode);
 
     let period = 'Period : All Dates';
-    if (type === 'MONTH' && sVal) { const [y, m] = sVal.split('-'); period = `Billing Month : ${new Date(y, m - 1).toLocaleString('default', { month: 'long' })}, ${y}`; }
-    else if (type === 'YEAR' && sVal) { period = `Year : ${sVal}`; }
-    else if (type === 'DATE' && sVal) { const [y, m, d] = sVal.split('-'); period = `Date : ${d}-${m}-${y}`; }
+    if (type === 'MONTH' && sVal) { const [y, m] = sVal.split('-'); period = `Period : ${new Date(y, m - 1).toLocaleString('default', { month: 'long' })} ${y}`; }
+    else if (type === 'YEAR' && sVal) { period = `Period : ${sVal}`; }
+    else if (type === 'DATE' && sVal) { const [y, m, d] = sVal.split('-'); period = `Period : ${d}-${m}-${y}`; }
     else if (type === 'RANGE') { const fS = start ? `${start.split('-')[2]}-${start.split('-')[1]}-${start.split('-')[0]}` : ''; const fE = end ? `${end.split('-')[2]}-${end.split('-')[1]}-${end.split('-')[0]}` : ''; period = `Period : ${fS} to ${fE}`; }
 
     const ls = db.consignments.filter(c => {
@@ -220,20 +220,25 @@ export const generateInvoicePreview = () => {
 
     applyInvoicePrintSize();
 
+    const now = getUAEDisplayDate();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const printedTimestamp = now.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+
     if (isTaxInvoice) {
         document.getElementById('standardInvoiceWrap').classList.add('hidden');
         document.getElementById('taxInvoiceWrap').classList.remove('hidden');
 
         const invNo = 'NW-' + (db.settings.invoiceCounter || 1001);
         document.getElementById('taxInvNo').textContent = invNo;
-        const now = getUAEDisplayDate();
-        document.getElementById('taxInvDate').textContent = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+        document.getElementById('taxInvDate').textContent = `${dd}/${mm}/${yyyy}`;
 
         document.getElementById('taxCustName').textContent = v ? v.name : 'ALL VENDORS';
         document.getElementById('taxCustLoc').textContent = v ? (v.address || '') : '';
         document.getElementById('taxCustTRN').textContent = v ? (v.trn || '') : '';
         document.getElementById('taxPrintedBy').textContent = currentUser ? currentUser.name : 'System';
-        document.getElementById('taxPrintedDate').textContent = getUAEDisplayDate().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById('taxPrintedDate').textContent = printedTimestamp;
 
         if (typeof window.JsBarcode !== 'undefined') {
             window.JsBarcode('#taxInvoiceBarcode', invNo, { height: 40, width: 2, displayValue: false, margin: 0, background: 'transparent' });
@@ -274,19 +279,29 @@ export const generateInvoicePreview = () => {
         document.getElementById('standardInvoiceWrap').classList.remove('hidden');
         document.getElementById('taxInvoiceWrap').classList.add('hidden');
 
-        const now = getUAEDisplayDate();
+        const refCode = v ? v.code : 'ALL';
+        const refEl = document.getElementById('invRefNo');
+        if (refEl) refEl.textContent = `STMT-${refCode}-${yyyy}${mm}${dd}`;
+
         const stmtDateEl = document.getElementById('invStatementDate');
-        if (stmtDateEl) {
-            stmtDateEl.textContent = `Statement Date : ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-        }
+        if (stmtDateEl) stmtDateEl.textContent = `${dd}/${mm}/${yyyy}`;
+
+        const vNameEl = document.getElementById('invVendorName');
+        const vMetaEl = document.getElementById('invVendorMeta');
+        const vAddrEl = document.getElementById('invVendorAddress');
+        if (vNameEl) vNameEl.textContent = v ? v.name : 'ALL REGISTERED VENDORS';
+        if (vMetaEl) vMetaEl.textContent = v ? `Code: ${v.code}${v.phone ? ' | ' + v.phone : ''}` : '';
+        if (vAddrEl) vAddrEl.textContent = v ? (v.address || '') : '';
+
+        document.getElementById('invPeriodHeader').textContent = period;
 
         const countEl = document.getElementById('invOrderCount');
         if (countEl) countEl.textContent = String(ls.length);
 
-        document.getElementById('invVendorHeader').innerHTML = v
-          ? `${v.name} (${v.code})<br/><span class="text-[10px] font-semibold text-gray-600 normal-case block mt-0.5">${v.phone || ''}${v.address ? ' | ' + v.address : ''}</span>`
-          : 'ALL REGISTERED VENDORS';
-        document.getElementById('invPeriodHeader').textContent = period;
+        const printedByEl = document.getElementById('invPrintedBy');
+        const printedDateEl = document.getElementById('invPrintedDate');
+        if (printedByEl) printedByEl.textContent = currentUser ? currentUser.name : 'System Administrator';
+        if (printedDateEl) printedDateEl.textContent = printedTimestamp;
 
         let tp = 0, td = 0, netDeduction = 0;
         document.getElementById('invTableBody').innerHTML = ls.length ? ls.map((c, i) => {
@@ -307,18 +322,21 @@ export const generateInvoicePreview = () => {
           netDeduction += mathDeduction;
 
           const feeDisplay = c.feeType === 'COC' ? c.cocPendingAmount : deduction;
-          const rowNet = (parseFloat(c.productAmount) || 0) - (parseFloat(mathDeduction) || 0);
 
-          return `<tr>
-            <td class="py-2 px-2 border-r border-gray-200 font-bold text-gray-600">${i + 1}</td>
-            <td class="py-2 px-2 border-r border-gray-200 whitespace-nowrap font-semibold">${c.createdAt}</td>
-            <td class="py-2 px-2 border-r border-gray-200 font-black">${c.id}</td>
-            <td class="py-2 px-2 border-r border-gray-200 uppercase font-semibold">${c.customerName}</td>
-            <td class="py-2 px-2 border-r border-gray-200 text-right font-bold">${formatAmt(c.productAmount)}</td>
-            <td class="py-2 px-2 border-r border-gray-200 text-right text-rose-700 font-bold">${formatAmt(feeDisplay)}</td>
-            <td class="py-2 px-2 text-right font-black">${formatAmt(rowNet)}</td>
+          return `<tr class="bg-white">
+            <td class="py-2 px-3 text-center font-bold text-slate-600 border-r border-slate-200">${i + 1}</td>
+            <td class="py-2 px-3 whitespace-nowrap font-medium text-slate-600 border-r border-slate-200">${c.createdAt}</td>
+            <td class="py-2 px-3 font-extrabold text-[#0b0f19] border-r border-slate-200">${c.id}</td>
+            <td class="py-2 px-3 uppercase font-medium text-[#0b0f19] border-r border-slate-200">${c.customerName}</td>
+            <td class="py-2 px-3 text-right font-bold text-rose-600 border-r border-slate-200">${formatAmt(feeDisplay)}</td>
+            <td class="py-2 px-3 text-right font-extrabold text-[#0b0f19]">${formatAmt(c.productAmount)}</td>
           </tr>`;
-        }).join('') : `<tr><td colspan="7" class="py-6 text-center text-gray-500 font-bold text-[10px] uppercase tracking-widest">No delivered consignments for this period.</td></tr>`;
+        }).join('') : `<tr><td colspan="6" class="py-6 text-center text-slate-500 font-bold text-[10px] uppercase tracking-widest">No delivered consignments for this period.</td></tr>`;
+
+        const subDedEl = document.getElementById('invSubTotalDeductions');
+        const subProdEl = document.getElementById('invSubTotalProduct');
+        if (subDedEl) subDedEl.textContent = formatAmt(td);
+        if (subProdEl) subProdEl.textContent = formatAmt(tp);
 
         let lp = 0;
         const pL = db.vendorPayments.filter(p => {
@@ -337,10 +355,10 @@ export const generateInvoicePreview = () => {
                 if (p.type === 'PAID') lp += p.amount;
                 else lp -= p.amount;
                 return `<tr>
-                  <td class="py-2 px-2 border-r border-gray-200 font-semibold whitespace-nowrap">${p.date}</td>
-                  <td class="py-2 px-2 border-r border-gray-200 font-black text-[10px] uppercase tracking-wider ${p.type === 'PAID' ? 'text-emerald-700' : 'text-blue-700'}">${p.type}</td>
-                  <td class="py-2 px-2 border-r border-gray-200 font-semibold">${p.notes || '-'}</td>
-                  <td class="py-2 px-2 text-right font-black">${formatAmt(p.amount)}</td>
+                  <td class="py-2 px-3 border-r border-slate-200 font-medium whitespace-nowrap">${p.date}</td>
+                  <td class="py-2 px-3 border-r border-slate-200 font-extrabold text-[10px] uppercase tracking-wider ${p.type === 'PAID' ? 'text-emerald-700' : 'text-blue-700'}">${p.type}</td>
+                  <td class="py-2 px-3 border-r border-slate-200 font-medium">${p.notes || '-'}</td>
+                  <td class="py-2 px-3 text-right font-extrabold">${formatAmt(p.amount)}</td>
                 </tr>`;
             }).join('');
         } else {
@@ -359,9 +377,14 @@ export const generateInvoicePreview = () => {
             qrWrap.innerHTML = '';
             if (window.QRCode) {
                 new window.QRCode(qrWrap, {
-                    text: JSON.stringify({ Vendor: vCode, NetPayable: formatAmt(netPayable), Date: getUAEISOString() }),
-                    width: 60,
-                    height: 60,
+                    text: JSON.stringify({
+                        Ref: `STMT-${refCode}-${yyyy}${mm}${dd}`,
+                        Vendor: vCode,
+                        NetPayable: formatAmt(netPayable),
+                        Date: getUAEISOString()
+                    }),
+                    width: 68,
+                    height: 68,
                     colorDark: '#0b0f19',
                     colorLight: '#ffffff',
                     correctLevel: window.QRCode.CorrectLevel.L
