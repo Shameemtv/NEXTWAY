@@ -46,6 +46,22 @@ const getDashboardConsignments = (type = 'DELIVERY') => {
   });
 };
 
+const getActiveRtoConsignments = () => {
+  const db = getDB();
+  const currentUser = getCurrentUser();
+  if (!db || !currentUser) return [];
+
+  if (currentUser.role === 'ADMIN') {
+    const filterId = document.getElementById('adminDashAgentFilter')?.value || 'ALL';
+    return db.consignments.filter(c => {
+      if (c.rtoStatus !== 'ASSIGNED') return false;
+      return filterId === 'ALL' ? true : c.rtoPickupBy === filterId;
+    });
+  }
+
+  return db.consignments.filter(c => c.rtoStatus === 'ASSIGNED' && c.rtoPickupBy === currentUser.id);
+};
+
 const formatDashDateTime = (isoStr) => {
   if (!isoStr) return '-';
   if (isoStr.includes('T')) {
@@ -97,8 +113,8 @@ export const renderAgentDashboard = () => {
   const totalDelivery = assigned.length;
   const deliveredList = assigned.filter(c => c.status === 'Delivered');
   const pendingList = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-  const failedList = assigned.filter(c => c.status === 'Returned');
-  const rtoList = assigned.filter(c => ['ASSIGNED', 'SUBMITTED_BY_AGENT', 'CONFIRMED'].includes(c.rtoStatus));
+  const failedList = assigned.filter(c => c.status === 'Returned' && !c.rtoStatus);
+  const rtoList = getActiveRtoConsignments();
 
   const delPct = totalDelivery > 0 ? Math.round((deliveredList.length / totalDelivery) * 100) : 0;
   const penPct = totalDelivery > 0 ? Math.round((pendingList.length / totalDelivery) * 100) : 0;
@@ -158,7 +174,7 @@ export const renderAgentDashboard = () => {
       </div>
       <div onclick="openDashList('PICKUP_FAILED')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-rose)] transition-colors flex flex-col justify-between min-h-[120px]">
         <div class="flex items-center gap-3">${iconCrossRed}<span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Failed</span></div>
-        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.filter(c => c.status === 'Returned').length}</p>
+        <p class="text-right font-black text-2xl text-[var(--text-primary)] mt-3 tabular-nums">${pickups.filter(c => c.status === 'Returned' && !c.rtoStatus).length}</p>
       </div>
     `;
   } else if (currentDashMode === 'COD') {
@@ -221,7 +237,7 @@ export const openDashAnalysis = (type) => {
     let rows = assigned;
     if (type === 'COD_COLLECTED') rows = assigned.filter(c => c.status === 'Delivered');
     else if (type === 'COD_PENDING') rows = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-    else if (type === 'COD_FAILED') rows = assigned.filter(c => c.status === 'Returned');
+    else if (type === 'COD_FAILED') rows = assigned.filter(c => c.status === 'Returned' && !c.rtoStatus);
 
     thead.innerHTML = `<tr><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">#</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">AWB Number</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold">Merchant</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold text-right">Collect</th><th class="p-4 text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-extrabold text-right">Received</th></tr>`;
     tbody.innerHTML = rows.length ? rows.map((c, idx) => {
@@ -266,14 +282,15 @@ export const renderDashListItems = () => {
     if (currentDashListFilter === 'PICKUP_TOTAL') list = pickups;
     else if (currentDashListFilter === 'PICKUP_COLLECTED') list = pickups.filter(c => ['Picked Up', 'Out for delivery', 'Delivered'].includes(c.status));
     else if (currentDashListFilter === 'PICKUP_PENDING') list = pickups.filter(c => ['Created', 'Assigned'].includes(c.status));
-    else if (currentDashListFilter === 'PICKUP_FAILED') list = pickups.filter(c => c.status === 'Returned');
+    else if (currentDashListFilter === 'PICKUP_FAILED') list = pickups.filter(c => c.status === 'Returned' && !c.rtoStatus);
+  } else if (currentDashListFilter === 'RTO') {
+    list = getActiveRtoConsignments();
   } else {
     const assigned = getDashboardConsignments('DELIVERY');
     if (currentDashListFilter === 'TOTAL_DELIVERY') list = assigned;
     else if (currentDashListFilter === 'DELIVERED') list = assigned.filter(c => c.status === 'Delivered');
     else if (currentDashListFilter === 'PENDING') list = assigned.filter(c => ['Assigned', 'Picked Up', 'Out for delivery'].includes(c.status));
-    else if (currentDashListFilter === 'FAILED') list = assigned.filter(c => c.status === 'Returned');
-    else if (currentDashListFilter === 'RTO') list = assigned.filter(c => ['ASSIGNED', 'SUBMITTED_BY_AGENT', 'CONFIRMED'].includes(c.rtoStatus));
+    else if (currentDashListFilter === 'FAILED') list = assigned.filter(c => c.status === 'Returned' && !c.rtoStatus);
   }
 
   if (q) list = list.filter(c => `${c.id} ${c.customerName} ${c.customerPhone}`.toLowerCase().includes(q));
