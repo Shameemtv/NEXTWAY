@@ -487,6 +487,39 @@ export const executeAdminConfirmRto = async (cid) => {
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
+export const adminRejectRto = (cid) => {
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'ADMIN') return;
+
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    document.getElementById('actionModalTitle').textContent = `Reject RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-rose-bg)] border border-[#f43f5e]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-rose)] uppercase tracking-widest mb-1.5">Reject RTO submission for ${c.id} and send back to RTO card?</p>
+      </div>
+      <button onclick="window.executeAdminRejectRto('${c.id}')" class="w-full bg-[var(--status-rose)] hover:bg-[#e11d48] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm Reject
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeAdminRejectRto = async (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
+
+    c.rtoStatus = 'ASSIGNED';
+    c.rtoSubmittedAt = null;
+
+    await saveDB();
+    closeModal('actionModal');
+    if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+};
+
 export const openAgentModal = () => {
     document.getElementById('aName').value = '';
     document.getElementById('aUser').value = '';
@@ -630,7 +663,10 @@ export const renderConfirmations = () => {
           <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Owner / Merchant: <b class="text-[var(--text-primary)] ml-1">${v ? v.name : c.vendorCode}</b></span><br/>
           <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Submitted By: <b class="text-[var(--text-primary)] ml-1">${picker ? `${picker.name} - ${picker.id}` : (c.rtoPickupBy || 'Agent')}</b></span>
         </div>
-        <button onclick="window.adminConfirmRto('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-[var(--shadow-elevated)] shrink-0 transition-all text-[10px] uppercase tracking-widest border border-[#1e293b]">Confirm RTO</button>
+        <div class="flex gap-2 shrink-0">
+          <button onclick="window.adminConfirmRto('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-[var(--shadow-elevated)] transition-all text-[10px] uppercase tracking-widest border border-[#1e293b]">Confirm RTO</button>
+          <button onclick="window.adminRejectRto('${c.id}')" class="bg-[var(--bg-base)] hover:bg-[var(--border-color-strong)] text-[var(--status-rose)] border border-[var(--border-color)] font-extrabold px-5 py-2.5 rounded-xl shadow-sm transition-colors text-[10px] uppercase tracking-widest">Reject</button>
+        </div>
       </div>`;
     }).join('');
 
