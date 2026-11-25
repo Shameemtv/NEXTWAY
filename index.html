@@ -758,95 +758,125 @@
 
         <div id="printableInvoice" class="ql-card p-6 sm:p-8 bg-white border border-[var(--border-color)] space-y-6">
           <!-- STANDARD LEDGER STATEMENT FORMAT (TAX INVOICE = NO) -->
-          <div id="standardInvoiceWrap" class="font-sans text-gray-900 bg-white space-y-5">
-            <div class="flex justify-between items-start border-b-2 border-gray-900 pb-4 gap-4">
+          <div id="standardInvoiceWrap" class="font-sans text-[#0b0f19] bg-white space-y-5">
+            <!-- Top Header -->
+            <div class="flex justify-between items-start border-b-[2.5px] border-[#0b0f19] pb-4 gap-4">
               <div>
-                <img src="1000515619.jpg" alt="Logo" class="stmt-logo h-14 mb-2 object-contain" />
-                <h2 class="stmt-company text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">NEXT WAY DELIVERY SERVICES LLC</h2>
-                <p class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-1">Al Quoz 3, United Arab Emirates | Ph: +971 56 691 3977<br/>nextwaydelivery@gmail.com</p>
+                <img src="1000515619.jpg" alt="Logo" class="stmt-logo h-12 mb-2 object-contain" />
+                <h2 class="stmt-company text-base sm:text-lg font-black text-[#0b0f19] uppercase tracking-tight leading-tight">NEXT WAY DELIVERY SERVICES LLC</h2>
+                <p class="text-[11px] text-slate-600 font-medium leading-snug mt-1">Al Quoz 3, United Arab Emirates<br/>nextwaydelivery@gmail.com | Ph: +971 56 691 3977</p>
               </div>
               <div class="text-right shrink-0">
-                <h1 class="stmt-title text-lg sm:text-xl font-black text-gray-900 uppercase tracking-widest">STATEMENT OF ACCOUNT</h1>
-                <p id="invStatementDate" class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-1"></p>
-                <p id="invPeriodHeader" class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-0.5"></p>
+                <h1 class="stmt-title text-base sm:text-lg font-black text-[#0b0f19] uppercase tracking-wide">LEDGER STATEMENT</h1>
+                <p class="text-[11px] text-slate-600 font-medium mt-1">Ref: <span id="invRefNo" class="font-extrabold text-[#0b0f19]"></span></p>
+                <p class="text-[11px] text-slate-600 font-medium mt-0.5">Date: <span id="invStatementDate" class="font-extrabold text-[#0b0f19]"></span></p>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-xs border border-gray-300 rounded-lg p-3 bg-gray-50">
-              <div class="space-y-1">
-                <p class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">Account / Merchant</p>
-                <div id="invVendorHeader" class="text-xs font-black text-gray-900 uppercase leading-snug"></div>
+            <!-- Merchant & Statement Details Box -->
+            <div class="grid grid-cols-2 border border-slate-200 rounded-md bg-slate-50/70 px-4 py-3 text-xs">
+              <div class="pr-4 border-r border-slate-200 space-y-0.5">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">STATEMENT TO (MERCHANT)</p>
+                <p id="invVendorName" class="text-xs font-black text-[#0b0f19] uppercase pt-0.5"></p>
+                <p id="invVendorMeta" class="text-[11px] text-slate-600 font-medium"></p>
+                <p id="invVendorAddress" class="text-[11px] text-slate-600 font-medium"></p>
               </div>
-              <div class="text-right space-y-1">
-                <p class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">Statement Summary</p>
-                <p class="text-[11px] font-bold text-gray-700">Currency: <span class="font-black text-gray-900">AED</span></p>
-                <p class="text-[11px] font-bold text-gray-700">Total Deliveries: <span id="invOrderCount" class="font-black text-gray-900 tabular-nums">0</span></p>
+              <div class="pl-4 text-right space-y-0.5">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">STATEMENT DETAILS</p>
+                <p id="invPeriodHeader" class="text-[11px] font-extrabold text-[#0b0f19] pt-0.5"></p>
+                <p class="text-[11px] text-slate-600 font-medium">Orders: <span id="invOrderCount" class="font-extrabold text-[#0b0f19] tabular-nums">0</span> | Currency: <span class="font-extrabold text-[#0b0f19]">AED</span></p>
               </div>
             </div>
 
+            <!-- 6-Column Ledger Table -->
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-[11px] border border-gray-300 border-collapse tabular-nums">
+              <table class="w-full text-left text-xs border border-slate-200 border-collapse tabular-nums">
                 <thead>
                   <tr class="bg-[#0b0f19] text-white" style="background-color: #0b0f19 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold w-8">#</th>
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">Date</th>
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">AWB / Ref</th>
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">Customer</th>
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold text-right">Product (AED)</th>
-                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold text-right">Charges / Deficit</th>
-                    <th class="py-2 px-2 text-[9px] uppercase tracking-wider font-extrabold text-right">Net (AED)</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold text-center w-10">#</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold">DATE</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold">AWB / ID</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold">CUSTOMER</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold text-right">DEDUCTION</th>
+                    <th class="py-2.5 px-3 text-[10px] uppercase tracking-wider font-extrabold text-right">PRODUCT</th>
                   </tr>
                 </thead>
-                <tbody id="invTableBody" class="divide-y divide-gray-200 text-gray-900"></tbody>
+                <tbody id="invTableBody" class="divide-y divide-slate-200 text-[#0b0f19]"></tbody>
+                <tfoot>
+                  <tr class="bg-slate-50 border-t-2 border-slate-300" style="background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <td colspan="4" class="py-2.5 px-3 text-right text-[11px] font-black uppercase tracking-wider text-[#0b0f19] border-r border-slate-200">SUBTOTALS (AED)</td>
+                    <td id="invSubTotalDeductions" class="py-2.5 px-3 text-right text-xs font-black text-rose-600 border-r border-slate-200">0.00</td>
+                    <td id="invSubTotalProduct" class="py-2.5 px-3 text-right text-xs font-black text-[#0b0f19]">0.00</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 
+            <!-- Direct Payouts / Payments Table (Shown when payments exist) -->
             <div id="invSettledLedgerWrap" class="hidden space-y-2">
-              <p class="text-[10px] font-black text-gray-900 uppercase tracking-widest">Payments & Adjustments</p>
+              <p class="text-[10px] font-black text-[#0b0f19] uppercase tracking-widest">Payments &amp; Adjustments</p>
               <div class="overflow-x-auto">
-                <table class="w-full text-left text-[11px] border border-gray-300 border-collapse tabular-nums">
+                <table class="w-full text-left text-xs border border-slate-200 border-collapse tabular-nums">
                   <thead>
-                    <tr class="bg-gray-100 text-gray-800 border-b border-gray-300">
-                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Date</th>
-                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Type</th>
-                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Reference / Notes</th>
-                      <th class="py-2 px-2 text-[9px] uppercase tracking-wider font-extrabold text-right">Amount (AED)</th>
+                    <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                      <th class="py-2 px-3 border-r border-slate-200 text-[10px] uppercase tracking-wider font-extrabold">Date</th>
+                      <th class="py-2 px-3 border-r border-slate-200 text-[10px] uppercase tracking-wider font-extrabold">Type</th>
+                      <th class="py-2 px-3 border-r border-slate-200 text-[10px] uppercase tracking-wider font-extrabold">Reference / Notes</th>
+                      <th class="py-2 px-3 text-[10px] uppercase tracking-wider font-extrabold text-right">Amount (AED)</th>
                     </tr>
                   </thead>
-                  <tbody id="invSettledTableBody" class="divide-y divide-gray-200 text-gray-900"></tbody>
+                  <tbody id="invSettledTableBody" class="divide-y divide-slate-200 text-[#0b0f19]"></tbody>
                 </table>
               </div>
             </div>
 
-            <div class="flex justify-end pt-2">
-              <table class="stmt-totals-table w-72 text-xs border border-gray-300 border-collapse tabular-nums">
-                <tr class="border-b border-gray-200">
-                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Gross Collected</td>
-                  <td id="invTotalProduct" class="py-2 px-3 text-right font-bold text-gray-900">0.00 AED</td>
-                </tr>
-                <tr class="border-b border-gray-200">
-                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Delivery Fees / Deficit</td>
-                  <td id="invTotalDeductions" class="py-2 px-3 text-right font-bold text-rose-700">0.00 AED</td>
-                </tr>
-                <tr class="border-b border-gray-200">
-                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Paid to Vendor</td>
-                  <td id="invSettledAmount" class="py-2 px-3 text-right font-bold text-gray-900">0.00 AED</td>
-                </tr>
-                <tr class="bg-gray-100 border-t-2 border-gray-900">
-                  <td id="invNetLabel" class="py-2.5 px-3 text-[10px] font-black uppercase tracking-widest text-gray-900">Net Balance Due</td>
-                  <td id="invNetAmount" class="py-2.5 px-3 text-right font-black text-sm text-gray-900">0.00 AED</td>
-                </tr>
-              </table>
+            <!-- Bottom Section: QR + Note (Left) & Accounting Summary (Right) -->
+            <div class="grid grid-cols-12 gap-5 items-start pt-4 border-t border-slate-200">
+              <div class="col-span-6 flex items-start gap-3">
+                <div id="pdfQrCodeCanvas" class="stmt-qr p-1.5 bg-white border border-slate-200 rounded shrink-0"></div>
+                <div class="text-[10px] text-slate-600 leading-snug space-y-1">
+                  <p class="font-black text-[#0b0f19] uppercase tracking-wider">NOTE</p>
+                  <p>Please report any discrepancy within 7 days of receipt.</p>
+                  <p class="pt-0.5">By: <span id="invPrintedBy" class="font-extrabold text-[#0b0f19]"></span></p>
+                  <p>Printed: <span id="invPrintedDate" class="font-extrabold text-[#0b0f19]"></span></p>
+                </div>
+              </div>
+
+              <div class="col-span-6">
+                <table class="stmt-totals-table w-full text-xs border border-slate-200 border-collapse tabular-nums">
+                  <tr class="border-b border-slate-200 bg-white">
+                    <td class="py-2 px-3 text-slate-700 font-semibold">Gross Product Collected</td>
+                    <td id="invTotalProduct" class="py-2 px-3 text-right font-extrabold text-[#0b0f19] whitespace-nowrap">0.00 AED</td>
+                  </tr>
+                  <tr class="border-b border-slate-200 bg-white">
+                    <td class="py-2 px-3 text-rose-600 font-semibold">Less: Delivery Fees / Deficit</td>
+                    <td id="invTotalDeductions" class="py-2 px-3 text-right font-extrabold text-rose-600 whitespace-nowrap">0.00 AED</td>
+                  </tr>
+                  <tr class="border-b border-slate-200 bg-white">
+                    <td class="py-2 px-3 text-slate-700 font-semibold">Less: Paid to Vendor</td>
+                    <td id="invSettledAmount" class="py-2 px-3 text-right font-extrabold text-[#0b0f19] whitespace-nowrap">0.00 AED</td>
+                  </tr>
+                  <tr class="bg-[#0b0f19] text-white" style="background-color: #0b0f19 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <td id="invNetLabel" class="py-2.5 px-3 font-black uppercase tracking-wider text-[11px]">NET PAYABLE DUE</td>
+                    <td id="invNetAmount" class="py-2.5 px-3 text-right font-black text-sm whitespace-nowrap">0.00 AED</td>
+                  </tr>
+                </table>
+              </div>
             </div>
 
-            <div class="flex justify-between items-end pt-4 border-t border-gray-300 gap-4">
-              <div id="pdfQrCodeCanvas" class="stmt-qr p-1.5 bg-white border border-gray-200 rounded-lg"></div>
-              <div class="flex gap-8 text-center text-xs text-gray-600">
-                <div><div class="border-b border-gray-500 w-28 mx-auto mb-1.5"></div><p class="font-bold uppercase tracking-wider text-[9px]">Next Way Signatory</p></div>
-                <div><div class="border-b border-gray-500 w-28 mx-auto mb-1.5"></div><p class="font-bold uppercase tracking-wider text-[9px]">Vendor Acceptance</p></div>
+            <!-- Signatures -->
+            <div class="grid grid-cols-2 gap-16 pt-10 text-center">
+              <div>
+                <div class="border-t-2 border-slate-500 w-full mb-2"></div>
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-600">NEXT WAY SIGNATORY</p>
+              </div>
+              <div>
+                <div class="border-t-2 border-slate-500 w-full mb-2"></div>
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-600">MERCHANT ACCEPTANCE</p>
               </div>
             </div>
           </div>
+
 
           <!-- TAX INVOICE FORMAT -->
           <div id="taxInvoiceWrap" class="hidden font-sans text-gray-800 bg-white p-2">
