@@ -285,12 +285,63 @@ export const renderDashListItems = () => {
   }
 
   const currentUser = getCurrentUser();
+  const isAgent = currentUser && currentUser.role === 'AGENT';
 
   container.innerHTML = list.map((c, idx) => {
     const v = getVendorByCode(c.vendorCode);
     const vendorName = v ? v.name : c.vendorCode;
-    const canSubmitRto = c.rtoStatus === 'ASSIGNED' && (currentUser.role === 'AGENT' ? c.rtoPickupBy === currentUser.id : currentUser.role === 'ADMIN');
+    const baseAmt = Number(c.productAmount) || 0;
+    const delCharge = Number(c.deliveryCharge) || 0;
+    const collectAmt = c.feeType === 'COD' ? (baseAmt + delCharge) : baseAmt;
+    const waMessage = `Dear Customer,\nYour Shipment RefNo: *${c.id}*\n(From : *${vendorName}*),is on the way for delivery.\nAmount: Aed *${formatAmt(collectAmt)}*`;
+    const cleanPhone = (c.customerPhone || '').replace(/[^0-9]/g, '');
 
+    if (currentDashListFilter === 'PENDING' && isAgent) {
+      return `
+        <div onclick="window.showConsignmentDetails('${c.id}')" class="cursor-pointer ql-card p-4 sm:p-5 hover:border-[var(--accent-gold)] transition-colors space-y-3 text-xs">
+          <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-3 mb-1">
+            <button onclick="event.stopPropagation(); window.openPodScreen('${c.id}')" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all tracking-widest text-[10px] uppercase border border-[#1e293b]">Start</button>
+            <div class="flex items-center gap-3">
+              <span class="font-black text-[var(--text-primary)] text-sm tracking-widest uppercase">${c.id}</span>
+              <span class="w-6 h-6 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] font-black text-[10px] flex items-center justify-center shadow-sm tabular-nums">${idx + 1}</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-end gap-3">
+            <div class="flex-1 space-y-2.5 min-w-0">
+              <p class="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[11px]">${c.customerName}</p>
+              <div class="flex items-center">
+                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Loc</span>
+                <span class="font-bold text-[var(--text-primary)] truncate">${c.deliveryAddress || ''}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Pcs</span>
+                <span class="font-bold text-[var(--text-primary)] tabular-nums">${c.pieces || 1}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Mob</span>
+                <span class="font-bold text-[var(--text-primary)] tabular-nums">${c.customerPhone || ''}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="uppercase text-[10px] tracking-wider text-[var(--text-muted)] w-14 shrink-0">Shipper</span>
+                <span class="font-bold text-[var(--text-primary)] uppercase truncate">${vendorName}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3 shrink-0">
+              <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}" target="_blank" onclick="event.stopPropagation()" class="w-10 h-10 rounded-full bg-[#0b0f19] border border-[#1e293b] text-[var(--accent-gold)] flex items-center justify-center shadow-[var(--shadow-elevated)] hover:scale-110 transition-transform" title="WhatsApp">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.128.552 4.195 1.6 6.02L.015 24l6.104-1.592c1.748.956 3.715 1.464 5.912 1.464 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm0 21.874c-1.802 0-3.565-.483-5.111-1.398l-.366-.217-3.8.992.992-3.801-.238-.378c-.997-1.583-1.523-3.411-1.523-5.253 0-5.467 4.45-9.917 9.916-9.917 5.467 0 9.917 4.45 9.917 9.917s-4.45 9.917-9.917 9.917zm5.442-7.44c-.298-.15-1.765-.871-2.037-.971-.272-.1-.472-.15-.671.15-.199.3-.77 1.018-.944 1.218-.174.2-.348.25-.646.1-1.258-.636-2.316-1.29-3.238-2.613-.238-.344.238-.328.665-1.182.1-.2.05-.375-.025-.525-.075-.15-.671-1.618-.921-2.218-.242-.582-.487-.503-.671-.513-.174-.01-.374-.01-.573-.01-.199 0-.522.075-.796.375-.273.3-1.044 1.022-1.044 2.493s1.07 2.892 1.219 3.092c.15.2 2.11 3.22 5.11 4.515.714.308 1.27.492 1.706.63.717.228 1.368.196 1.884.119.58-.087 1.765-.722 2.014-1.422.249-.7.249-1.3.174-1.422-.075-.122-.274-.197-.573-.347z"/></svg>
+              </a>
+              <a href="tel:${c.customerPhone || ''}" onclick="event.stopPropagation()" class="w-10 h-10 rounded-full bg-[var(--bg-base)] border border-[var(--border-color-strong)] text-[var(--text-primary)] flex items-center justify-center shadow-sm hover:scale-110 transition-transform" title="Call">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const canSubmitRto = c.rtoStatus === 'ASSIGNED' && (currentUser.role === 'AGENT' ? c.rtoPickupBy === currentUser.id : currentUser.role === 'ADMIN');
     const rtoBadge = c.rtoStatus
       ? `<span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--status-blue-bg)] text-[var(--status-blue)] border border-[#3b82f6]/20">${c.rtoStatus.replace(/_/g, ' ')}</span>`
       : '';
