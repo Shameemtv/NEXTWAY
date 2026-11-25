@@ -16,7 +16,7 @@ import {
 
 import {
   generateAdminAgentReport, generateAgentFinanceReport, updateInvoiceFilterInputs,
-  generateInvoicePreview, exportAgentDailyExcel, sendAgentReportWhatsApp,
+  generateInvoicePreview, applyInvoicePrintSize, exportAgentDailyExcel, sendAgentReportWhatsApp,
   exportInvoiceExcel, printAdminAgentReport, printAgentFinanceReport, printVendorInvoice,
   openExpenseModal, saveAgentExpense, deleteExpense, updateExpenseStatus
 } from './views/finance.js';
@@ -50,6 +50,32 @@ import {
   renderConfirmations, generateAdminFinanceTab
 } from './views/admin.js';
 
+export const applySavedTheme = () => {
+  const isDark = localStorage.getItem('NEXTWAY_DARK_MODE') === 'enabled';
+  document.body.classList.toggle('dark-mode', isDark);
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) {
+    themeMeta.setAttribute('content', isDark ? '#05070a' : '#0b0f19');
+  }
+};
+
+export const toggleDarkMode = () => {
+  const nextDark = !document.body.classList.contains('dark-mode');
+  document.body.classList.toggle('dark-mode', nextDark);
+  localStorage.setItem('NEXTWAY_DARK_MODE', nextDark ? 'enabled' : 'disabled');
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) {
+    themeMeta.setAttribute('content', nextDark ? '#05070a' : '#0b0f19');
+  }
+};
+
+applySavedTheme();
+window.addEventListener('pageshow', applySavedTheme);
+window.addEventListener('focus', applySavedTheme);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) applySavedTheme();
+});
+
 const getDefaultSeedDB = async () => {
   const adminHash = await hashPassword('admin123');
   const agentHash = await hashPassword('agent123');
@@ -81,6 +107,7 @@ export const enterWorkspace = () => {
   const currentUser = getCurrentUser();
   if (!currentUser) return;
 
+  applySavedTheme();
   document.getElementById('authView').classList.add('hidden');
   document.getElementById('appView').classList.remove('hidden');
   document.getElementById('bottomNav').classList.remove('hidden');
@@ -136,11 +163,6 @@ export const logout = () => {
   document.getElementById('darkModeBtn').classList.add('hidden');
 };
 
-export const toggleDarkMode = () => {
-  document.body.classList.toggle('dark-mode');
-  localStorage.setItem('NEXTWAY_DARK_MODE', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
-};
-
 export const toggleMoreMenu = () => {
   document.getElementById('moreMenuDrawer').classList.toggle('hidden');
 };
@@ -188,6 +210,7 @@ export const switchTab = (tName) => {
     if (db && db.vendors) {
       document.getElementById('invVendorSelect').innerHTML = `<option value="" selected disabled></option>` + db.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
     }
+    applyInvoicePrintSize();
     generateInvoicePreview();
     renderVendorLedger();
   }
@@ -261,6 +284,8 @@ const initPWA = () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    applySavedTheme();
+
     const seedDB = await getDefaultSeedDB();
     await initDB(seedDB);
     setStatusCallback(updateSyncBadge);
@@ -309,6 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.closeModal = closeModal;
     window.enterWorkspace = enterWorkspace;
     window.logout = logout;
+    window.applySavedTheme = applySavedTheme;
     window.toggleDarkMode = toggleDarkMode;
     window.switchTab = switchTab;
     window.switchTabWrapper = switchTabWrapper;
@@ -331,6 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.generateAgentFinanceReport = generateAgentFinanceReport;
     window.updateInvoiceFilterInputs = updateInvoiceFilterInputs;
     window.generateInvoicePreview = generateInvoicePreview;
+    window.applyInvoicePrintSize = applyInvoicePrintSize;
     window.exportAgentDailyExcel = exportAgentDailyExcel;
     window.sendAgentReportWhatsApp = sendAgentReportWhatsApp;
     window.exportInvoiceExcel = exportInvoiceExcel;
