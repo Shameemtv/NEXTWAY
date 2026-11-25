@@ -454,7 +454,7 @@ export const cancelSettlementOtp = async (otpId) => {
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
-export const adminConfirmRto = async (cid) => {
+export const adminConfirmRto = (cid) => {
     const db = getDB();
     const currentUser = getCurrentUser();
     if (!currentUser || currentUser.role !== 'ADMIN') return;
@@ -462,12 +462,28 @@ export const adminConfirmRto = async (cid) => {
     const c = db.consignments.find(x => x.id === cid);
     if (!c) return;
 
-    if (!confirm(`Confirm that RTO consignment ${c.id} has been received back by the owner?`)) return;
+    document.getElementById('actionModalTitle').textContent = `Confirm RTO: ${c.id}`;
+    document.getElementById('actionModalBody').innerHTML = `
+      <div class="mb-4 p-4 bg-[var(--status-emerald-bg)] border border-[#10b981]/20 rounded-xl text-center">
+        <p class="text-[10px] font-extrabold text-[var(--status-emerald)] uppercase tracking-widest mb-1.5">You want to confirm RTO ${c.id} received by owner?</p>
+      </div>
+      <button onclick="window.executeAdminConfirmRto('${c.id}')" class="w-full bg-[var(--status-emerald)] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-xl shadow-[var(--shadow-elevated)] transition-colors uppercase tracking-widest text-[11px]">
+        Confirm RTO Receipt
+      </button>
+    `;
+    document.getElementById('actionModal').classList.remove('hidden');
+};
+
+export const executeAdminConfirmRto = async (cid) => {
+    const db = getDB();
+    const c = db.consignments.find(x => x.id === cid);
+    if (!c) return;
 
     c.rtoStatus = 'CONFIRMED';
     c.rtoConfirmedAt = getUAEISOString();
 
     await saveDB();
+    closeModal('actionModal');
     if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
 };
 
