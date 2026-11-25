@@ -1,5 +1,5 @@
 // /src/services/store.js
-import localforage from 'localforage';[span_1420](start_span)[span_1420](end_span)
+const localforage = window.localforage;[span_1420](start_span)[span_1420](end_span)
 import { pushLocalDBToCloud } from './sync.js';[span_1421](start_span)[span_1421](end_span)[span_1422](start_span)[span_1422](end_span)
 
 const DB_KEY = 'NEXTWAY_DELIVERY_DB_V1';[span_1423](start_span)[span_1423](end_span)
