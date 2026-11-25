@@ -58,7 +58,7 @@
       --bg-surface: #0b0f19;
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
-      --text-muted: #64748b; /* WCAG AA Compliant Contrast */
+      --text-muted: #64748b;
 
       /* Status Tweaks for Dark */
       --status-emerald: #34d399;
@@ -79,7 +79,7 @@
       filter: drop-shadow(0 0 8px rgba(201, 162, 75, 0.35));
     }
 
-    /* Smooth Slide-up for the new More Menu */
+    /* Smooth Slide-up for the More Menu */
     @keyframes slideUp {
       from { transform: translateY(100%); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -89,10 +89,114 @@
     }
 
     @media print {
+      @page {
+        margin: 10mm;
+      }
+      body, body.dark-mode {
+        background: #ffffff !important;
+        color: #111827 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
       body * { visibility: hidden !important; }
       .print-area, .print-area * { visibility: visible !important; }
-      .print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0.5rem !important; background: white !important; }
+      .print-area {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #111827 !important;
+      }
+      .print-area .bg-white,
+      .print-area .ql-card,
+      .print-area .glass-card {
+        background: #ffffff !important;
+        color: #111827 !important;
+        box-shadow: none !important;
+      }
+      .print-area .overflow-x-auto {
+        overflow: visible !important;
+      }
+      .print-area table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+      .print-area thead {
+        display: table-header-group !important;
+      }
+      .print-area tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
       .no-print { display: none !important; }
+
+      /* Compact scaling when A5 is selected in dropdown */
+      .print-area.print-size-a5,
+      .print-area.print-size-a5-landscape {
+        font-size: 9px !important;
+      }
+      .print-area.print-size-a5 .stmt-logo,
+      .print-area.print-size-a5-landscape .stmt-logo {
+        height: 36px !important;
+        margin-bottom: 4px !important;
+      }
+      .print-area.print-size-a5 .stmt-title,
+      .print-area.print-size-a5-landscape .stmt-title {
+        font-size: 14px !important;
+      }
+      .print-area.print-size-a5 .stmt-company,
+      .print-area.print-size-a5-landscape .stmt-company {
+        font-size: 13px !important;
+      }
+      .print-area.print-size-a5 table th,
+      .print-area.print-size-a5 table td,
+      .print-area.print-size-a5-landscape table th,
+      .print-area.print-size-a5-landscape table td {
+        padding: 3px 4px !important;
+        font-size: 8.5px !important;
+      }
+      .print-area.print-size-a5 .stmt-totals-table,
+      .print-area.print-size-a5-landscape .stmt-totals-table {
+        width: 210px !important;
+      }
+      .print-area.print-size-a5 .stmt-qr img,
+      .print-area.print-size-a5 .stmt-qr canvas,
+      .print-area.print-size-a5-landscape .stmt-qr img,
+      .print-area.print-size-a5-landscape .stmt-qr canvas {
+        width: 48px !important;
+        height: 48px !important;
+      }
+    }
+
+    @media print and (max-width: 165mm) {
+      .print-area {
+        font-size: 9px !important;
+      }
+      .print-area .stmt-logo {
+        height: 36px !important;
+        margin-bottom: 4px !important;
+      }
+      .print-area .stmt-title {
+        font-size: 14px !important;
+      }
+      .print-area .stmt-company {
+        font-size: 13px !important;
+      }
+      .print-area table th,
+      .print-area table td {
+        padding: 3px 4px !important;
+        font-size: 8.5px !important;
+      }
+      .print-area .stmt-totals-table {
+        width: 210px !important;
+      }
     }
 
     /* Core Typography & Base */
@@ -155,7 +259,7 @@
       border-radius: 0 0 3px 3px;
     }
 
-    /* Dark Mode Fallbacks (Safeguarding existing JS strings until they are updated) */
+    /* Dark Mode Fallbacks */
     body.dark-mode .glass-card, body.dark-mode .bg-white, body.dark-mode .bg-white\/90 { background-color: var(--bg-surface) !important; border-color: var(--border-color) !important; color: var(--text-primary) !important; }
     body.dark-mode .bg-slate-50, body.dark-mode .bg-slate-100, body.dark-mode .bg-gray-50, body.dark-mode .bg-gray-100 { background-color: var(--bg-base) !important; border-color: var(--border-color) !important; }
     body.dark-mode .bg-slate-200, body.dark-mode .bg-gray-200, body.dark-mode .bg-gray-300 { background-color: var(--border-color-strong) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
@@ -171,7 +275,7 @@
     body.dark-mode .hover\:bg-slate-200:hover, body.dark-mode .hover\:bg-slate-300:hover { background-color: var(--border-color-strong) !important; color: var(--text-primary) !important; }
     body.dark-mode .shadow-sm, body.dark-mode .shadow-md, body.dark-mode .shadow-xl { box-shadow: var(--shadow-subtle) !important; }
 
-    /* Safely mapped state backgrounds and text colors for existing JS classes */
+    /* Safely mapped state backgrounds and text colors */
     body.dark-mode .bg-emerald-50, body.dark-mode .bg-emerald-50\/60 { background-color: var(--status-emerald-bg) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
     body.dark-mode .bg-rose-50, body.dark-mode .bg-red-50 { background-color: var(--status-rose-bg) !important; border-color: rgba(244, 63, 94, 0.2) !important; }
     body.dark-mode .bg-blue-50, body.dark-mode .bg-blue-50\/60 { background-color: var(--status-blue-bg) !important; border-color: rgba(59, 130, 246, 0.2) !important; }
@@ -184,6 +288,11 @@
   </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-amber-500 selection:text-slate-900">
+  <script>
+    if (localStorage.getItem('NEXTWAY_DARK_MODE') === 'enabled') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
 
   <!-- TOP NAVIGATION BAR -->
   <header class="glass-panel text-[var(--text-primary)] sticky top-0 z-40 no-print transition-colors duration-300">
@@ -220,7 +329,7 @@
         <h2 class="text-2xl font-black text-[var(--text-primary)] tracking-tight uppercase">Next Way</h2>
         <p class="text-xs text-[var(--text-secondary)] mt-1.5 font-bold tracking-widest uppercase">Delivery Services</p>
       </div>
-      <form onsubmit="handleLogin(event)" class="space-y-5">
+      <form class="space-y-5">
         <div>
           <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-2">Username</label>
           <input id="loginUsername" type="text" required class="w-full px-4 py-3 rounded-xl bg-[var(--bg-base)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] font-bold focus:ring-2 focus:ring-[#c9a24b]/20 focus:border-[var(--accent-gold)] focus:outline-none transition-all placeholder-[var(--text-muted)]" placeholder="Enter your username" />
@@ -266,7 +375,6 @@
 
         <!-- MAIN DASHBOARD VIEW -->
         <div id="dashMainScreen" class="max-w-md mx-auto space-y-6 py-2">
-          <!-- Agent Name & Date -->
           <div class="text-center space-y-1">
             <h2 id="dashAgentName" class="text-sm font-black text-[var(--text-primary)] uppercase tracking-widest"></h2>
             <p id="dashCurrentDate" class="text-[10px] font-extrabold text-[var(--text-secondary)] tracking-widest uppercase"></p>
@@ -274,7 +382,6 @@
 
           <!-- Top Donut Cards: Delivered & Pending -->
           <div class="grid grid-cols-2 gap-4">
-            <!-- Delivered Card -->
             <div onclick="openDashAnalysis('DELIVERED_ANALYSIS')" class="cursor-pointer ql-card p-5 hover:border-[var(--status-emerald)] transition-colors group">
               <div class="flex justify-between items-center mb-4">
                 <span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Delivered</span>
@@ -293,7 +400,6 @@
               </div>
             </div>
 
-            <!-- Pending Card -->
             <div onclick="openDashAnalysis('PENDING_ANALYSIS')" class="cursor-pointer ql-card p-5 hover:border-[var(--accent-gold)] transition-colors group">
               <div class="flex justify-between items-center mb-4">
                 <span class="font-extrabold text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Pending</span>
@@ -328,7 +434,7 @@
             </button>
           </div>
 
-          <!-- Bottom 2x2 Summary Cards Grid -->
+          <!-- Bottom Summary Cards Grid -->
           <div id="dashCardsGrid" class="grid grid-cols-2 gap-4"></div>
         </div>
 
@@ -625,13 +731,23 @@
       <div id="panel-invoices" class="hidden space-y-5">
         <div class="ql-card p-6 space-y-5 no-print">
           <div><h3 class="font-black text-sm text-[var(--text-primary)] uppercase tracking-widest">Vendor Statement & Ledger</h3></div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             <div><label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Select Vendor</label><select id="invVendorSelect" onchange="generateInvoicePreview()" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all cursor-pointer"></select></div>
             <div><label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Period Filter</label><select id="invFilterType" onchange="updateInvoiceFilterInputs()" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all cursor-pointer"><option value="ALL">All Dates</option><option value="DATE">Specific Date</option><option value="MONTH">Specific Month</option><option value="YEAR">Specific Year</option><option value="RANGE">Date Range</option></select></div>
             <div id="invSingleDateWrap" class="hidden"><label id="invSingleLabel" class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Select Date</label><input id="invSingleInput" onchange="generateInvoicePreview()" type="date" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all" /></div>
             <div id="invRangeStartWrap" class="hidden"><label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Start Date</label><input id="invStartDate" onchange="generateInvoicePreview()" type="date" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all" /></div>
             <div id="invRangeEndWrap" class="hidden"><label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">End Date</label><input id="invEndDate" onchange="generateInvoicePreview()" type="date" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all" /></div>
             <div><label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Tax Invoice</label><select id="invTaxInvoiceSelect" onchange="generateInvoicePreview()" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all cursor-pointer"><option value="NO" selected>No</option><option value="YES">Yes</option><option value="NO_VAT">No VAT</option></select></div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Print Sheet Size</label>
+              <select id="invPrintSizeSelect" onchange="applyInvoicePrintSize()" class="w-full text-xs font-bold border border-[var(--border-color)] rounded-xl px-4 py-2.5 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all cursor-pointer">
+                <option value="AUTO" selected>Auto (Printer Choice)</option>
+                <option value="A4">A4 Portrait</option>
+                <option value="A5">A5 Portrait</option>
+                <option value="A5_LANDSCAPE">A5 Landscape</option>
+                <option value="LETTER">US Letter</option>
+              </select>
+            </div>
           </div>
           <div class="flex flex-wrap gap-3 pt-2">
             <button onclick="generateInvoicePreview()" class="bg-[#0b0f19] hover:bg-[#131b2e] text-[var(--accent-gold)] text-[11px] font-extrabold px-5 py-2.5 rounded-xl shadow-[var(--shadow-elevated)] transition-all uppercase tracking-widest border border-[#1e293b]">Generate View</button>
@@ -640,38 +756,94 @@
           </div>
         </div>
 
-        <div id="printableInvoice" class="ql-card p-8 bg-white border border-[var(--border-color)] space-y-6">
-          <!-- STANDARD STATEMENT -->
-          <div id="standardInvoiceWrap" class="space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between border-b border-gray-200 pb-5 gap-4">
+        <div id="printableInvoice" class="ql-card p-6 sm:p-8 bg-white border border-[var(--border-color)] space-y-6">
+          <!-- STANDARD LEDGER STATEMENT FORMAT (TAX INVOICE = NO) -->
+          <div id="standardInvoiceWrap" class="font-sans text-gray-900 bg-white space-y-5">
+            <div class="flex justify-between items-start border-b-2 border-gray-900 pb-4 gap-4">
               <div>
-                <h2 class="text-xl font-black text-gray-900 uppercase tracking-tighter">NEXT WAY DELIVERY SERVICES LLC</h2>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Al Quoz 3, United Arab Emirates<br/>nextwaydelivery@gmail.com<br/>Ph: +971 56 691 3977</p>
+                <img src="1000515619.jpg" alt="Logo" class="stmt-logo h-14 mb-2 object-contain" />
+                <h2 class="stmt-company text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">NEXT WAY DELIVERY SERVICES LLC</h2>
+                <p class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-1">Al Quoz 3, United Arab Emirates | Ph: +971 56 691 3977<br/>nextwaydelivery@gmail.com</p>
               </div>
-              <div class="text-left sm:text-right">
-                <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Merchant Statement</p>
-                <div id="invVendorHeader" class="text-sm font-black text-gray-900 mt-1 uppercase tracking-tight"></div>
-                <p id="invPeriodHeader" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1"></p>
+              <div class="text-right shrink-0">
+                <h1 class="stmt-title text-lg sm:text-xl font-black text-gray-900 uppercase tracking-widest">STATEMENT OF ACCOUNT</h1>
+                <p id="invStatementDate" class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-1"></p>
+                <p id="invPeriodHeader" class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-0.5"></p>
               </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div class="p-4 rounded-xl bg-gray-50 border border-gray-200"><p class="text-[10px] uppercase font-extrabold text-gray-500 tracking-wider">Gross Collected</p><p id="invTotalProduct" class="text-xl font-black text-gray-900 mt-1 tabular-nums">0.00 AED</p></div>
-              <div class="p-4 rounded-xl bg-rose-50 border border-rose-200"><p class="text-[10px] uppercase font-extrabold text-rose-800 tracking-wider">Delivery Fees</p><p id="invTotalDeductions" class="text-xl font-black text-rose-900 mt-1 tabular-nums">0.00 AED</p></div>
-              <div class="p-4 rounded-xl bg-gray-50 border border-gray-200"><p class="text-[10px] uppercase font-extrabold text-gray-500 tracking-wider">Paid to Vendor</p><p id="invSettledAmount" class="text-xl font-black text-gray-700 mt-1 tabular-nums">0.00 AED</p></div>
-              <div class="p-4 rounded-xl bg-gray-900 border border-gray-900"><p id="invNetLabel" class="text-[10px] uppercase font-extrabold text-[#c9a24b] tracking-wider">Net Balance Due</p><p id="invNetAmount" class="text-xl font-black text-white mt-1 tabular-nums">0.00 AED</p></div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs border border-gray-300 rounded-lg p-3 bg-gray-50">
+              <div class="space-y-1">
+                <p class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">Account / Merchant</p>
+                <div id="invVendorHeader" class="text-xs font-black text-gray-900 uppercase leading-snug"></div>
+              </div>
+              <div class="text-right space-y-1">
+                <p class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">Statement Summary</p>
+                <p class="text-[11px] font-bold text-gray-700">Currency: <span class="font-black text-gray-900">AED</span></p>
+                <p class="text-[11px] font-bold text-gray-700">Total Deliveries: <span id="invOrderCount" class="font-black text-gray-900 tabular-nums">0</span></p>
+              </div>
             </div>
-            <div class="space-y-5 overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse tabular-nums">
-                <thead><tr class="bg-gray-100 text-gray-700 border-b border-gray-300"><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Date</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Tracking ID</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Customer</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold text-right text-rose-700">Deduction / Deficit</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold text-right">Product Total</th></tr></thead>
-                <tbody id="invTableBody" class="divide-y divide-gray-100 text-gray-800"></tbody>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-[11px] border border-gray-300 border-collapse tabular-nums">
+                <thead>
+                  <tr class="bg-[#0b0f19] text-white" style="background-color: #0b0f19 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold w-8">#</th>
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">Date</th>
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">AWB / Ref</th>
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold">Customer</th>
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold text-right">Product (AED)</th>
+                    <th class="py-2 px-2 border-r border-gray-700 text-[9px] uppercase tracking-wider font-extrabold text-right">Charges / Deficit</th>
+                    <th class="py-2 px-2 text-[9px] uppercase tracking-wider font-extrabold text-right">Net (AED)</th>
+                  </tr>
+                </thead>
+                <tbody id="invTableBody" class="divide-y divide-gray-200 text-gray-900"></tbody>
               </table>
-              <div id="invSettledLedgerWrap" class="hidden pt-5 border-t border-gray-200"><p class="text-[10px] font-extrabold text-gray-900 uppercase tracking-widest mb-3">Direct Payouts Made to Vendor</p><table class="w-full text-left text-xs border-collapse tabular-nums"><thead><tr class="bg-gray-100 text-gray-700 border-b border-gray-300"><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Date</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Type</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold">Reference</th><th class="p-3 text-[10px] uppercase tracking-wider font-extrabold text-right">Amount</th></tr></thead><tbody id="invSettledTableBody" class="divide-y divide-gray-100 text-gray-800"></tbody></table></div>
             </div>
-            <div class="flex justify-between items-end mt-6 pt-5 border-t border-gray-200">
-              <div id="pdfQrCodeCanvas" class="p-2 bg-white border border-gray-200 rounded-xl shadow-sm"></div>
-              <div class="flex gap-10 text-center text-xs text-gray-500">
-                <div><div class="border-b border-gray-400 w-32 mx-auto mb-2"></div><p class="font-bold uppercase tracking-widest text-[10px]">Next Way Signatory</p></div>
-                <div><div class="border-b border-gray-400 w-32 mx-auto mb-2"></div><p class="font-bold uppercase tracking-widest text-[10px]">Vendor Acceptance</p></div>
+
+            <div id="invSettledLedgerWrap" class="hidden space-y-2">
+              <p class="text-[10px] font-black text-gray-900 uppercase tracking-widest">Payments & Adjustments</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-[11px] border border-gray-300 border-collapse tabular-nums">
+                  <thead>
+                    <tr class="bg-gray-100 text-gray-800 border-b border-gray-300">
+                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Date</th>
+                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Type</th>
+                      <th class="py-2 px-2 border-r border-gray-300 text-[9px] uppercase tracking-wider font-extrabold">Reference / Notes</th>
+                      <th class="py-2 px-2 text-[9px] uppercase tracking-wider font-extrabold text-right">Amount (AED)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invSettledTableBody" class="divide-y divide-gray-200 text-gray-900"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <table class="stmt-totals-table w-72 text-xs border border-gray-300 border-collapse tabular-nums">
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Gross Collected</td>
+                  <td id="invTotalProduct" class="py-2 px-3 text-right font-bold text-gray-900">0.00 AED</td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Delivery Fees / Deficit</td>
+                  <td id="invTotalDeductions" class="py-2 px-3 text-right font-bold text-rose-700">0.00 AED</td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-600">Paid to Vendor</td>
+                  <td id="invSettledAmount" class="py-2 px-3 text-right font-bold text-gray-900">0.00 AED</td>
+                </tr>
+                <tr class="bg-gray-100 border-t-2 border-gray-900">
+                  <td id="invNetLabel" class="py-2.5 px-3 text-[10px] font-black uppercase tracking-widest text-gray-900">Net Balance Due</td>
+                  <td id="invNetAmount" class="py-2.5 px-3 text-right font-black text-sm text-gray-900">0.00 AED</td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="flex justify-between items-end pt-4 border-t border-gray-300 gap-4">
+              <div id="pdfQrCodeCanvas" class="stmt-qr p-1.5 bg-white border border-gray-200 rounded-lg"></div>
+              <div class="flex gap-8 text-center text-xs text-gray-600">
+                <div><div class="border-b border-gray-500 w-28 mx-auto mb-1.5"></div><p class="font-bold uppercase tracking-wider text-[9px]">Next Way Signatory</p></div>
+                <div><div class="border-b border-gray-500 w-28 mx-auto mb-1.5"></div><p class="font-bold uppercase tracking-wider text-[9px]">Vendor Acceptance</p></div>
               </div>
             </div>
           </div>
@@ -680,12 +852,12 @@
           <div id="taxInvoiceWrap" class="hidden font-sans text-gray-800 bg-white p-2">
             <div class="flex justify-between items-start border-b-2 border-gray-900 pb-5">
               <div>
-                <img src="1000515619.jpg" alt="Logo" class="h-16 mb-3 object-contain" />
-                <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tighter leading-tight">NEXT WAY DELIVERY SERVICES LLC</h2>
+                <img src="1000515619.jpg" alt="Logo" class="stmt-logo h-16 mb-3 object-contain" />
+                <h2 class="stmt-company text-2xl font-black text-gray-900 uppercase tracking-tighter leading-tight">NEXT WAY DELIVERY SERVICES LLC</h2>
                 <p class="text-[10px] text-gray-600 font-extrabold uppercase tracking-widest mt-1.5">Al Quoz 3, United Arab Emirates<br/>info@nextwaydelivery.com<br/>Ph: +971 56 691 3977, TRN: 105375921100001</p>
               </div>
               <div class="text-right flex flex-col items-end">
-                <h1 id="taxInvoiceMainTitle" class="text-2xl font-black text-gray-900 mb-3 tracking-widest">TAX INVOICE</h1>
+                <h1 id="taxInvoiceMainTitle" class="stmt-title text-2xl font-black text-gray-900 mb-3 tracking-widest">TAX INVOICE</h1>
                 <svg id="taxInvoiceBarcode" class="h-14"></svg>
               </div>
             </div>
@@ -731,7 +903,7 @@
             </div>
 
             <div class="flex justify-end mt-8 text-xs">
-              <table class="w-80 text-right text-xs tabular-nums">
+              <table class="stmt-totals-table w-80 text-right text-xs tabular-nums">
                 <tr><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total Amount</td><td class="py-1.5 font-black" id="taxTotalAmt"></td></tr>
                 <tr><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total Discount</td><td class="py-1.5 font-black">0.00</td></tr>
                 <tr id="rowTotalBeforeVat"><td class="py-1.5 text-gray-500 font-bold uppercase tracking-wider">Total before VAT</td><td class="py-1.5 font-black" id="taxTotalBeforeVat"></td></tr>
@@ -748,7 +920,6 @@
               <p class="font-bold uppercase tracking-wider">Printed Date: <span id="taxPrintedDate" class="text-gray-900 font-black"></span></p>
             </div>
           </div>
-
         </div>
 
         <div class="ql-card p-6 space-y-5 no-print">
@@ -1175,7 +1346,6 @@
 
         <div><label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">Pickup Location</label><input id="cPickupFrom" type="text" required class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all" /></div>
 
-        <!-- HIDDEN WALK-IN FIELDS -->
         <div id="walkInFields" class="hidden grid-cols-2 gap-4">
           <div><label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">Actual Vendor</label><input id="cRefVendorName" type="text" placeholder="Name" class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all placeholder-[var(--text-muted)]" /></div>
           <div><label class="block text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">Vendor Phone</label><input id="cRefVendorPhone" type="text" placeholder="Phone" class="w-full font-bold border border-[var(--border-color)] rounded-xl px-4 py-3 bg-[var(--bg-base)] text-[var(--text-primary)] outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-all placeholder-[var(--text-muted)]" /></div>
